@@ -1,0 +1,54 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = 'forge'
+            url = 'https://files.minecraftforge.net/maven'
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'kotlin'
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+version = modVersion
+group = modGroup
+archivesBaseName = modBaseName
+
+minecraft {
+    version = project.forgeVersion
+    runDir = 'run'
+    mappings = project.mcpVersion
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+    maven {
+        url = 'http://maven.bluexin.be/repository/snapshots/'
+    }
+}
+
+dependencies {
+    compile 'be.bluexin:saomc-lib:1.12.2-1.2.1.0-SNAPSHOT:deobf'
+    compile 'com.teamwizardry.librarianlib:librarianlib-1.12.2:4.13-SNAPSHOT:deobf'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'mcversion', project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': project.version, 'mcversion': project.minecraft.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
