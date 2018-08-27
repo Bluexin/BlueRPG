@@ -1,0 +1,20 @@
+[
+  {
+    "modid": "rpg",
+    "name": "Rpg",
+    "description": "RPG Mod for Faerun",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "updateUrl": "",
+    "authorList": [
+      "Bluexin"
+    ],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": [
+      "librarianlib"
+    ]
+  }
+]
