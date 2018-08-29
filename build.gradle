@@ -35,7 +35,7 @@ repositories {
 
 dependencies {
     compile 'be.bluexin:saomc-lib:1.12.2-1.2.1.11-SNAPSHOT:deobf'
-    compile 'com.teamwizardry.librarianlib:librarianlib-1.12.2:4.15-SNAPSHOT:deobf'
+    compile 'com.teamwizardry.librarianlib:librarianlib-dynsaverfixes-1.12.2:4.15-SNAPSHOT:deobf'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
@@ -54,3 +54,20 @@ processResources {
 }
 
 idea { module { inheritOutputDirs = true } }
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 10, 'minutes'
+}
+
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        javaParameters = true
+        jvmTarget = 1.8
+    }
+}

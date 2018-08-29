@@ -1,7 +1,7 @@
 package be.bluexin.rpg.gui
 
 import be.bluexin.rpg.PacketRaiseStat
-import be.bluexin.rpg.stats.Stats
+import be.bluexin.rpg.stats.PrimaryStat
 import be.bluexin.rpg.stats.stats
 import com.teamwizardry.librarianlib.features.gui.GuiBase
 import com.teamwizardry.librarianlib.features.gui.component.GuiComponentEvents
@@ -33,7 +33,7 @@ class GuiAttributes : GuiBase(WIDTH, HEIGHT) {
             text { "rpg.display.stat".localize("rpg.attributepoints.long".localize(), stats.attributePoints) }
         })
 
-        for (stat in Stats.values()) {
+        for (stat in PrimaryStat.values()) {
             bg.add(ComponentText(10, 45 + stat.ordinal * 10).apply {
                 text { "rpg.display.stat".localize(stat.longName(), stats.baseStats[stat]) }
             })

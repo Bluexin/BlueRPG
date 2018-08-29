@@ -1,9 +1,9 @@
 package be.bluexin.rpg.stats
 
-import be.bluexin.rpg.RPG
+import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.events.ExperienceChangeEvent
 import be.bluexin.rpg.events.LevelUpEvent
-import be.bluexin.rpg.fire
+import be.bluexin.rpg.util.fire
 import be.bluexin.saomclib.capabilities.AbstractCapability
 import be.bluexin.saomclib.capabilities.AbstractEntityCapability
 import be.bluexin.saomclib.capabilities.Key
@@ -12,6 +12,7 @@ import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -38,9 +39,13 @@ class PlayerStats : AbstractEntityCapability() {
 
     @Save
     lateinit var baseStats: StatsCollection
+        internal set
 
-    operator fun get(stat: Stats): Int {
-        return baseStats[stat] // TODO: add equipment stats once that's in
+    operator fun get(stat: Stat): Int {
+        val player = reference.get() as? EntityPlayer ?: return 0
+        return baseStats[stat] + EntityEquipmentSlot.values().sumBy {
+            player.getItemStackFromSlot(it).getCapability(GearStats.Capability, null)?.get(stat) ?: 0
+        }
     }
 
     override fun setup(param: Any): AbstractCapability {
@@ -85,7 +90,7 @@ class PlayerStats : AbstractEntityCapability() {
 
     companion object {
         @Key
-        val KEY = ResourceLocation(RPG.MODID, "player_stats")
+        val KEY = ResourceLocation(BlueRPG.MODID, "player_stats")
 
         @CapabilityInject(PlayerStats::class)
         lateinit var Capability: Capability<PlayerStats>
@@ -167,7 +172,7 @@ class Level(private val player: WeakReference<EntityPlayer>) {
         dirty = true
     }
 
-    private companion object {
+    companion object {
         const val LEVEL_CAP = 100
     }
 }

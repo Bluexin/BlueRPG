@@ -29,9 +29,9 @@ object DebugStatsItem : ItemMod("debug_stats") {
 
     @SideOnly(Side.CLIENT)
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
+        val stats = Minecraft.getMinecraft().player?.stats?: return
         val shift = GuiScreen.isShiftKeyDown()
 
-        val stats = Minecraft.getMinecraft().player.stats
         tooltip.add("rpg.display.stats".localize())
         tooltip.add("rpg.display.level".localize(stats.level.level))
         tooltip.add("rpg.display.stat".localize("rpg.attributepoints.${if (shift) "long" else "short"}".localize(), stats.attributePoints))

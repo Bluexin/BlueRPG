@@ -1,17 +1,21 @@
 
 # Display
-rpg.display.stats=Player Stats
+rpg.display.stats=Stats
 rpg.display.stat=%1$s: %2$d
 rpg.display.level=Level %d
 rpg.display.exp.short=%f%%
 rpg.display.exp.long=%1$d/%2$d
 rpg.display.shift=§8(hold shift for details)§r
+rpg.display.notgenerated=§8(not generated yet)§r
 rpg.display.attributes=Attributes
 rpg.display.increase.small=Add 1 point into %s
 rpg.display.increase.big=Add 5 points into %s
 
 rpg.display.debug_exp=Use to gain 20 XP
 rpg.display.debug_exp.shift=Use while shifting to gain 100 XP
+
+rpg.display.item=%s %s
+item_group.bluerpg=Blue RPG
 
 # Stats
 rpg.attributepoints.long=Attribute Points
@@ -22,6 +26,28 @@ rpg.intelligence.long=Intelligence
 rpg.wisdom.long=Wisdom
 rpg.charisma.long=Charisma
 
+rpg.health.long=Health
+rpg.psyche.long=Psyche
+rpg.regen.long=Health Regeneration
+rpg.spirit.long=Spirit
+rpg.reflect.long=Reflect
+rpg.block.long=Block
+rpg.dodge.long=Dodge
+rpg.speed.long=Speed
+rpg.lifestealchance.long=Life Steal Chance
+rpg.lifesteal.long=Life Steal
+rpg.manaleechchance.long=Mana Leech Chance
+rpg.manaleech.long=Mana Leech
+rpg.critchance.long=Crit Chance
+rpg.critdamage.long=Crit Damage
+rpg.bonustoskill.long=Bonus To Skill
+rpg.bonusdamage.long=Bonus Damage
+rpg.resistance.long=Resistance
+rpg.root.long=Root
+rpg.slow.long=Slow
+rpg.cooldownreduction.long=Cooldown Reduction
+rpg.manareduction.long=Mana Reduction
+
 rpg.attributepoints.short=ATTR
 rpg.strength.short=STR
 rpg.constitution.short=CON
@@ -30,6 +56,64 @@ rpg.intelligence.short=INT
 rpg.wisdom.short=WIS
 rpg.charisma.short=CHA
 
+rpg.health.short=HP
+rpg.psyche.short=PSY
+rpg.regen.short=REG
+rpg.spirit.short=SPI
+rpg.reflect.short=REF
+rpg.block.short=BLK
+rpg.dodge.short=DOG
+rpg.speed.short=SPD
+rpg.lifestealchance.short=LSC
+rpg.lifesteal.short=LS
+rpg.manaleechchance.short=MLC
+rpg.manaleech.short=ML
+rpg.critchance.short=CHC
+rpg.critdamage.short=CHD
+rpg.bonustoskill.short=SKILL
+rpg.bonusdamage.short=DMG
+rpg.resistance.short=RES
+rpg.root.short=RT
+rpg.slow.short=SL
+rpg.cooldownreduction.short=CDR
+rpg.manareduction.short=MCR
+
 # Items
 item.bluerpg:debug_stats.name=Debug Player Stats
 item.bluerpg:debug_exp.name=Debug Player Exp
+
+item.bluerpg:gear_token_token.name=Token
+item.bluerpg:gear_token_crafted.name=Crafted Token
+item.bluerpg:gear_token_plus.name=Token Plus
+item.bluerpg:gear_token_plus2.name=Token Plus²
+
+# Rarity
+rpg.common.name=Common
+rpg.uncommon.name=Uncommon
+rpg.rare.name=Rare
+rpg.epic.name=Epic
+rpg.legendary.name=Legendary
+rpg.mythic.name=Mythic
+rpg.godlike.name=Godlike
+
+# Gear Types
+rpg.head_cloth.name=Hood
+rpg.head_leather.name=Cap
+rpg.head_plate.name=Helm
+rpg.chest_cloth.name=Robe
+rpg.chest_leather.name=Vest
+rpg.chest_plate.name=Plastron
+rpg.legs_cloth.name=Cloth Pants
+rpg.legs_leather.name=Leather Pants
+rpg.legs_plate.name=Plate Pants
+rpg.feet_cloth.name=Cloth Boots
+rpg.feet_leather.name=Leather Boots
+rpg.feet_plate.name=Plate Boots
+
+rpg.mace.name=Mace
+rpg.sword.name=Sword
+rpg.axe.name=Axe
+rpg.bow.name=Bow
+rpg.shield.name=Shield
+rpg.parry_dagger.name=Parry Dagger
+rpg.focus.name=Focus

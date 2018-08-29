@@ -1,8 +1,5 @@
 package be.bluexin.rpg
 
-import be.bluexin.rpg.stats.PlayerStats
-import be.bluexin.saomclib.capabilities.CapabilitiesHandler
-import net.minecraft.entity.player.EntityPlayer
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.SidedProxy
@@ -11,13 +8,13 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
 @Mod(
-        modid = RPG.MODID,
-        name = RPG.NAME,
-        version = RPG.VERSION,
-        dependencies = RPG.DEPS,
+        modid = BlueRPG.MODID,
+        name = BlueRPG.NAME,
+        version = BlueRPG.VERSION,
+        dependencies = BlueRPG.DEPS,
         acceptableSaveVersions = "*"
 )
-object RPG {
+object BlueRPG {
     const val MODID = "bluerpg"
     const val NAME = "Blue's RPG"
     const val VERSION = "1.0"
@@ -41,7 +38,5 @@ object RPG {
     fun preInit(evt: FMLPreInitializationEvent) {
         MinecraftForge.EVENT_BUS.register(CommonEventHandler)
         proxy.preInit()
-
-        CapabilitiesHandler.registerEntityCapability(PlayerStats::class.java, PlayerStats.Storage) { it is EntityPlayer }
     }
 }
