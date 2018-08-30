@@ -59,7 +59,7 @@ class StatsCollection(private val reference: WeakReference<out Any>, @Save priva
     fun isEmpty() = collection.isEmpty()
 }
 
-@NamedDynamic(resourceLocation = "bluerpg:stat")
+@NamedDynamic(resourceLocation = "b:s")
 @Savable
 interface Stat {
 
@@ -78,7 +78,7 @@ interface Stat {
     fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot): Int
 }
 
-@NamedDynamic(resourceLocation = "bluerpg:primarystat")
+@NamedDynamic(resourceLocation = "b:ps")
 enum class PrimaryStat: Stat {
     STRENGTH,
     CONSTITUTION,
@@ -92,7 +92,7 @@ enum class PrimaryStat: Stat {
     }
 }
 
-@NamedDynamic(resourceLocation = "bluerpg:secondarystat")
+@NamedDynamic(resourceLocation = "b:ss")
 enum class SecondaryStat: Stat {
     HEALTH,
     PSYCHE,

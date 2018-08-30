@@ -1,5 +1,6 @@
 package be.bluexin.rpg.gear
 
+import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.stats.GearStats
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
@@ -14,7 +15,7 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 
-interface IRPGGear {
+interface IRPGGear { // TODO: use ISpecialArmor
 
     val type: GearType
 
@@ -38,7 +39,25 @@ interface IRPGGear {
         return HashMultimap.create() // TODO use this for stats like hp?
     }
 
-    fun initCapabilities(stack: ItemStack, nbt: NBTTagCompound?): ICapabilityProvider? = GearStatWrapper(stack)
+    fun initCapabilities(stack: ItemStack, nbt: NBTTagCompound?): ICapabilityProvider? {
+        BlueRPG.LOGGER.warn("$stack -> $nbt")
+        return GearStatWrapper(stack)
+    }
+
+    fun addNBTShare(stack: ItemStack, nbt: NBTTagCompound): NBTTagCompound {
+        val cap = stack.getCapability(GearStats.Capability, null)?: return nbt
+        val capNbt = GearStats.Storage.writeNBT(GearStats.Capability, cap, null)
+        nbt.setTag("capabilities", capNbt)
+        BlueRPG.LOGGER.warn("Write share: $nbt")
+        return nbt
+    }
+
+    fun readNBTShare(stack: ItemStack, nbt: NBTTagCompound?) {
+        BlueRPG.LOGGER.warn("Read share: $nbt")
+        val capNbt = nbt?.getCompoundTag("capabilities")?: return
+        val cap = stack.getCapability(GearStats.Capability, null)?: return
+        GearStats.Storage.readNBT(GearStats.Capability, cap, null, capNbt)
+    }
 
     val item: Item
 

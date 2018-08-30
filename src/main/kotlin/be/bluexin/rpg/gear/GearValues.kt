@@ -33,9 +33,13 @@ enum class Rarity(
         return color + text + RESET
     }
 
-    fun rollStats() = Array<Stat>(rolls) {
-        if (it < primaryRolls) PrimaryStat.values()[RNG.nextInt(PrimaryStat.values().size)]
-        else SecondaryStat.values()[RNG.nextInt(SecondaryStat.values().size)]
+    fun rollStats(): Array<Stat> {
+        val primaries = LinkedList(PrimaryStat.values().toList())
+        val secondarySize = SecondaryStat.values().size
+        return Array<Stat>(rolls) {
+            if (it < primaryRolls) primaries.removeAt(RNG.nextInt(primaries.size))
+            else SecondaryStat.values()[RNG.nextInt(secondarySize)]
+        }
     }
 }
 

@@ -28,6 +28,18 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) =
             super<IRPGGear>.addInformation(stack, worldIn, tooltip, flagIn)
 
+    override fun getNBTShareTag(stack: ItemStack): NBTTagCompound? =
+            super.addNBTShare(stack, super.getNBTShareTag(stack) ?: NBTTagCompound())
+
+    override fun readNBTShareTag(stack: ItemStack, nbt: NBTTagCompound?) {
+        super.readNBTShareTag(stack, nbt)
+        if (nbt != null) super.readNBTShare(stack, nbt)
+    }
+
+    override fun getShareTag(): Boolean {
+        return true
+    }
+
     override val item: Item
         get() = this
 

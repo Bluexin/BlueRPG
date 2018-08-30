@@ -30,6 +30,18 @@ class ItemOffHand private constructor(override val type: OffHandType) : ItemMod(
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) =
             super<IRPGGear>.addInformation(stack, worldIn, tooltip, flagIn)
 
+    override fun getNBTShareTag(stack: ItemStack): NBTTagCompound? =
+            super.addNBTShare(stack, super.getNBTShareTag(stack) ?: NBTTagCompound())
+
+    override fun readNBTShareTag(stack: ItemStack, nbt: NBTTagCompound?) {
+        super.readNBTShareTag(stack, nbt)
+        if (nbt != null) super.readNBTShare(stack, nbt)
+    }
+
+    override fun getShareTag(): Boolean {
+        return true
+    }
+
     override val gearSlot: EntityEquipmentSlot
         get() = EntityEquipmentSlot.OFFHAND
 

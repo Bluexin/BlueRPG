@@ -18,7 +18,7 @@ object BlueRPG {
     const val MODID = "bluerpg"
     const val NAME = "Blue's RPG"
     const val VERSION = "1.0"
-    const val DEPS = "required-after:saomclib@[1.2.1,); required-after:librarianlib"
+    const val DEPS = "required-after:saomclib@[1.2.1,);required-after:librarianlib@[4.14,);required-after:forge@[14.23.4.2718,)"
 
     val LOGGER: Logger = LogManager.getLogger(MODID)
 

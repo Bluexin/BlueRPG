@@ -14,6 +14,7 @@ import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
 import net.minecraft.util.NonNullList
 import net.minecraft.world.World
+import net.minecraftforge.items.ItemHandlerHelper
 
 class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_token_${type.key}") {
 
@@ -27,14 +28,13 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
     }
 
     init {
-        hasSubtypes = true
+        hasSubtypes = false
     }
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
-        val stack = playerIn.getHeldItem(handIn)
+        var stack = playerIn.getHeldItem(handIn)
 
         worldIn onServer {
-            if (!playerIn.isCreative) stack.shrink(1)
             val rarity = type.generateRarity()
             val gear = GearTypeGenerator()
             val iss = ItemStack(gear.item)
@@ -43,9 +43,10 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
             stats.rarity = rarity
             stats.ilvl = stack.itemDamage + 1
             stats.generate()
-            if (!playerIn.addItemStackToInventory(iss)) {
-                playerIn.dropItem(iss, false)
-            }
+
+            if (!playerIn.isCreative) stack.shrink(1)
+            if (stack.isEmpty) stack = iss
+            else ItemHandlerHelper.giveItemToPlayer(playerIn, iss)
         }
 
         return ActionResult.newResult(EnumActionResult.SUCCESS, stack)
