@@ -6,7 +6,7 @@ rpg.display.level=Level %d
 rpg.display.exp.short=%f%%
 rpg.display.exp.long=%1$d/%2$d
 rpg.display.shift=§8(hold shift for details)§r
-rpg.display.notgenerated=§8(right-click in hand to generate stats)§r
+rpg.display.notgenerated=§8(right-click in hand to identify)§r
 rpg.display.open=§8(right click in hand to open)§r
 rpg.display.attributes=Attributes
 rpg.display.increase.small=Add 1 point into %s
@@ -91,6 +91,30 @@ item.bluerpg:gear_token_crafted.name=Crafted Token
 item.bluerpg:gear_token_plus.name=Token Plus
 item.bluerpg:gear_token_plus2.name=Token Plus²
 
+item.bluerpg:feet_cloth.name=Unidentified Cloth Feetpiece
+item.bluerpg:legs_cloth.name=Unidentified Cloth Legpiece
+item.bluerpg:chest_cloth.name=Unidentified Cloth Chestpiece
+item.bluerpg:head_cloth.name=Unidentified Cloth Headpiece
+item.bluerpg:feet_leather.name=Unidentified Leather Feetpiece
+item.bluerpg:legs_leather.name=Unidentified Leather Legpiece
+item.bluerpg:chest_leather.name=Unidentified Leather Chestpiece
+item.bluerpg:head_leather.name=Unidentified Leather Headpiece
+item.bluerpg:feet_plate.name=Unidentified Plate Feetpiece
+item.bluerpg:legs_plate.name=Unidentified Plate Legpiece
+item.bluerpg:chest_plate.name=Unidentified Plate Chestpiece
+item.bluerpg:head_plate.name=Unidentified Plate Headpiece
+
+item.bluerpg:mace.name=Unidentified Mace
+item.bluerpg:sword.name=Unidentified Sword
+item.bluerpg:axe.name=Unidentified Axe
+item.bluerpg:sword_2h.name=Unidentified Two-handed Sword
+item.bluerpg:spear.name=Unidentified Spear
+item.bluerpg:staff.name=Unidentified Staff
+item.bluerpg:bow.name=Unidentified Bow
+item.bluerpg:shield.name=Unidentified Shield
+item.bluerpg:parry_dagger.name=Unidentified Parry Dagger
+item.bluerpg:focus.name=Unidentified Focus
+
 # Rarity
 rpg.common.name=Common
 rpg.uncommon.name=Uncommon
@@ -116,6 +140,9 @@ rpg.feet_plate.name=Plate Boots
 
 rpg.mace.name=Mace
 rpg.sword.name=Sword
+rpg.sword_2h.name=Two-handed Sword
+rpg.spear.name=Spear
+rpg.staff.name=Staff
 rpg.axe.name=Axe
 rpg.bow.name=Bow
 rpg.shield.name=Shield

@@ -49,11 +49,13 @@ interface IRPGGear { // TODO: use ISpecialArmor
         tooltip.add("rpg.display.item".localize(cap.rarity.localized, "rpg.$key.name".localize()))
         tooltip.add("rpg.display.level".localize(cap.ilvl))
         val shift = GuiScreen.isShiftKeyDown()
-        tooltip.add("rpg.display.stats".localize())
         if (cap.stats.isEmpty()) tooltip.add("rpg.display.notgenerated".localize())
-        else tooltip.addAll(cap.stats().map {
-            "rpg.display.stat".localize(if (shift) it.key.longName() else it.key.shortName(), it.value)
-        })
+        else {
+            tooltip.add("rpg.display.stats".localize())
+            tooltip.addAll(cap.stats().map {
+                "rpg.display.stat".localize(if (shift) it.key.longName() else it.key.shortName(), it.value)
+            })
+        }
         if (!shift && !cap.stats.isEmpty()) tooltip.add("rpg.display.shift".localize())
         stack.maxDamage
     }
@@ -80,7 +82,7 @@ interface IRPGGear { // TODO: use ISpecialArmor
     }
 
     fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
-        var stack = playerIn.getHeldItem(handIn)
+        val stack = playerIn.getHeldItem(handIn)
         val stats = stack.stats
                 ?: throw IllegalStateException("Missing capability!")
 
