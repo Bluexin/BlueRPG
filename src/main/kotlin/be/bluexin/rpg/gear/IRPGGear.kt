@@ -19,16 +19,22 @@ package be.bluexin.rpg.gear
 
 import be.bluexin.rpg.stats.GearStats
 import be.bluexin.rpg.stats.stats
+import be.bluexin.saomclib.onServer
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.ai.attributes.AttributeModifier
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.ActionResult
+import net.minecraft.util.EnumActionResult
+import net.minecraft.util.EnumHand
+import net.minecraft.util.text.TextComponentTranslation
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 
@@ -48,7 +54,7 @@ interface IRPGGear { // TODO: use ISpecialArmor
         else tooltip.addAll(cap.stats().map {
             "rpg.display.stat".localize(if (shift) it.key.longName() else it.key.shortName(), it.value)
         })
-        tooltip.add("rpg.display.shift".localize())
+        if (!shift && !cap.stats.isEmpty()) tooltip.add("rpg.display.shift".localize())
         stack.maxDamage
     }
 
@@ -71,6 +77,24 @@ interface IRPGGear { // TODO: use ISpecialArmor
         val capNbt = nbt?.getCompoundTag("capabilities")?: return
         val cap = stack.stats?: return
         GearStats.Storage.readNBT(GearStats.Capability, cap, null, capNbt)
+    }
+
+    fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
+        var stack = playerIn.getHeldItem(handIn)
+        val stats = stack.stats
+                ?: throw IllegalStateException("Missing capability!")
+
+        return if (stats.stats.isEmpty()) {
+            worldIn onServer {
+                stats.generate()
+                stack.setStackDisplayName(NameGenerator(stack, playerIn))
+
+                if (stats.rarity.shouldNotify) worldIn.minecraftServer?.playerList?.players?.forEach {
+                    it.sendMessage(TextComponentTranslation("rpg.broadcast.item", playerIn.displayName, stack.textComponent))
+                }
+            }
+            ActionResult.newResult(EnumActionResult.SUCCESS, stack)
+        } else ActionResult.newResult(EnumActionResult.PASS, stack)
     }
 
     val item: Item

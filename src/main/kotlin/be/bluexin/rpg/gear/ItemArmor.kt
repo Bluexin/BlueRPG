@@ -19,10 +19,14 @@ package be.bluexin.rpg.gear
 
 import com.teamwizardry.librarianlib.features.base.item.ItemModArmor
 import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.ActionResult
+import net.minecraft.util.EnumActionResult
+import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 
 class ItemArmor private constructor(override val type: ArmorType, material: ArmorMaterial, slot: EntityEquipmentSlot)
@@ -67,6 +71,11 @@ class ItemArmor private constructor(override val type: ArmorType, material: Armo
 
     override fun getShareTag(): Boolean {
         return true
+    }
+
+    override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
+        val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
+        return if (r.type == EnumActionResult.PASS) super<ItemModArmor>.onItemRightClick(worldIn, playerIn, handIn) else r
     }
 
     override val key = "${slot.getName()}_${type.key}"

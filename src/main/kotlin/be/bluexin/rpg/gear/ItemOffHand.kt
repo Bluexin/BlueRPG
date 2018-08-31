@@ -21,10 +21,14 @@ import com.teamwizardry.librarianlib.features.base.IModelGenerator
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.EntityLivingBase
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.ActionResult
+import net.minecraft.util.EnumActionResult
+import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 
 class ItemOffHand private constructor(override val type: OffHandType) : ItemMod(type.key), IModelGenerator, IRPGGear {
@@ -58,6 +62,11 @@ class ItemOffHand private constructor(override val type: OffHandType) : ItemMod(
     override fun getShareTag(): Boolean {
         return true
     }
+
+    override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
+        val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
+        return if (r.type == EnumActionResult.PASS) super<ItemMod>.onItemRightClick(worldIn, playerIn, handIn) else r
+    } // TODO: equip
 
     override val gearSlot: EntityEquipmentSlot
         get() = EntityEquipmentSlot.OFFHAND

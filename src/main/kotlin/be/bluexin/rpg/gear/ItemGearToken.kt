@@ -46,7 +46,7 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
     }
 
     init {
-        hasSubtypes = false
+        hasSubtypes = true
     }
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
@@ -77,13 +77,10 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
         tooltip.add("rpg.display.level".localize(stack.itemDamage + 1))
+        tooltip.add("rpg.display.open".localize())
     }
 
     override fun getSubItems(tab: CreativeTabs, subItems: NonNullList<ItemStack>) {
         if (this.isInCreativeTab(tab)) for (i in 0..Level.LEVEL_CAP step 5) subItems.add(ItemStack(this, 1, i - 1))
-    }
-
-    override fun getDamage(stack: ItemStack): Int {
-        return super.getDamage(stack)
     }
 }

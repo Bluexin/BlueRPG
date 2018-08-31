@@ -19,10 +19,14 @@ package be.bluexin.rpg.gear
 
 import com.teamwizardry.librarianlib.features.base.item.ItemModBow
 import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.ActionResult
+import net.minecraft.util.EnumActionResult
+import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 
 class ItemRangedWeapon private constructor(override val type: RangedWeaponType) : ItemModBow(type.key), IRPGGear {
@@ -51,6 +55,11 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
     override fun readNBTShareTag(stack: ItemStack, nbt: NBTTagCompound?) {
         super.readNBTShareTag(stack, nbt)
         if (nbt != null) super.readNBTShare(stack, nbt)
+    }
+
+    override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
+        val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
+        return if (r.type == EnumActionResult.PASS) super<ItemModBow>.onItemRightClick(worldIn, playerIn, handIn) else r
     }
 
     override fun getShareTag(): Boolean {
