@@ -25,9 +25,11 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
+import com.teamwizardry.librarianlib.features.kotlin.plus
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.ItemStack
+import net.minecraft.util.text.TextFormatting
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import java.io.File
 import java.io.FileReader
@@ -84,22 +86,22 @@ object NameGenerator {
 
             var f = File(dir, "name_fixes.json")
             if (f.exists()) {
-                val read = FileReader(f).use { gson.fromJson<Map<NamePart, Array<String>>>(it, object : TypeToken<Map<NamePart, Array<String>>>() {}.type) }
-                read.forEach { k, it -> fix[k] = it }
+                val read = FileReader(f).use { gson.fromJson<Map<NamePart, List<String>>>(it, object : TypeToken<Map<NamePart, List<String>>>() {}.type) }
+                read.forEach { k, it -> fix[k] = it.toTypedArray() }
             }
             FileWriter(f).use { gson.toJson(fix, it) }
 
             f = File(dir, "name_armors.json")
             if (f.exists()) {
-                val read = FileReader(f).use { gson.fromJson<Map<EntityEquipmentSlot, Array<String>>>(it, object : TypeToken<Map<EntityEquipmentSlot, Array<String>>>() {}.type) }
-                read.forEach { k, it -> armorCores[k] = it }
+                val read = FileReader(f).use { gson.fromJson<Map<EntityEquipmentSlot, List<String>>>(it, object : TypeToken<Map<EntityEquipmentSlot, List<String>>>() {}.type) }
+                read.forEach { k, it -> armorCores[k] = it.toTypedArray() }
             }
             FileWriter(f).use { gson.toJson(armorCores, it) }
 
             f = File(dir, "name_weapons.json")
             if (f.exists()) {
-                val read = FileReader(f).use { gson.fromJson<Map<GearType, Array<String>>>(it, object : TypeToken<Map<GearType, Array<String>>>() {}.type) }
-                read.forEach { k, it -> weaponCores[k] = it }
+                val read = FileReader(f).use { gson.fromJson<Map<GearType, List<String>>>(it, object : TypeToken<Map<GearType, List<String>>>() {}.type) }
+                read.forEach { k, it -> weaponCores[k] = it.toTypedArray() }
             }
             for (it in MeleeWeaponType.values()) weaponCores.putIfAbsent(it, arrayOf("Unknown"))
             for (it in RangedWeaponType.values()) weaponCores.putIfAbsent(it, arrayOf("Unknown"))
@@ -121,7 +123,7 @@ object NameGenerator {
     }
 
     private fun String.wrapped(rarity: Rarity): String {
-        return rarity.format(this)
+        return rarity.format(TextFormatting.BOLD + this)
     }
 
     private fun generateLegendary(player: EntityPlayer): String {
