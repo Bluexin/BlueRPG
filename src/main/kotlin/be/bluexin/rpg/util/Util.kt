@@ -25,6 +25,8 @@ fun fire(event: Event) = !MinecraftForge.EVENT_BUS.post(event)
 
 val RNG = XoRoRNG()
 
+fun <T: Any> Array<T>.random(): T = this[RNG.nextInt(this.size)]
+
 interface Localizable {
     val name: String
 

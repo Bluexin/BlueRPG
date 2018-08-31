@@ -30,11 +30,12 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.capabilities.CapabilityManager
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
 open class CommonProxy {
-    open fun preInit() {
+    open fun preInit(event: FMLPreInitializationEvent) {
         classLoadItems()
 
         CapabilitiesHandler.registerEntityCapability(PlayerStats::class.java, PlayerStats.Storage) { it is EntityPlayer }
@@ -42,6 +43,8 @@ open class CommonProxy {
         CapabilityManager.INSTANCE.register(GearStats::class.java, GearStats.Storage) { GearStats(ItemStack.EMPTY) }
 
         MinecraftForge.EVENT_BUS.register(CommonEventHandler)
+
+        NameGenerator.preInit(event)
     }
 
     private fun classLoadItems() {
@@ -65,8 +68,8 @@ open class CommonProxy {
 
 @SideOnly(Side.CLIENT)
 class ClientProxy: CommonProxy() {
-    override fun preInit() {
-        super.preInit()
+    override fun preInit(event: FMLPreInitializationEvent) {
+        super.preInit(event)
 
         MinecraftForge.EVENT_BUS.register(ClientEventHandler)
     }
@@ -74,8 +77,8 @@ class ClientProxy: CommonProxy() {
 
 @SideOnly(Side.SERVER)
 class ServerProxy: CommonProxy() {
-    override fun preInit() {
-        super.preInit()
+    override fun preInit(event: FMLPreInitializationEvent) {
+        super.preInit(event)
 
         MinecraftForge.EVENT_BUS.register(ServerEventHandler)
     }

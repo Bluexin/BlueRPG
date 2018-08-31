@@ -17,8 +17,8 @@
 
 package be.bluexin.rpg.gear
 
-import be.bluexin.rpg.stats.GearStats
 import be.bluexin.rpg.stats.Level
+import be.bluexin.rpg.stats.stats
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.kotlin.localize
@@ -55,11 +55,12 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
             val rarity = type.generateRarity()
             val gear = GearTypeGenerator()
             val iss = ItemStack(gear.item)
-            val stats = iss.getCapability(GearStats.Capability, null)
+            val stats = iss.stats
                     ?: throw IllegalStateException("Missing capability!")
             stats.rarity = rarity
             stats.ilvl = stack.itemDamage + 1
             stats.generate()
+            iss.setStackDisplayName(NameGenerator(iss, playerIn))
 
             if (!playerIn.isCreative) stack.shrink(1)
             if (stack.isEmpty) stack = iss

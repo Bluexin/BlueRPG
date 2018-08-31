@@ -54,6 +54,6 @@ object BlueRPG {
     @Mod.EventHandler
     fun preInit(evt: FMLPreInitializationEvent) {
         MinecraftForge.EVENT_BUS.register(CommonEventHandler)
-        proxy.preInit()
+        proxy.preInit(evt)
     }
 }

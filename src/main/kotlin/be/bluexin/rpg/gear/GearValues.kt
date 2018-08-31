@@ -152,7 +152,10 @@ enum class ArmorType(
 enum class MeleeWeaponType : GearType {
     MACE,
     SWORD,
-    AXE;
+    AXE,
+    SWORD_2H,
+    SPEAR,
+    STAFF;
 
     override fun invoke(i: Int) = ItemMeleeWeapon[this]
 

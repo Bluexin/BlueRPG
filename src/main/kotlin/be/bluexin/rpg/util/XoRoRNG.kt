@@ -66,8 +66,8 @@ class XoRoRNG @JvmOverloads constructor(seed: Long = (Math.random() * java.lang.
         val result = s0 + s1
 
         s1 = s1 xor s0
-        state0 = s0 shl 55 or (s0 ushr 9) xor s1 xor (s1 shl 14) // a, b
-        state1 = s1 shl 36 or (s1 ushr 28) // c
+        state0 = s0 shl 55 or (s0 ushr -55) xor s1 xor (s1 shl 14) // a, b
+        state1 = s1 shl 36 or (s1 ushr -36) // c
         /*
         state0 = Long.rotateLeft(s0, 55) ^ s1 ^ (s1 << 14); // a, b
         state1 = Long.rotateLeft(s1, 36); // c
