@@ -15,29 +15,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package be.bluexin.rpg.gear
+package be.bluexin.rpg.util
 
 import be.bluexin.rpg.stats.GearStats
-import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTBase
+import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.ICapabilitySerializable
 
-class GearStatWrapper(itemStack: ItemStack) : ICapabilitySerializable<NBTBase> {
-
-    val stats = GearStats(itemStack)//.also(GearStats::generate)
+class ItemCapabilityWrapper<A>(val instance: A, val capability: Capability<A>) : ICapabilitySerializable<NBTBase> {
 
     override fun <T : Any?> getCapability(capability: Capability<T>, facing: EnumFacing?): T? =
-            if (capability == GearStats.Capability) GearStats.Capability.cast(stats) else null
+            if (capability == this.capability) this.capability.cast(instance) else null
 
     override fun hasCapability(capability: Capability<*>, facing: EnumFacing?) = capability == GearStats.Capability
 
     override fun deserializeNBT(nbt: NBTBase?) {
-        if (nbt != null) GearStats.Storage.readNBT(GearStats.Capability, stats, null, nbt)
+        if (nbt != null) capability.storage.readNBT(capability, instance, null, nbt)
     }
 
     override fun serializeNBT(): NBTBase {
-        return GearStats.Storage.writeNBT(GearStats.Capability, stats, null)
+        return capability.storage.writeNBT(capability, instance, null)?: NBTTagCompound()
     }
 }

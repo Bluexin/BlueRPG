@@ -17,22 +17,21 @@
 
 package be.bluexin.rpg.gear
 
-import be.bluexin.rpg.stats.Level
-import be.bluexin.rpg.stats.stats
+import be.bluexin.rpg.stats.TokenStats
+import be.bluexin.rpg.stats.tokenStats
+import be.bluexin.rpg.util.ItemCapabilityWrapper
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
+import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.ActionResult
 import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.text.TextComponentTranslation
 import net.minecraft.world.World
-import net.minecraftforge.items.ItemHandlerHelper
+import net.minecraftforge.common.capabilities.ICapabilityProvider
 
 class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_token_${type.key}") {
 
@@ -45,45 +44,36 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
         operator fun get(type: TokenType) = pieces[type.ordinal]
     }
 
-    init {
-        hasSubtypes = true
-        maxDamage = Level.LEVEL_CAP - 1
-    }
-
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         var stack = playerIn.getHeldItem(handIn)
-
-        worldIn onServer {
-            val rarity = type.generateRarity()
-            val gear = GearTypeGenerator()
-            val iss = ItemStack(gear.item)
-            val stats = iss.stats
-                    ?: throw IllegalStateException("Missing capability!")
-            stats.rarity = rarity
-            stats.ilvl = stack.itemDamage + 1
-            stats.generate()
-            iss.setStackDisplayName(NameGenerator(iss, playerIn))
-
-            if (rarity.shouldNotify) worldIn.minecraftServer?.playerList?.players?.forEach {
-                it.sendMessage(TextComponentTranslation("rpg.broadcast.item", playerIn.displayName, iss.textComponent))
-            }
-
-            if (!playerIn.isCreative) stack.shrink(1)
-            if (stack.isEmpty) stack = iss
-            else ItemHandlerHelper.giveItemToPlayer(playerIn, iss)
-        }
-
+        worldIn onServer { stack = stack.tokenStats?.open(playerIn) ?: stack }
         return ActionResult.newResult(EnumActionResult.SUCCESS, stack)
     }
 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
-        tooltip.add("rpg.display.level".localize(stack.itemDamage + 1))
+        val stats = stack.tokenStats ?: return
+        tooltip.add("rpg.display.itemlevel".localize(stats.ilvl))
+        tooltip.add("rpg.display.levelreq".localize(stats.levelReq))
+        if (stats.rarity != null) tooltip.add(stats.rarity!!.localized)
         tooltip.add("rpg.display.open".localize())
     }
 
-    override fun getSubItems(tab: CreativeTabs, subItems: NonNullList<ItemStack>) {
-        if (this.isInCreativeTab(tab)) for (i in 0..Level.LEVEL_CAP step 5) subItems.add(ItemStack(this, 1, i - 1))
+    override fun initCapabilities(stack: ItemStack, nbt: NBTTagCompound?): ICapabilityProvider? {
+        return ItemCapabilityWrapper(TokenStats(stack), TokenStats.Capability)
     }
 
-    override fun showDurabilityBar(stack: ItemStack) = false
+    override fun getNBTShareTag(stack: ItemStack): NBTTagCompound? {
+        val nbt = super.getNBTShareTag(stack) ?: NBTTagCompound()
+        val cap = stack.tokenStats ?: return nbt
+        val capNbt = TokenStats.Storage.writeNBT(TokenStats.Capability, cap, null)
+        nbt.setTag("capabilities", capNbt)
+        return nbt
+    }
+
+    override fun readNBTShareTag(stack: ItemStack, nbt: NBTTagCompound?) {
+        super.readNBTShareTag(stack, nbt)
+        val capNbt = nbt?.getCompoundTag("capabilities") ?: return
+        val cap = stack.tokenStats ?: return
+        TokenStats.Storage.readNBT(TokenStats.Capability, cap, null, capNbt)
+    }
 }

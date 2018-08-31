@@ -18,7 +18,10 @@
 package be.bluexin.rpg.stats
 
 import be.bluexin.rpg.BlueRPG
-import be.bluexin.rpg.gear.*
+import be.bluexin.rpg.gear.Binding
+import be.bluexin.rpg.gear.GearTypeGenerator
+import be.bluexin.rpg.gear.ItemGearToken
+import be.bluexin.rpg.gear.Rarity
 import be.bluexin.saomclib.capabilities.Key
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
@@ -28,32 +31,20 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagInt
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.ResourceLocation
-import net.minecraft.util.text.TextComponentTranslation
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
-import java.lang.ref.WeakReference
-import java.util.*
+import net.minecraftforge.items.ItemHandlerHelper
 
 @SaveInPlace
-class GearStats(val itemStackIn: ItemStack) {
-
-    @Save
-    var generated = false
-
-    @Save
-    var generator = TokenType.CRAFTED
+class TokenStats(val itemStackIn: ItemStack) {
 
     @Save
     var rarity: Rarity? = null
 
     @Save
-    var binding = Binding.BOE // TODO
-
-    @Save
-    var bound: UUID? = null
+    var binding = Binding.BOE
 
     @Save
     var ilvl = 1
@@ -61,53 +52,49 @@ class GearStats(val itemStackIn: ItemStack) {
     @Save
     var levelReq = 1
 
-    @Save
-    var stats: StatsCollection = StatsCollection(WeakReference(itemStackIn))
-        internal set
-
-    fun generate(playerIn: EntityPlayer) {
+    fun open(playerIn: EntityPlayer): ItemStack {
         playerIn.world onServer {
-            val gear = itemStackIn.item as? IRPGGear ?: return
-            this.stats.clear()
-            if (rarity == null) rarity = generator.generateRarity()
-            val stats = rarity!!.rollStats()
-            stats.forEach { this.stats[it] += it.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot) }
-            generated = true
-            itemStackIn.setStackDisplayName(NameGenerator(itemStackIn, playerIn))
-            itemStackIn.setTagInfo("HideFlags", NBTTagInt(2))
-            if (rarity!!.shouldNotify) playerIn.world.minecraftServer?.playerList?.players?.forEach {
-                it.sendMessage(TextComponentTranslation("rpg.broadcast.item", playerIn.displayName, itemStackIn.textComponent))
-            }
+            val token = itemStackIn.item as? ItemGearToken ?: return itemStackIn
+            val rarity = this.rarity ?: token.type.generateRarity()
+            val iss = ItemStack(GearTypeGenerator().item)
+            val stats = iss.stats ?: throw IllegalStateException("Missing capability!")
+            stats.rarity = rarity
+            stats.ilvl = this.ilvl
+            stats.levelReq = this.levelReq
+            stats.binding = this.binding
+            stats.generate(playerIn)
+
+            if (!playerIn.isCreative) itemStackIn.shrink(1)
+            if (itemStackIn.isEmpty) return iss
+            else ItemHandlerHelper.giveItemToPlayer(playerIn, iss)
         }
+        return itemStackIn
     }
 
-    operator fun get(stat: Stat) = stats[stat]
-
-    internal object Storage : Capability.IStorage<GearStats> {
-        override fun readNBT(capability: Capability<GearStats>, instance: GearStats, side: EnumFacing?, nbt: NBTBase) {
+    internal object Storage : Capability.IStorage<TokenStats> {
+        override fun readNBT(capability: Capability<TokenStats>, instance: TokenStats, side: EnumFacing?, nbt: NBTBase) {
             val nbtTagCompound = nbt as? NBTTagCompound ?: return
-            instance.stats.clear()
             try {
                 AbstractSaveHandler.readAutoNBT(instance, nbtTagCompound.getTag(KEY.toString()), false)
             } catch (e: Exception) {
-                BlueRPG.LOGGER.warn("Failed to read gear stats.", e)
+                BlueRPG.LOGGER.warn("Failed to read token stats.", e)
                 // Resetting bad data is fine
             }
         }
 
-        override fun writeNBT(capability: Capability<GearStats>, instance: GearStats, side: EnumFacing?): NBTBase {
+        override fun writeNBT(capability: Capability<TokenStats>, instance: TokenStats, side: EnumFacing?): NBTBase {
             return NBTTagCompound().also { it.setTag(KEY.toString(), AbstractSaveHandler.writeAutoNBT(instance, false)) }
         }
     }
 
     companion object {
         @Key
-        val KEY = ResourceLocation(BlueRPG.MODID, "gear_stats")
+        val KEY = ResourceLocation(BlueRPG.MODID, "token_stats")
 
-        @CapabilityInject(GearStats::class)
-        lateinit var Capability: Capability<GearStats>
+        @CapabilityInject(TokenStats::class)
+        lateinit var Capability: Capability<TokenStats>
             internal set
     }
 }
 
-val ItemStack.stats get() = this.getCapability(GearStats.Capability, null)
+val ItemStack.tokenStats get() = this.getCapability(TokenStats.Capability, null)

@@ -24,6 +24,7 @@ import be.bluexin.rpg.items.DebugExpItem
 import be.bluexin.rpg.items.DebugStatsItem
 import be.bluexin.rpg.stats.GearStats
 import be.bluexin.rpg.stats.PlayerStats
+import be.bluexin.rpg.stats.TokenStats
 import be.bluexin.saomclib.capabilities.CapabilitiesHandler
 import com.teamwizardry.librarianlib.features.base.ModCreativeTab
 import net.minecraft.entity.player.EntityPlayer
@@ -41,6 +42,7 @@ open class CommonProxy {
         CapabilitiesHandler.registerEntityCapability(PlayerStats::class.java, PlayerStats.Storage) { it is EntityPlayer }
         // Not using SAOMCLib for this one because we don't want it autoregistered
         CapabilityManager.INSTANCE.register(GearStats::class.java, GearStats.Storage) { GearStats(ItemStack.EMPTY) }
+        CapabilityManager.INSTANCE.register(TokenStats::class.java, TokenStats.Storage) { TokenStats(ItemStack.EMPTY) }
 
         MinecraftForge.EVENT_BUS.register(CommonEventHandler)
 

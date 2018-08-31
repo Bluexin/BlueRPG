@@ -45,19 +45,18 @@ interface IRPGGear { // TODO: use ISpecialArmor
     val gearSlot: EntityEquipmentSlot
 
     fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
-        val cap = stack.stats?: return
-        tooltip.add("rpg.display.item".localize(cap.rarity.localized, "rpg.$key.name".localize()))
-        tooltip.add("rpg.display.level".localize(cap.ilvl))
-        val shift = GuiScreen.isShiftKeyDown()
-        if (cap.stats.isEmpty()) tooltip.add("rpg.display.notgenerated".localize())
+        val cap = stack.stats
+        if (cap?.generated != true) tooltip.add("rpg.display.notgenerated".localize())
         else {
+            val shift = GuiScreen.isShiftKeyDown()
+            tooltip.add("rpg.display.item".localize(cap.rarity!!.localized, "rpg.$key.name".localize()))
+            tooltip.add("rpg.display.level".localize(cap.ilvl))
             tooltip.add("rpg.display.stats".localize())
             tooltip.addAll(cap.stats().map {
                 "rpg.display.stat".localize(if (shift) it.key.longName() else it.key.shortName(), it.value)
             })
+            if (!shift) tooltip.add("rpg.display.shift".localize())
         }
-        if (!shift && !cap.stats.isEmpty()) tooltip.add("rpg.display.shift".localize())
-        stack.maxDamage
     }
 
     fun getAttributeModifiers(slot: EntityEquipmentSlot, stack: ItemStack): Multimap<String, AttributeModifier> {
@@ -65,13 +64,15 @@ interface IRPGGear { // TODO: use ISpecialArmor
     }
 
     fun initCapabilities(stack: ItemStack, nbt: NBTTagCompound?): ICapabilityProvider? {
-        return GearStatWrapper(stack)
+        return ItemCapabilityWrapper(GearStats(stack), GearStats.Capability)
     }
 
     fun addNBTShare(stack: ItemStack, nbt: NBTTagCompound): NBTTagCompound {
         val cap = stack.stats?: return nbt
-        val capNbt = GearStats.Storage.writeNBT(GearStats.Capability, cap, null)
-        nbt.setTag("capabilities", capNbt)
+        if (cap.generated) {
+            val capNbt = GearStats.Storage.writeNBT(GearStats.Capability, cap, null)
+            nbt.setTag("capabilities", capNbt)
+        }
         return nbt
     }
 
@@ -85,16 +86,8 @@ interface IRPGGear { // TODO: use ISpecialArmor
         val stack = playerIn.getHeldItem(handIn)
         val stats = stack.stats
                 ?: throw IllegalStateException("Missing capability!")
-
-        return if (stats.stats.isEmpty()) {
-            worldIn onServer {
-                stats.generate()
-                stack.setStackDisplayName(NameGenerator(stack, playerIn))
-
-                if (stats.rarity.shouldNotify) worldIn.minecraftServer?.playerList?.players?.forEach {
-                    it.sendMessage(TextComponentTranslation("rpg.broadcast.item", playerIn.displayName, stack.textComponent))
-                }
-            }
+        return if (!stats.generated) {
+            worldIn onServer { stats.generate(playerIn) }
             ActionResult.newResult(EnumActionResult.SUCCESS, stack)
         } else ActionResult.newResult(EnumActionResult.PASS, stack)
     }

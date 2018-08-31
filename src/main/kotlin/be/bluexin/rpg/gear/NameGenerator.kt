@@ -114,10 +114,10 @@ object NameGenerator {
 
     operator fun invoke(iss: ItemStack, player: EntityPlayer): String {
         val stats = iss.stats ?: return "Error: Missing Stats"
-        if (stats.rarity.ordinal >= Rarity.LEGENDARY.ordinal) return generateLegendary(player).wrapped(stats.rarity)
+        if (stats.rarity!!.ordinal >= Rarity.LEGENDARY.ordinal) return generateLegendary(player).wrapped(stats.rarity!!)
         val item = iss.item
-        if (item is ItemArmor) return generateArmor(item).wrapped(stats.rarity)
-        if (item is IRPGGear) return generateWeapon(item.type).wrapped(stats.rarity)
+        if (item is ItemArmor) return generateArmor(item).wrapped(stats.rarity!!)
+        if (item is IRPGGear) return generateWeapon(item.type).wrapped(stats.rarity!!)
 
         return "Error: Unknown Item ${iss.item}"
     }
