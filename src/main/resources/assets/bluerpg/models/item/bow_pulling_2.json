@@ -1,6 +1,6 @@
 {
 	"parent": "bluerpg:item/bow",
 	"textures": {
-		"layer0": "bluerpg:items/bow_pulling_2"
+		"layer0": "bluerpg:items/weapon/bow_pulling_2"
 	}
 }

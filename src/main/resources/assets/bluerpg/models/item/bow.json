@@ -1,7 +1,7 @@
 {
 	"parent": "item/bow",
 	"textures": {
-		"layer0": "bluerpg:items/bow"
+		"layer0": "bluerpg:items/weapon/bow"
 	},
 	"overrides": [
 		{

@@ -1,6 +1,6 @@
 {
 	"parent": "item/handheld",
 	"textures": {
-		"layer0": "bluerpg:items/weapon/mace"
+		"layer0": "bluerpg:items/weapon/staff"
 	}
 }

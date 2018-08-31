@@ -1,6 +1,6 @@
 {
 	"parent": "item/generated",
 	"textures": {
-		"layer0": "bluerpg:items/gear_token_plus"
+		"layer0": "bluerpg:items/token/gear_token_plus"
 	}
 }

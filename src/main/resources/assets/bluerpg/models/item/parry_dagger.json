@@ -1,6 +1,6 @@
 {
 	"parent": "item/generated",
 	"textures": {
-		"layer0": "bluerpg:items/parry_dagger"
+		"layer0": "bluerpg:items/offhand/parry_dagger"
 	}
 }

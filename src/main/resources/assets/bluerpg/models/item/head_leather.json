@@ -1,6 +1,6 @@
 {
 	"parent": "item/generated",
 	"textures": {
-		"layer0": "bluerpg:items/head_leather"
+		"layer0": "bluerpg:items/armor/head_leather"
 	}
 }

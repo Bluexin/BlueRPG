@@ -1,6 +1,6 @@
 {
 	"parent": "item/generated",
 	"textures": {
-		"layer0": "bluerpg:items/shield"
+		"layer0": "bluerpg:items/offhand/shield"
 	}
 }
