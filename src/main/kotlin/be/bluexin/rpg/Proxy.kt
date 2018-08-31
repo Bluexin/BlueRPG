@@ -50,19 +50,19 @@ open class CommonProxy {
     private fun classLoadItems() {
         object: ModCreativeTab() {
             override val iconStack: ItemStack
-                get() = ItemStack(DebugStatsItem)
+                get() = ItemStack(ItemGearToken[TokenType.TOKEN])
 
             init {
                 registerDefaultTab()
             }
         }
+        ItemGearToken
         DebugStatsItem
         DebugExpItem
         ItemArmor
         ItemMeleeWeapon
         ItemRangedWeapon
         ItemOffHand
-        ItemGearToken
     }
 }
 
