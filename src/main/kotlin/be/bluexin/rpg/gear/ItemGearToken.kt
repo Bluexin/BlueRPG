@@ -30,6 +30,7 @@ import net.minecraft.util.ActionResult
 import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
 import net.minecraft.util.NonNullList
+import net.minecraft.util.text.TextComponentTranslation
 import net.minecraft.world.World
 import net.minecraftforge.items.ItemHandlerHelper
 
@@ -61,6 +62,10 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
             stats.ilvl = stack.itemDamage + 1
             stats.generate()
             iss.setStackDisplayName(NameGenerator(iss, playerIn))
+
+            if (rarity.shouldNotify) worldIn.minecraftServer?.playerList?.players?.forEach {
+                it.sendMessage(TextComponentTranslation("rpg.broadcast.item", playerIn.displayName, iss.textComponent))
+            }
 
             if (!playerIn.isCreative) stack.shrink(1)
             if (stack.isEmpty) stack = iss

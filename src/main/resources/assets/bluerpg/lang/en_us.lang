@@ -17,6 +17,9 @@ rpg.display.debug_exp.shift=Use while shifting to gain 100 XP
 rpg.display.item=%s %s
 item_group.bluerpg=Blue RPG
 
+# Broadcast
+rpg.broadcast.item=Congratulations! %1$s obtained %2$s
+
 # Stats
 rpg.attributepoints.long=Attribute Points
 rpg.strength.long=Strength
