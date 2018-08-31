@@ -47,6 +47,7 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
 
     init {
         hasSubtypes = true
+        maxDamage = Level.LEVEL_CAP - 1
     }
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
@@ -83,4 +84,6 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
     override fun getSubItems(tab: CreativeTabs, subItems: NonNullList<ItemStack>) {
         if (this.isInCreativeTab(tab)) for (i in 0..Level.LEVEL_CAP step 5) subItems.add(ItemStack(this, 1, i - 1))
     }
+
+    override fun showDurabilityBar(stack: ItemStack) = false
 }
