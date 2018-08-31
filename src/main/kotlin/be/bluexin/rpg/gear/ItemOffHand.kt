@@ -20,6 +20,7 @@ package be.bluexin.rpg.gear
 import com.teamwizardry.librarianlib.features.base.IModelGenerator
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.entity.EntityLiving
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
@@ -40,6 +41,11 @@ class ItemOffHand private constructor(override val type: OffHandType) : ItemMod(
         }
 
         operator fun get(type: OffHandType) = pieces[type.ordinal]
+    }
+
+    init {
+        maxDamage = 150
+        maxStackSize = 1
     }
 
     override fun getAttributeModifiers(slot: EntityEquipmentSlot, stack: ItemStack) =
@@ -65,8 +71,20 @@ class ItemOffHand private constructor(override val type: OffHandType) : ItemMod(
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
-        return if (r.type == EnumActionResult.PASS) super<ItemMod>.onItemRightClick(worldIn, playerIn, handIn) else r
-    } // TODO: equip
+        if (r.type != EnumActionResult.PASS) return r
+
+        val itemstack = playerIn.getHeldItem(handIn)
+        val entityequipmentslot = EntityLiving.getSlotForItemStack(itemstack)
+        val itemstack1 = playerIn.getItemStackFromSlot(entityequipmentslot)
+
+        return if (itemstack1.isEmpty) {
+            playerIn.setItemStackToSlot(entityequipmentslot, itemstack.copy())
+            itemstack.count = 0
+            ActionResult(EnumActionResult.SUCCESS, itemstack)
+        } else {
+            ActionResult(EnumActionResult.FAIL, itemstack)
+        }
+    }
 
     override val gearSlot: EntityEquipmentSlot
         get() = EntityEquipmentSlot.OFFHAND
