@@ -36,7 +36,7 @@ enum class Rarity(
 ) : Localizable {
     COMMON(WHITE, 1),
     UNCOMMON(GREEN, 1),
-    RARE(BLUE, 2),
+    RARE(AQUA, 2),
     EPIC(LIGHT_PURPLE, 2),
     LEGENDARY(YELLOW, 3),
     MYTHIC(RED, 3),
