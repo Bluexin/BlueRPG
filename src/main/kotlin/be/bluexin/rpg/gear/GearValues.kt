@@ -42,7 +42,7 @@ enum class Rarity(
     MYTHIC(RED, 3),
     GODLIKE(WHITE, 3);
 
-    val shouldNotify by lazy { ordinal >= EPIC.ordinal }
+    val shouldNotify by lazy { ordinal >= LEGENDARY.ordinal }
 
     val rolls by lazy { ordinal + 1 }
 
