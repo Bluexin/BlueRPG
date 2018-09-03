@@ -78,6 +78,8 @@ class ItemArmor private constructor(override val type: ArmorType, material: Armo
         return if (r.type == EnumActionResult.PASS) super<ItemModArmor>.onItemRightClick(worldIn, playerIn, handIn) else r
     }
 
+    override fun getItemStackDisplayName(stack: ItemStack) = super<IRPGGear>.getItemStackDisplayName(stack)
+
     override val key = "${slot.getName()}_${type.key}"
 
     override val gearSlot: EntityEquipmentSlot

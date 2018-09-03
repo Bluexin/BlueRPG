@@ -22,8 +22,9 @@ import be.bluexin.rpg.gear.*
 import be.bluexin.saomclib.capabilities.Key
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
+import com.teamwizardry.librarianlib.features.saving.NamedDynamic
+import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
-import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTBase
@@ -37,8 +38,11 @@ import net.minecraftforge.common.capabilities.CapabilityInject
 import java.lang.ref.WeakReference
 import java.util.*
 
-@SaveInPlace
-class GearStats(val itemStackIn: ItemStack) {
+@Savable
+@NamedDynamic(resourceLocation = "b:gs")
+class GearStats(val itemStackIn: ItemStack) : StatCapability {
+
+    internal constructor() : this(ItemStack.EMPTY)
 
     @Save
     var generated = false
@@ -62,6 +66,9 @@ class GearStats(val itemStackIn: ItemStack) {
     var levelReq = 1
 
     @Save
+    var name: String? = null
+
+    @Save
     var stats: StatsCollection = StatsCollection(WeakReference(itemStackIn))
         internal set
 
@@ -73,7 +80,7 @@ class GearStats(val itemStackIn: ItemStack) {
             val stats = rarity!!.rollStats()
             stats.forEach { this.stats[it] += it.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot) }
             generated = true
-            itemStackIn.setStackDisplayName(NameGenerator(itemStackIn, playerIn))
+            if (name == null) name = NameGenerator(itemStackIn, playerIn)
             itemStackIn.setTagInfo("HideFlags", NBTTagInt(2))
             if (rarity!!.shouldNotify) playerIn.world.minecraftServer?.playerList?.players?.forEach {
                 it.sendMessage(TextComponentTranslation("rpg.broadcast.item", playerIn.displayName, itemStackIn.textComponent))
@@ -82,6 +89,22 @@ class GearStats(val itemStackIn: ItemStack) {
     }
 
     operator fun get(stat: Stat) = stats[stat]
+
+    fun loadFrom(other: GearStats) {
+        generated = other.generated
+        generator = other.generator
+        rarity = other.rarity
+        binding = other.binding
+        bound = other.bound
+        ilvl = other.ilvl
+        levelReq = other.levelReq
+        stats = other.stats
+        name = other.name
+    }
+
+    override fun copy() = GearStats(ItemStack.EMPTY).also {
+        it.loadFrom(this)
+    }
 
     internal object Storage : Capability.IStorage<GearStats> {
         override fun readNBT(capability: Capability<GearStats>, instance: GearStats, side: EnumFacing?, nbt: NBTBase) {

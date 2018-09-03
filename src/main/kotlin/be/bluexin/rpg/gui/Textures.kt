@@ -15,29 +15,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package be.bluexin.rpg.util
+package be.bluexin.rpg.gui
 
-import com.google.common.collect.HashMultimap
-import com.teamwizardry.librarianlib.features.kotlin.localize
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.fml.common.eventhandler.Event
+import be.bluexin.rpg.BlueRPG
+import com.teamwizardry.librarianlib.features.sprite.Texture
+import net.minecraft.util.ResourceLocation
 
-fun fire(event: Event) = !MinecraftForge.EVENT_BUS.post(event)
+object Textures {
 
-val RNG = XoRoRNG()
-
-fun <T> Array<T>.random(): T = this[RNG.nextInt(this.size)]
-
-operator fun <K, V> HashMultimap<K, V>.set(key: K, value: V) {
-    this.put(key, value)
-}
-
-interface Localizable {
-    val name: String
-
-    val localized: String
-        get() = "rpg.$key.name".localize()
-
-    val key: String
-        get() = name.toLowerCase()
+    private val BASE = Texture(ResourceLocation(BlueRPG.MODID, "textures/gui/gui_base.png"))
+    val BG = BASE.getSprite("bg", 176, 166)
+    val SLOT = BASE.getSprite("slot", 18, 18)
+    val PROGRESS_BG = BASE.getSprite("progression_bg", 14, 10)
+    val PROGRESS_FG = BASE.getSprite("progression_fg", 12, 8)
+    val POWER_BG = BASE.getSprite("power_bg", 8, 56)
+    val POWER_FG = BASE.getSprite("power_fg", 8, 56)
 }

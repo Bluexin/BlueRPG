@@ -17,11 +17,13 @@
 
 package be.bluexin.rpg
 
-import be.bluexin.rpg.stats.PrimaryStat
-import be.bluexin.rpg.stats.stats
+import be.bluexin.rpg.containers.ContainerEditor
+import be.bluexin.rpg.stats.*
 import com.teamwizardry.librarianlib.features.autoregister.PacketRegister
+import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
 import com.teamwizardry.librarianlib.features.network.PacketBase
 import com.teamwizardry.librarianlib.features.saving.Save
+import net.minecraft.util.math.BlockPos
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
 import net.minecraftforge.fml.relauncher.Side
 
@@ -45,4 +47,51 @@ class PacketRaiseStat(stat: PrimaryStat, amount: Int) : PacketBase() {
             }
         }
     }
+}
+
+@PacketRegister(Side.SERVER)
+class PacketSetEditorStats(pos: BlockPos, stats: StatCapability?) : PacketBase() {
+    @Save
+    var stats = stats
+        internal set
+
+    @Save
+    var pos = pos
+        internal set
+
+    @Suppress("unused")
+    internal constructor() : this(BlockPos.ORIGIN, null)
+
+    override fun handle(ctx: MessageContext) {
+        val player = ctx.serverHandler.player
+        val te = if (player.world.isBlockLoaded(pos)) player.world.getTileEntity(pos) else return
+        if (te != null && ((player.openContainer as? ContainerImpl)?.container as? ContainerEditor)?.te == te) {
+            if (stats is TokenStats) te.tokenStats = stats as TokenStats
+            else if (stats is GearStats) te.gearStats = stats as GearStats
+        }
+    }
+}
+
+@PacketRegister(Side.SERVER)
+class PacketSaveLoadEditorItem(pos: BlockPos, saving: Boolean): PacketBase() {
+    @Save
+    var saving = saving
+        internal set
+
+    @Save
+    var pos = pos
+        internal set
+
+    @Suppress("unused")
+    internal constructor() : this(BlockPos.ORIGIN, false)
+
+    override fun handle(ctx: MessageContext) {
+        val player = ctx.serverHandler.player
+        val te = if (player.world.isBlockLoaded(pos)) player.world.getTileEntity(pos) else return
+        if (te != null && ((player.openContainer as? ContainerImpl)?.container as? ContainerEditor)?.te == te) {
+            if (saving) te.saveStats()
+            else te.loadStats()
+        }
+    }
+
 }

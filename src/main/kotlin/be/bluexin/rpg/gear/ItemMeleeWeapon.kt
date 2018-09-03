@@ -62,6 +62,8 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) : 
         return if (r.type == EnumActionResult.PASS) super<ItemModSword>.onItemRightClick(worldIn, playerIn, handIn) else r
     }
 
+    override fun getItemStackDisplayName(stack: ItemStack) = super<IRPGGear>.getItemStackDisplayName(stack)
+
     override fun getShareTag(): Boolean {
         return true
     }

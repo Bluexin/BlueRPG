@@ -35,7 +35,7 @@ import net.minecraftforge.fml.relauncher.SideOnly
 import java.lang.ref.WeakReference
 
 @SaveInPlace
-class StatsCollection(private val reference: WeakReference<out Any>, @Save private var collection: HashMap<Stat, Int> = HashMap()) {
+class StatsCollection(private val reference: WeakReference<out Any>, @Save internal var collection: HashMap<Stat, Int> = HashMap()) {
     // TODO: move collection to `val` and `withDefault` (instead of getOrDefault) once liblib updates
 
     operator fun get(stat: Stat): Int = collection.getOrDefault(stat, 0)
@@ -58,7 +58,11 @@ class StatsCollection(private val reference: WeakReference<out Any>, @Save priva
 
     operator fun iterator() = (collection as Map<Stat, Int>).iterator()
 
-    fun copy() = StatsCollection(reference, HashMap(collection))
+    fun copy() = StatsCollection(WeakReference<Any>(null), HashMap(collection))
+
+    fun load(other: StatsCollection) {
+        this.collection = other.collection
+    }
 
     internal var dirty = false
         private set
@@ -136,4 +140,10 @@ enum class SecondaryStat: Stat {
     override fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot): Int {
         return RNG.nextInt(10) + ilvl // TODO: formulae
     }
+}
+
+@Savable
+@NamedDynamic(resourceLocation = "b:sc")
+interface StatCapability {
+    fun copy(): StatCapability
 }

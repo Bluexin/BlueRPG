@@ -18,13 +18,17 @@
 package be.bluexin.rpg.gear
 
 import be.bluexin.rpg.stats.GearStats
+import be.bluexin.rpg.stats.SecondaryStat
 import be.bluexin.rpg.stats.stats
+import be.bluexin.rpg.util.ItemCapabilityWrapper
+import be.bluexin.rpg.util.set
 import be.bluexin.saomclib.onServer
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.attributes.AttributeModifier
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
@@ -34,9 +38,10 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.ActionResult
 import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
-import net.minecraft.util.text.TextComponentTranslation
+import net.minecraft.util.text.translation.I18n
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.ICapabilityProvider
+import java.util.*
 
 interface IRPGGear { // TODO: use ISpecialArmor
 
@@ -49,8 +54,9 @@ interface IRPGGear { // TODO: use ISpecialArmor
         if (cap?.generated != true) tooltip.add("rpg.display.notgenerated".localize())
         else {
             val shift = GuiScreen.isShiftKeyDown()
-            tooltip.add("rpg.display.item".localize(cap.rarity!!.localized, "rpg.$key.name".localize()))
+            tooltip.add("rpg.display.item".localize(cap.rarity?.localized?: "rpg.random.name".localize(), "rpg.$key.name".localize()))
             tooltip.add("rpg.display.level".localize(cap.ilvl))
+            tooltip.add("rpg.display.levelreq".localize(cap.levelReq))
             tooltip.add("rpg.display.stats".localize())
             tooltip.addAll(cap.stats().map {
                 "rpg.display.stat".localize(if (shift) it.key.longName() else it.key.shortName(), it.value)
@@ -68,17 +74,15 @@ interface IRPGGear { // TODO: use ISpecialArmor
     }
 
     fun addNBTShare(stack: ItemStack, nbt: NBTTagCompound): NBTTagCompound {
-        val cap = stack.stats?: return nbt
-        if (cap.generated) {
-            val capNbt = GearStats.Storage.writeNBT(GearStats.Capability, cap, null)
-            nbt.setTag("capabilities", capNbt)
-        }
+        val cap = stack.stats ?: return nbt
+        if (cap.generated) nbt.setTag("capabilities", GearStats.Storage.writeNBT(GearStats.Capability, cap, null))
+        else nbt.setTag("capabilities", GearStats.Storage.writeNBT(GearStats.Capability, GearStats(stack), null))
         return nbt
     }
 
     fun readNBTShare(stack: ItemStack, nbt: NBTTagCompound?) {
-        val capNbt = nbt?.getCompoundTag("capabilities")?: return
-        val cap = stack.stats?: return
+        val capNbt = nbt?.getCompoundTag("capabilities") ?: return
+        val cap = stack.stats ?: return
         GearStats.Storage.readNBT(GearStats.Capability, cap, null, capNbt)
     }
 
@@ -91,6 +95,14 @@ interface IRPGGear { // TODO: use ISpecialArmor
             ActionResult.newResult(EnumActionResult.SUCCESS, stack)
         } else ActionResult.newResult(EnumActionResult.PASS, stack)
     }
+
+    fun getItemStackDisplayName(stack: ItemStack): String {
+        val stats = stack.stats
+        return if (stats == null || !stats.generated || stats.name == null) I18n.translateToLocal(this.getUnlocalizedNameInefficiently(stack) + ".name").trim { it <= ' ' }
+        else stats.name!!
+    }
+
+    fun getUnlocalizedNameInefficiently(stack: ItemStack): String
 
     val item: Item
 

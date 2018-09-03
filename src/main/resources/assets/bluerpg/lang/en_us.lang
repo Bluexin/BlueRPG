@@ -3,8 +3,8 @@
 rpg.display.stats=Stats
 rpg.display.stat=%1$s: %2$d
 rpg.display.level=Level %d
-rpg.display.levelreq=Requires level %d
-rpg.display.itemlevel=Itemlevel %d
+rpg.display.levelreq=Requires level: %d
+rpg.display.itemlevel=Item Level: %d
 rpg.display.exp.short=%f%%
 rpg.display.exp.long=%1$d/%2$d
 rpg.display.shift=§8(hold shift for details)§r
@@ -13,6 +13,22 @@ rpg.display.open=§8(right click in hand to open)§r
 rpg.display.attributes=Attributes
 rpg.display.increase.small=Add 1 point into %s
 rpg.display.increase.big=Add 5 points into %s
+rpg.display.bound=Bound to %s
+rpg.display.rarity=Rarity: %s
+rpg.display.binding=Binding: %s
+rpg.display.apply=Press enter in the text field to apply changes
+rpg.display.load=Click to load stats from item
+rpg.display.save=Click to save stats to item
+rpg.display.generator=Generator: %s
+rpg.display.generated=Generated: %s
+rpg.display.name=Name: %s
+rpg.display.namefield=Specify a name manually
+
+rpg.display.cyclerarity=Click to cycle trough the possible rarity values
+rpg.display.cyclebind=Click to cycle trough the possible binding values
+rpg.display.cyclegenerator=Click to cycle trough the possible generator values
+rpg.display.cyclegenerated=Click to toggle generated status
+rpg.display.cyclename=Left click to generate a new random name, right click to unset (will be generated upon identifying)
 
 rpg.display.debug_exp=Use to gain 20 XP
 rpg.display.debug_exp.shift=Use while shifting to gain 100 XP
@@ -40,19 +56,19 @@ rpg.reflect.long=Reflect
 rpg.block.long=Block
 rpg.dodge.long=Dodge
 rpg.speed.long=Speed
-rpg.lifestealchance.long=Life Steal Chance
-rpg.lifesteal.long=Life Steal
-rpg.manaleechchance.long=Mana Leech Chance
-rpg.manaleech.long=Mana Leech
-rpg.critchance.long=Crit Chance
-rpg.critdamage.long=Crit Damage
-rpg.bonustoskill.long=Bonus To Skill
-rpg.bonusdamage.long=Bonus Damage
+rpg.life_steal_chance.long=Life Steal Chance
+rpg.life_steal.long=Life Steal
+rpg.mana_leech_chance.long=Mana Leech Chance
+rpg.mana_leech.long=Mana Leech
+rpg.crit_chance.long=Crit Chance
+rpg.crit_damage.long=Crit Damage
+rpg.bonus_to_skill.long=Bonus To Skill
+rpg.bonus_damage.long=Bonus Damage
 rpg.resistance.long=Resistance
 rpg.root.long=Root
 rpg.slow.long=Slow
-rpg.cooldownreduction.long=Cooldown Reduction
-rpg.manareduction.long=Mana Reduction
+rpg.cooldown_reduction.long=Cooldown Reduction
+rpg.mana_reduction.long=Mana Reduction
 
 rpg.attributepoints.short=ATTR
 rpg.strength.short=STR
@@ -70,19 +86,19 @@ rpg.reflect.short=REF
 rpg.block.short=BLK
 rpg.dodge.short=DOG
 rpg.speed.short=SPD
-rpg.lifestealchance.short=LSC
-rpg.lifesteal.short=LS
-rpg.manaleechchance.short=MLC
-rpg.manaleech.short=ML
-rpg.critchance.short=CHC
-rpg.critdamage.short=CHD
-rpg.bonustoskill.short=SKILL
-rpg.bonusdamage.short=DMG
+rpg.life_steal_chance.short=LSC
+rpg.life_steal.short=LS
+rpg.mana_leech_chance.short=MLC
+rpg.mana_leech.short=ML
+rpg.crit_chance.short=CHC
+rpg.crit_damage.short=CHD
+rpg.bonus_to_skill.short=SKILL
+rpg.bonus_damage.short=DMG
 rpg.resistance.short=RES
 rpg.root.short=RT
 rpg.slow.short=SL
-rpg.cooldownreduction.short=CDR
-rpg.manareduction.short=MCR
+rpg.cooldown_reduction.short=CDR
+rpg.mana_reduction.short=MCR
 
 # Items
 item.bluerpg:debug_stats.name=Debug Player Stats
@@ -125,6 +141,19 @@ rpg.epic.name=Epic
 rpg.legendary.name=Legendary
 rpg.mythic.name=Mythic
 rpg.godlike.name=Godlike
+rpg.random.name=Random
+
+# Binding
+rpg.boe.name=Bound on Equip
+rpg.bop.name=Bound on Pickup
+rpg.bou.name=Bound on Use
+rpg.bot.name=Bound on Trade
+
+# Generator/token
+rpg.token.name=Token
+rpg.crafted.name=Crafted
+rpg.plus.name=Plus
+rpg.plus2.name=Plus²
 
 # Gear Types
 rpg.head_cloth.name=Hood
@@ -150,3 +179,7 @@ rpg.bow.name=Bow
 rpg.shield.name=Shield
 rpg.parry_dagger.name=Parry Dagger
 rpg.focus.name=Focus
+
+# Blocks
+
+tile.bluerpg:editor.name=Loot Editor

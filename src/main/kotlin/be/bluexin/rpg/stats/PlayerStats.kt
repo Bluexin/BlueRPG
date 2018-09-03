@@ -26,6 +26,7 @@ import be.bluexin.saomclib.capabilities.AbstractEntityCapability
 import be.bluexin.saomclib.capabilities.Key
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
+import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import net.minecraft.entity.player.EntityPlayer
@@ -41,11 +42,12 @@ import java.lang.ref.WeakReference
 import kotlin.math.max
 
 @SaveInPlace
-class PlayerStats : AbstractEntityCapability() {
+@NamedDynamic(resourceLocation = "b:ps")
+class PlayerStats : AbstractEntityCapability(), StatCapability {
 
     @Save
     lateinit var level: Level
-        private set
+        internal set
 
     @Save
     var attributePoints = LEVELUP_ATTRIBUTES * 3
@@ -73,6 +75,16 @@ class PlayerStats : AbstractEntityCapability() {
         baseStats = StatsCollection(wr)
 
         return this
+    }
+
+    fun loadFrom(other: PlayerStats) {
+        level = other.level.copy()
+        attributePoints = other.attributePoints
+        baseStats = other.baseStats.copy()
+    }
+
+    override fun copy() = PlayerStats().also {
+        it.loadFrom(this)
     }
 
     internal var dirty = false
@@ -187,6 +199,15 @@ class Level(private val player: WeakReference<EntityPlayer>) {
 
     private fun dirty() {
         dirty = true
+    }
+
+    fun loadFrom(other: Level) {
+        level = other.level
+        exp = other.exp
+    }
+
+    fun copy() = Level(WeakReference<EntityPlayer>(null)).also {
+        it.loadFrom(this)
     }
 
     companion object {

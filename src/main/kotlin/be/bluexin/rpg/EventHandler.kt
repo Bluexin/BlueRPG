@@ -33,6 +33,7 @@ object CommonEventHandler {
         event.player.world onServer {
             val stats = event.player.stats
             if (stats.dirty) stats.sync()
+            if (event.player.health > event.player.maxHealth) event.player.health = event.player.maxHealth
         }
     }
 }

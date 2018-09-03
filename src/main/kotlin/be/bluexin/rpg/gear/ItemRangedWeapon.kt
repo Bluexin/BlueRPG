@@ -62,6 +62,8 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
         return if (r.type == EnumActionResult.PASS) super<ItemModBow>.onItemRightClick(worldIn, playerIn, handIn) else r
     }
 
+    override fun getItemStackDisplayName(stack: ItemStack) = super<IRPGGear>.getItemStackDisplayName(stack)
+
     override fun getShareTag(): Boolean {
         return true
     }

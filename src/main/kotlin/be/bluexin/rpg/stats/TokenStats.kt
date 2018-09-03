@@ -25,8 +25,9 @@ import be.bluexin.rpg.gear.Rarity
 import be.bluexin.saomclib.capabilities.Key
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
+import com.teamwizardry.librarianlib.features.saving.NamedDynamic
+import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
-import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTBase
@@ -37,8 +38,11 @@ import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
 import net.minecraftforge.items.ItemHandlerHelper
 
-@SaveInPlace
-class TokenStats(val itemStackIn: ItemStack) {
+@Savable
+@NamedDynamic(resourceLocation = "b:ts")
+class TokenStats(val itemStackIn: ItemStack) : StatCapability {
+
+    internal constructor() : this(ItemStack.EMPTY)
 
     @Save
     var rarity: Rarity? = null
@@ -69,6 +73,17 @@ class TokenStats(val itemStackIn: ItemStack) {
             else ItemHandlerHelper.giveItemToPlayer(playerIn, iss)
         }
         return itemStackIn
+    }
+
+    fun loadFrom(other: TokenStats) {
+        rarity = other.rarity
+        binding = other.binding
+        ilvl = other.ilvl
+        levelReq = other.levelReq
+    }
+
+    override fun copy() = TokenStats(ItemStack.EMPTY).also {
+        it.loadFrom(this)
     }
 
     internal object Storage : Capability.IStorage<TokenStats> {

@@ -114,10 +114,10 @@ object NameGenerator {
 
     operator fun invoke(iss: ItemStack, player: EntityPlayer): String {
         val stats = iss.stats ?: return "Error: Missing Stats"
-        if (stats.rarity!!.ordinal >= Rarity.LEGENDARY.ordinal) return generateLegendary(player).wrapped(stats.rarity!!)
+        if (stats.rarity?.ordinal ?: 0 >= Rarity.LEGENDARY.ordinal) return generateLegendary(player).wrapped(stats.rarity!!)
         val item = iss.item
-        if (item is ItemArmor) return generateArmor(item).wrapped(stats.rarity!!)
-        if (item is IRPGGear) return generateWeapon(item.type).wrapped(stats.rarity!!)
+        if (item is ItemArmor) return generateArmor(item).wrapped(stats.rarity?: Rarity.COMMON)
+        if (item is IRPGGear) return generateWeapon(item.type).wrapped(stats.rarity?: Rarity.COMMON)
 
         return "Error: Unknown Item ${iss.item}"
     }
@@ -138,18 +138,21 @@ object NameGenerator {
         return "${fix[NamePart.PREFIX]?.random()} ${weaponCores[gearType]?.random()} of ${fix[NamePart.SUFFIX]?.random()}"
     }
 
-    private object GearTypeDeserializer: JsonDeserializer<GearType> {
+    private object GearTypeDeserializer : JsonDeserializer<GearType> {
         override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): GearType {
             val s = json.asString
             try {
                 return MeleeWeaponType.valueOf(s)
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
             try {
                 return RangedWeaponType.valueOf(s)
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
             try {
                 return OffHandType.valueOf(s)
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
             throw IllegalArgumentException("Invalid GearType: $s")
         }
     }

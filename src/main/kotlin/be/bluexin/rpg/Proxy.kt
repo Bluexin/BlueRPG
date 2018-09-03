@@ -19,21 +19,26 @@
 
 package be.bluexin.rpg
 
+import be.bluexin.rpg.blocks.BlockEditor
+import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.items.DebugExpItem
 import be.bluexin.rpg.items.DebugStatsItem
-import be.bluexin.rpg.stats.GearStats
-import be.bluexin.rpg.stats.PlayerStats
-import be.bluexin.rpg.stats.TokenStats
+import be.bluexin.rpg.stats.*
 import be.bluexin.saomclib.capabilities.CapabilitiesHandler
 import com.teamwizardry.librarianlib.features.base.ModCreativeTab
+import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
+import com.teamwizardry.librarianlib.features.saving.Savable
+import com.teamwizardry.librarianlib.features.saving.Save
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.capabilities.CapabilityManager
+import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import java.lang.ref.WeakReference
 
 open class CommonProxy {
     open fun preInit(event: FMLPreInitializationEvent) {
@@ -65,6 +70,29 @@ open class CommonProxy {
         ItemMeleeWeapon
         ItemRangedWeapon
         ItemOffHand
+
+        BlockEditor
+        ContainerEditor
+    }
+
+    open fun init(event: FMLInitializationEvent) {
+        trickLiblib()
+    }
+
+    private fun trickLiblib() { // FIXME: remove once TeamWizardry/LibrarianLib#57 is fixed
+        @Savable
+        class T(@Save val s: StatCapability)
+        @Savable
+        class T2(@Save val s: Stat)
+
+        AbstractSaveHandler.writeAutoNBT(T(GearStats(ItemStack.EMPTY)), false)
+        AbstractSaveHandler.writeAutoNBT(T(TokenStats(ItemStack.EMPTY)), false)
+        AbstractSaveHandler.writeAutoNBT(T(PlayerStats().apply {
+            baseStats = StatsCollection(WeakReference(Unit))
+            level = Level(WeakReference<EntityPlayer>(null))
+        }), false)
+        AbstractSaveHandler.writeAutoNBT(T2(PrimaryStat.DEXTERITY), false)
+        AbstractSaveHandler.writeAutoNBT(T2(SecondaryStat.HEALTH), false)
     }
 }
 
