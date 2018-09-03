@@ -30,7 +30,6 @@ import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -60,12 +59,7 @@ class PlayerStats : AbstractEntityCapability(), StatCapability {
     lateinit var baseStats: StatsCollection
         internal set
 
-    operator fun get(stat: Stat): Int {
-        val player = reference.get() as? EntityPlayer ?: return 0
-        return baseStats[stat] + EntityEquipmentSlot.values().sumBy {
-            player.getItemStackFromSlot(it).getCapability(GearStats.Capability, null)?.get(stat) ?: 0
-        }
-    }
+    operator fun get(stat: Stat) = baseStats[stat]
 
     override fun setup(param: Any): AbstractCapability {
         super.setup(param)

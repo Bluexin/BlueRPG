@@ -17,10 +17,18 @@
 
 package be.bluexin.rpg
 
+import be.bluexin.rpg.stats.PrimaryStat
+import be.bluexin.rpg.stats.SecondaryStat
 import be.bluexin.rpg.stats.stats
 import be.bluexin.saomclib.onServer
+import com.teamwizardry.librarianlib.features.kotlin.localize
+import net.minecraft.client.Minecraft
+import net.minecraft.entity.ai.attributes.IAttributeInstance
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.text.TextComponentTranslation
+import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.event.ServerChatEvent
+import net.minecraftforge.event.entity.EntityEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.relauncher.Side
@@ -36,10 +44,35 @@ object CommonEventHandler {
             if (event.player.health > event.player.maxHealth) event.player.health = event.player.maxHealth
         }
     }
+
+    @SubscribeEvent
+    fun entityConstructing(event: EntityEvent.EntityConstructing) {
+        val e = event.entity
+        if (e is EntityPlayer) {
+            val m = e.attributeMap
+            PrimaryStat.values().forEach {
+                if (it.shouldRegister) m.registerAttribute(it.attribute)
+            }
+            SecondaryStat.values().forEach {
+                if (it.shouldRegister) m.registerAttribute(it.attribute)
+            }
+        }
+    }
 }
 
 @SideOnly(Side.CLIENT)
-object ClientEventHandler
+object ClientEventHandler {
+    @SubscribeEvent
+    fun debugOverlay(event: RenderGameOverlayEvent.Text) {
+        val player = Minecraft.getMinecraft().player
+        event.left.add("(temporary)")
+        event.left.addAll(PrimaryStat.values().map {
+            val att: IAttributeInstance? = player.getEntityAttribute(it.attribute)
+            val base = att?.baseValue?.toInt()?: 0
+            "rpg.display.stat".localize(it.longName(), "$base +${(att?.attributeValue?.toInt() ?: 0) - base}")
+        })
+    }
+}
 
 @SideOnly(Side.SERVER)
 object ServerEventHandler {

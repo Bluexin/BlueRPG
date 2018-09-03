@@ -30,12 +30,16 @@ import com.teamwizardry.librarianlib.features.base.ModCreativeTab
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
+import net.minecraft.entity.SharedMonsterAttributes
+import net.minecraft.entity.ai.attributes.BaseAttribute
+import net.minecraft.entity.ai.attributes.RangedAttribute
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.capabilities.CapabilityManager
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import net.minecraftforge.fml.relauncher.ReflectionHelper
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.lang.ref.WeakReference
@@ -43,6 +47,7 @@ import java.lang.ref.WeakReference
 open class CommonProxy {
     open fun preInit(event: FMLPreInitializationEvent) {
         classLoadItems()
+        vanillaHax()
 
         CapabilitiesHandler.registerEntityCapability(PlayerStats::class.java, PlayerStats.Storage) { it is EntityPlayer }
         // Not using SAOMCLib for this one because we don't want it autoregistered
@@ -52,6 +57,16 @@ open class CommonProxy {
         MinecraftForge.EVENT_BUS.register(CommonEventHandler)
 
         NameGenerator.preInit(event)
+    }
+
+    private fun vanillaHax() {
+        (SharedMonsterAttributes.ATTACK_DAMAGE as BaseAttribute).shouldWatch = true
+        try {
+            val f = ReflectionHelper.findField(RangedAttribute::class.java, "field_111118_b", "maximumValue")
+            f.set(SharedMonsterAttributes.MAX_HEALTH, Double.MAX_VALUE)
+        } catch (e: Exception) {
+            BlueRPG.LOGGER.warn("Unable to break max health limit", e)
+        }
     }
 
     private fun classLoadItems() {

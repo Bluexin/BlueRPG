@@ -20,6 +20,7 @@ package be.bluexin.rpg.gear
 import be.bluexin.rpg.stats.GearStats
 import be.bluexin.rpg.stats.stats
 import be.bluexin.rpg.util.ItemCapabilityWrapper
+import be.bluexin.rpg.util.set
 import be.bluexin.saomclib.onServer
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
@@ -50,19 +51,29 @@ interface IRPGGear { // TODO: use ISpecialArmor
         if (cap?.generated != true) tooltip.add("rpg.display.notgenerated".localize())
         else {
             val shift = GuiScreen.isShiftKeyDown()
-            tooltip.add("rpg.display.item".localize(cap.rarity?.localized?: "rpg.random.name".localize(), "rpg.$key.name".localize()))
+            tooltip.add("rpg.display.item".localize(cap.rarity?.localized
+                    ?: "rpg.random.name".localize(), "rpg.$key.name".localize()))
             tooltip.add("rpg.display.level".localize(cap.ilvl))
             tooltip.add("rpg.display.levelreq".localize(cap.levelReq))
             tooltip.add("rpg.display.stats".localize())
-            tooltip.addAll(cap.stats().map {
-                "rpg.display.stat".localize(if (shift) it.key.longName() else it.key.shortName(), it.value)
+            tooltip.addAll(cap.stats().map { (stat, value) ->
+                "rpg.display.stat".localize(if (shift) stat.longName() else stat.shortName(), if (stat.hasTransform) stat(value) else value)
             })
             if (!shift) tooltip.add("rpg.display.shift".localize())
         }
     }
 
     fun getAttributeModifiers(slot: EntityEquipmentSlot, stack: ItemStack): Multimap<String, AttributeModifier> {
-        return HashMultimap.create() // TODO use this for stats like hp?
+        val m = HashMultimap.create<String, AttributeModifier>() // TODO use this for stats like hp?
+        if (slot != this.gearSlot) return m
+        val stats = stack.stats ?: return m
+        if (!stats.generated) return m
+
+        stats.stats().forEach { (stat, value) ->
+            m[stat.attribute.name] = AttributeModifier(stat.uuid(this.gearSlot), stat.attribute.name, stat(value), 0)
+        }
+
+        return m
     }
 
     fun initCapabilities(stack: ItemStack, nbt: NBTTagCompound?): ICapabilityProvider? {
