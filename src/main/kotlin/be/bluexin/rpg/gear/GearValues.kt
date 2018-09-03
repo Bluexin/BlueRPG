@@ -44,7 +44,7 @@ enum class Rarity(
 
     val shouldNotify by lazy { ordinal >= LEGENDARY.ordinal }
 
-    val rolls by lazy { ordinal + 1 }
+    val secondaryRolls by lazy { ordinal + 1 }
 
     fun format(text: String): String {
         return color + text + RESET
@@ -53,10 +53,14 @@ enum class Rarity(
     fun rollStats(): Array<Stat> {
         val primaries = LinkedList(PrimaryStat.values().toList())
         val secondarySize = SecondaryStat.values().size
-        return Array<Stat>(rolls) {
-            if (it < primaryRolls) primaries.removeAt(RNG.nextInt(primaries.size))
-            else SecondaryStat.values()[RNG.nextInt(secondarySize)]
+        val p = Array<Stat>(primaryRolls) {
+            primaries.removeAt(RNG.nextInt(primaries.size))
         }
+        val s = Array<Stat>(secondaryRolls) {
+            SecondaryStat.values()[RNG.nextInt(secondarySize)]
+        }
+
+        return p + s
     }
 }
 
