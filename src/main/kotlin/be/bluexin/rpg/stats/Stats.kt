@@ -129,6 +129,12 @@ interface Stat {
         return "rpg.${name.toLowerCase()}.short".localize()
     }
 
+    @SideOnly(Side.CLIENT)
+    fun localize(value: Int): String {
+        return if (hasTransform) "rpg.tooltip.pctstat".localize(this(value))
+        else "rpg.tooltip.flatstat".localize(value)
+    }
+
     fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot): Int
 }
 
@@ -388,7 +394,13 @@ enum class FixedStat(uuid: Array<String>, attribute: IAttribute? = null): Stat {
     )),
     BASE_DAMAGE(arrayOf(
             "ddb9e209-25a2-418c-b5a9-1707e6d54638"
-    ), SharedMonsterAttributes.ATTACK_DAMAGE) {
+    )) {
+        override fun uuid(slot: EntityEquipmentSlot): UUID =
+                if (slot == EntityEquipmentSlot.MAINHAND) uuid[0] else throw IllegalArgumentException("`${this}` is not applicable to slot `$slot` !")
+    },
+    MAX_DAMAGE(arrayOf(
+            "514539e2-e992-4580-b4f8-ef6967b97831"
+    )) {
         override fun uuid(slot: EntityEquipmentSlot): UUID =
                 if (slot == EntityEquipmentSlot.MAINHAND) uuid[0] else throw IllegalArgumentException("`${this}` is not applicable to slot `$slot` !")
     };

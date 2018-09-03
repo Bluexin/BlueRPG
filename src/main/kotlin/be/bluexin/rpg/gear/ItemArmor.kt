@@ -17,7 +17,10 @@
 
 package be.bluexin.rpg.gear
 
+import be.bluexin.rpg.stats.FixedStat
+import be.bluexin.rpg.stats.GearStats
 import com.teamwizardry.librarianlib.features.base.item.ItemModArmor
+import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
@@ -79,6 +82,10 @@ class ItemArmor private constructor(override val type: ArmorType, material: Armo
     }
 
     override fun getItemStackDisplayName(stack: ItemStack) = super<IRPGGear>.getItemStackDisplayName(stack)
+
+    override fun tooltipizeFixedStats(stats: GearStats) =
+            FixedStat.values().asSequence().filter { stats[it] != 0 }
+                    .map { "rpg.tooltip.fstat".localize(it.localize(stats[it]), it.longName()) }
 
     override fun getUnlocalizedNameInefficientlyTrick(stack: ItemStack): String =
             super.getUnlocalizedNameInefficiently(stack)

@@ -89,6 +89,7 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
                 }
                 else -> {
                     this.stats[FixedStat.BASE_DAMAGE] += FixedStat.BASE_DAMAGE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
+                    this.stats[FixedStat.MAX_DAMAGE] += FixedStat.MAX_DAMAGE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
                 }
             }
             generated = true

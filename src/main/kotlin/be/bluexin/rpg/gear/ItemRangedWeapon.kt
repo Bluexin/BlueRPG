@@ -17,7 +17,10 @@
 
 package be.bluexin.rpg.gear
 
+import be.bluexin.rpg.stats.FixedStat
+import be.bluexin.rpg.stats.GearStats
 import com.teamwizardry.librarianlib.features.base.item.ItemModBow
+import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
@@ -61,6 +64,14 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
         val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
         return if (r.type == EnumActionResult.PASS) super<ItemModBow>.onItemRightClick(worldIn, playerIn, handIn) else r
     }
+
+    override fun tooltipizeFixedStats(stats: GearStats) =
+            sequenceOf("rpg.tooltip.fstat".localize(
+                    FixedStat.values().asSequence().filter { stats[it] != 0 }.joinToString(separator = "-") {
+                        it.localize(stats[it])
+                    },
+                    FixedStat.BASE_DAMAGE.longName()
+            ))
 
     override fun getItemStackDisplayName(stack: ItemStack) = super<IRPGGear>.getItemStackDisplayName(stack)
 

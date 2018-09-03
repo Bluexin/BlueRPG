@@ -17,7 +17,10 @@
 
 package be.bluexin.rpg.gear
 
+import be.bluexin.rpg.stats.FixedStat
+import be.bluexin.rpg.stats.GearStats
 import com.teamwizardry.librarianlib.features.base.item.ItemModSword
+import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
@@ -66,6 +69,14 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) : 
 
     override fun getUnlocalizedNameInefficientlyTrick(stack: ItemStack): String =
             super.getUnlocalizedNameInefficiently(stack)
+
+    override fun tooltipizeFixedStats(stats: GearStats) =
+            sequenceOf("rpg.tooltip.fstat".localize(
+                    FixedStat.values().asSequence().filter { stats[it] != 0 }.joinToString(separator = "-") {
+                        it.localize(stats[it])
+                    },
+                    FixedStat.BASE_DAMAGE.longName()
+            ))
 
     override fun getShareTag(): Boolean {
         return true

@@ -17,8 +17,11 @@
 
 package be.bluexin.rpg.gear
 
+import be.bluexin.rpg.stats.FixedStat
+import be.bluexin.rpg.stats.GearStats
 import com.teamwizardry.librarianlib.features.base.IModelGenerator
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
+import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.EntityLiving
 import net.minecraft.entity.EntityLivingBase
@@ -90,6 +93,10 @@ class ItemOffHand private constructor(override val type: OffHandType) : ItemMod(
 
     override fun getUnlocalizedNameInefficientlyTrick(stack: ItemStack): String =
             super.getUnlocalizedNameInefficiently(stack)
+
+    override fun tooltipizeFixedStats(stats: GearStats) =
+            FixedStat.values().asSequence().filter { stats[it] != 0 }
+                    .map { "rpg.tooltip.fstat".localize(it.localize(stats[it]), it.longName()) }
 
     override val gearSlot: EntityEquipmentSlot
         get() = EntityEquipmentSlot.OFFHAND

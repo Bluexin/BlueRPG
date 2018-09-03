@@ -39,6 +39,19 @@ item_group.bluerpg=Blue RPG
 # Broadcast
 rpg.broadcast.item=Congratulations! %1$s obtained %2$s
 
+# Item Tooltip
+rpg.tooltip.spacer=§7§r
+rpg.tooltip.desc=§8-=[A Level %1$d %2$s %3$s]=-§r
+rpg.tooltip.fstat=§7%2$s: §f%1$s§r
+rpg.tooltip.levelreq=§7Level Req: %d§r
+rpg.tooltip.pstat=§a+%1$s %2$s§r
+rpg.tooltip.sstat=§a+%1$s §7%2$s§r
+rpg.tooltip.flatstat=%d
+rpg.tooltip.pctstat=%d%%
+rpg.tooltip.bound=§cSoulbound§r
+rpg.tooltip.binding=§c%s§r
+rpg.tooltip.durability=§7Durability §a%1$d/%2$d§r
+
 # Stats
 rpg.attributepoints.long=Attribute Points
 rpg.strength.long=Strength
@@ -49,6 +62,9 @@ rpg.wisdom.long=Wisdom
 rpg.charisma.long=Charisma
 
 rpg.health.long=Health
+rpg.armor.long=Armor
+rpg.base_damage.long=Normal Damage
+
 rpg.psyche.long=Psyche
 rpg.regen.long=Health Regeneration
 rpg.spirit.long=Spirit
@@ -79,6 +95,9 @@ rpg.wisdom.short=WIS
 rpg.charisma.short=CHA
 
 rpg.health.short=HP
+rpg.armor.short=AR
+rpg.base_damage.short=DG
+
 rpg.psyche.short=PSY
 rpg.regen.short=REG
 rpg.spirit.short=SPI
