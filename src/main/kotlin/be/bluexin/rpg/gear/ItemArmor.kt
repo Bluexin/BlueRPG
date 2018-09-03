@@ -80,6 +80,9 @@ class ItemArmor private constructor(override val type: ArmorType, material: Armo
 
     override fun getItemStackDisplayName(stack: ItemStack) = super<IRPGGear>.getItemStackDisplayName(stack)
 
+    override fun getUnlocalizedNameInefficientlyTrick(stack: ItemStack): String =
+            super.getUnlocalizedNameInefficiently(stack)
+
     override val key = "${slot.getName()}_${type.key}"
 
     override val gearSlot: EntityEquipmentSlot

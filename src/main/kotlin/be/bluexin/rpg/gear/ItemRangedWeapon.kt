@@ -64,6 +64,9 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
 
     override fun getItemStackDisplayName(stack: ItemStack) = super<IRPGGear>.getItemStackDisplayName(stack)
 
+    override fun getUnlocalizedNameInefficientlyTrick(stack: ItemStack): String =
+            super.getUnlocalizedNameInefficiently(stack)
+
     override fun getShareTag(): Boolean {
         return true
     }

@@ -18,17 +18,14 @@
 package be.bluexin.rpg.gear
 
 import be.bluexin.rpg.stats.GearStats
-import be.bluexin.rpg.stats.SecondaryStat
 import be.bluexin.rpg.stats.stats
 import be.bluexin.rpg.util.ItemCapabilityWrapper
-import be.bluexin.rpg.util.set
 import be.bluexin.saomclib.onServer
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.attributes.AttributeModifier
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
@@ -41,7 +38,6 @@ import net.minecraft.util.EnumHand
 import net.minecraft.util.text.translation.I18n
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.ICapabilityProvider
-import java.util.*
 
 interface IRPGGear { // TODO: use ISpecialArmor
 
@@ -98,11 +94,11 @@ interface IRPGGear { // TODO: use ISpecialArmor
 
     fun getItemStackDisplayName(stack: ItemStack): String {
         val stats = stack.stats
-        return if (stats == null || !stats.generated || stats.name == null) I18n.translateToLocal(this.getUnlocalizedNameInefficiently(stack) + ".name").trim { it <= ' ' }
+        return if (stats == null || !stats.generated || stats.name == null) I18n.translateToLocal(this.getUnlocalizedNameInefficientlyTrick(stack) + ".name").trim { it <= ' ' }
         else stats.name!!
     }
 
-    fun getUnlocalizedNameInefficiently(stack: ItemStack): String
+    fun getUnlocalizedNameInefficientlyTrick(stack: ItemStack): String
 
     val item: Item
 
