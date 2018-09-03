@@ -194,14 +194,6 @@ enum class PrimaryStat(uuid: Array<String>) : Stat {
 
 @NamedDynamic(resourceLocation = "b:ss")
 enum class SecondaryStat(uuid: Array<String>, attribute: IAttribute? = null) : Stat {
-    HEALTH(arrayOf(
-            "31aec51b-dd4b-43a1-8a86-861f56ae39f1",
-            "32600f64-53a6-4ada-aa0a-7e46c33dc9d4",
-            "032b4961-3b99-4d56-bf85-3e34c001b2a8",
-            "292d56f2-038d-495e-aeac-7f5e4cdcc9bc",
-            "c984640c-be61-4684-b671-b7e5840304db",
-            "2a0d37a8-3161-4c92-b608-a7f20700f63f"
-    ), SharedMonsterAttributes.MAX_HEALTH),
     PSYCHE(arrayOf(
             "596b8658-6e31-479b-9d8c-75312bf7fde9",
             "3a44ded3-8f78-4e0f-a889-9a3943235bbb",
@@ -379,6 +371,40 @@ enum class SecondaryStat(uuid: Array<String>, attribute: IAttribute? = null) : S
     }
 }
 
+@NamedDynamic(resourceLocation = "b:fs")
+enum class FixedStat(uuid: Array<String>, attribute: IAttribute? = null): Stat {
+    HEALTH(arrayOf(
+            "31aec51b-dd4b-43a1-8a86-861f56ae39f1",
+            "32600f64-53a6-4ada-aa0a-7e46c33dc9d4",
+            "032b4961-3b99-4d56-bf85-3e34c001b2a8",
+            "292d56f2-038d-495e-aeac-7f5e4cdcc9bc",
+            "c984640c-be61-4684-b671-b7e5840304db"
+    ), SharedMonsterAttributes.MAX_HEALTH),
+    ARMOR(arrayOf(
+            "8c43be5a-c46b-4122-b80e-609163cac079",
+            "57a37153-8f94-4738-b348-a5b6bd3ee078",
+            "1bff0b30-b2b3-4759-856d-3d6e0945a2f2",
+            "6800cfd6-d1f9-49ac-8059-9c22a3d34ed5"
+    )),
+    BASE_DAMAGE(arrayOf(
+            "ddb9e209-25a2-418c-b5a9-1707e6d54638"
+    ), SharedMonsterAttributes.ATTACK_DAMAGE) {
+        override fun uuid(slot: EntityEquipmentSlot): UUID =
+                if (slot == EntityEquipmentSlot.MAINHAND) uuid[0] else throw IllegalArgumentException("`${this}` is not applicable to slot `$slot` !")
+    };
+
+    override val shouldRegister = attribute == null
+
+    override val attribute: IAttribute = attribute
+            ?: RangedAttribute(null, "${BlueRPG.MODID}.${this.name.toLowerCase()}", 0.0, 0.0, Double.MAX_VALUE).setShouldWatch(true)
+
+    override val uuid = uuid.map { UUID.fromString(it) }.toTypedArray()
+
+    override fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot): Int {
+        return RNG.nextInt(10) + ilvl // TODO: formulae
+    }
+}
+
 @Savable
 @NamedDynamic(resourceLocation = "b:sc")
 interface StatCapability {
@@ -404,6 +430,16 @@ fun main(args: Array<String>) {
     println(SecondaryStat.values().joinToString(separator = ",\n", postfix = ";") {
         """$it(arrayOf(
         |"${UUID.randomUUID()}",
+        |"${UUID.randomUUID()}",
+        |"${UUID.randomUUID()}",
+        |"${UUID.randomUUID()}",
+        |"${UUID.randomUUID()}",
+        |"${UUID.randomUUID()}"
+        |))
+    """.trimMargin()
+    })
+    println(FixedStat.values().joinToString(separator = ",\n", postfix = ";") {
+        """$it(arrayOf(
         |"${UUID.randomUUID()}",
         |"${UUID.randomUUID()}",
         |"${UUID.randomUUID()}",

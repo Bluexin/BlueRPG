@@ -79,6 +79,18 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
             if (rarity == null) rarity = generator.generateRarity()
             val stats = rarity!!.rollStats()
             stats.forEach { this.stats[it] += it.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot) }
+            when (gear) {
+                is ItemArmor -> {
+                    this.stats[FixedStat.HEALTH] += FixedStat.HEALTH.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
+                    this.stats[FixedStat.ARMOR] += FixedStat.ARMOR.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
+                }
+                is ItemOffHand -> {
+                    this.stats[FixedStat.HEALTH] += FixedStat.HEALTH.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
+                }
+                else -> {
+                    this.stats[FixedStat.BASE_DAMAGE] += FixedStat.BASE_DAMAGE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
+                }
+            }
             generated = true
             if (name == null) name = NameGenerator(itemStackIn, playerIn)
             itemStackIn.setTagInfo("HideFlags", NBTTagInt(2))

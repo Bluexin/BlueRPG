@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg
 
+import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.PrimaryStat
 import be.bluexin.rpg.stats.SecondaryStat
 import be.bluexin.rpg.stats.stats
@@ -54,6 +55,9 @@ object CommonEventHandler {
                 if (it.shouldRegister) m.registerAttribute(it.attribute)
             }
             SecondaryStat.values().forEach {
+                if (it.shouldRegister) m.registerAttribute(it.attribute)
+            }
+            FixedStat.values().forEach {
                 if (it.shouldRegister) m.registerAttribute(it.attribute)
             }
         }
