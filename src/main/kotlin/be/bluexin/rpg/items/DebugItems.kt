@@ -50,11 +50,11 @@ object DebugStatsItem : ItemMod("debug_stats") {
         val shift = GuiScreen.isShiftKeyDown()
 
         tooltip.add("rpg.display.stats".localize())
-        tooltip.add("rpg.display.level".localize(stats.level.level))
+        tooltip.add("rpg.display.level".localize(stats.level.level_a))
         tooltip.add("rpg.display.stat".localize("rpg.attributepoints.${if (shift) "long" else "short"}".localize(), stats.attributePoints))
         tooltip.add(
-                if (shift) "rpg.display.exp.long".localize(stats.level.exp, stats.level.toNext)
-                else "rpg.display.exp.short".localize(100f * stats.level.exp / stats.level.toNext)
+                if (shift) "rpg.display.exp.long".localize(stats.level.exp_a, stats.level.toNext)
+                else "rpg.display.exp.short".localize(100f * stats.level.exp_a / stats.level.toNext)
         )
         tooltip.addAll(stats.baseStats().map {
             "rpg.display.stat".localize(if (shift) it.key.longName() else it.key.shortName(), it.value)

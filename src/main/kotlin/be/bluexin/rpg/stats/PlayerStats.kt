@@ -126,12 +126,13 @@ class PlayerStats : AbstractEntityCapability(), StatCapability {
 @SaveInPlace
 class Level(private val player: WeakReference<EntityPlayer>) {
 
-    @Save
-    var level = 1
+    // TODO: rename thel to level and exp once liblib is fixed
+    var level_a
+        get() = _level
         private set(value) {
-            if (value <= LEVEL_CAP && field != value) {
-                val old = field
-                field = value
+            if (value <= LEVEL_CAP && _level != value) {
+                val old = _level
+                _level = value
                 dirty()
                 with(player.get()) {
                     if (this != null) {
@@ -144,27 +145,33 @@ class Level(private val player: WeakReference<EntityPlayer>) {
             }
         }
 
-    @Save
-    var exp = 0L
+    @Save("level")
+    private var _level = 1
+
+    var exp_a
+        get() = _exp
         private set(value) {
-            if (value == field) return
+            if (value == _exp) return
             val actualValue = max(value, 0)
             val evt = with(player.get()) {
-                return@with if (this != null) ExperienceChangeEvent(this, field, actualValue) else null
+                return@with if (this != null) ExperienceChangeEvent(this, _exp, actualValue) else null
             }
             if (evt != null && fire(evt) && evt.result != Event.Result.DENY) {
-                field = evt.newValue
+                _exp = evt.newValue
                 dirty()
                 checkLevelup()
             }
         }
 
+    @Save("exp")
+    private var _exp = 0L
+
     var toNext: Long = 100
-        get() = if (level < LEVEL_CAP) {
-            if (lastComputedLevel == level) field
+        get() = if (level_a < LEVEL_CAP) {
+            if (lastComputedLevel == level_a) field
             else {
-                field = 50L * level * level + 50 // TODO: find nice formula
-                lastComputedLevel = level
+                field = 50L * level_a * level_a + 50 // TODO: find nice formula
+                lastComputedLevel = level_a
                 field
             }
         } else -1L
@@ -173,14 +180,14 @@ class Level(private val player: WeakReference<EntityPlayer>) {
     private var lastComputedLevel = 1
 
     operator fun plusAssign(exp: Long) {
-        this.exp += exp
+        this.exp_a += exp
     }
 
     private fun checkLevelup() {
         val toNext = this.toNext
-        if (level < LEVEL_CAP && exp >= toNext) {
-            exp -= toNext
-            ++level
+        while (level_a < LEVEL_CAP && exp_a >= toNext) {
+            _exp -= toNext
+            ++level_a
         }
     }
 
@@ -196,8 +203,8 @@ class Level(private val player: WeakReference<EntityPlayer>) {
     }
 
     fun loadFrom(other: Level) {
-        level = other.level
-        exp = other.exp
+        level_a = other.level_a
+        exp_a = other.exp_a
     }
 
     fun copy() = Level(WeakReference<EntityPlayer>(null)).also {
