@@ -411,6 +411,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                 }
 
                 // Bug in compiler prevents using references here
+                FixedStat.values().forEach { addStat(it) }
                 PrimaryStat.values().forEach { addStat(it) }
                 SecondaryStat.values().forEach { addStat(it) }
             }
