@@ -81,7 +81,7 @@ interface IRPGGear { // TODO: use ISpecialArmor
             tooltipizeFixedStats(stats).forEach { tooltip += it }
             tooltip += spacer
             tooltip += "rpg.tooltip.levelreq".localize(stats.levelReq) // TODO: color req based on met criteria
-            // Add stats requirements once that's done
+            // TODO: Add stats requirements once that's done
             tooltip += spacer
             PrimaryStat.values().forEach {
                 if (stats[it] != 0) tooltip += "rpg.tooltip.pstat".localize(
@@ -103,7 +103,7 @@ interface IRPGGear { // TODO: use ISpecialArmor
     }
 
     fun getAttributeModifiers(slot: EntityEquipmentSlot, stack: ItemStack): Multimap<String, AttributeModifier> {
-        val m = HashMultimap.create<String, AttributeModifier>() // TODO use this for stats like hp?
+        val m = HashMultimap.create<String, AttributeModifier>()
         if (slot != this.gearSlot) return m
         val stats = stack.stats ?: return m
         if (!stats.generated) return m

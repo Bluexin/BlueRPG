@@ -26,6 +26,15 @@ fun fire(event: Event) = !MinecraftForge.EVENT_BUS.post(event)
 
 val RNG = XoRoRNG()
 
+/**
+ * Generates a random number between [min] and [max] (both inclusive).
+ */
+data class Roll(val min: Int, val max: Int) {
+    operator fun invoke() = RNG.nextInt(min, max + 1)
+
+    fun roll() = this()
+}
+
 fun <T> Array<T>.random(): T = this[RNG.nextInt(this.size)]
 
 operator fun <K, V> HashMultimap<K, V>.set(key: K, value: V) {

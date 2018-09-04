@@ -57,6 +57,7 @@ open class CommonProxy {
         MinecraftForge.EVENT_BUS.register(CommonEventHandler)
 
         NameGenerator.preInit(event)
+        FormulaeConfiguration.preInit(event)
     }
 
     private fun vanillaHax() {

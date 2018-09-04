@@ -21,7 +21,6 @@ import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.events.StatChangeEvent
 import be.bluexin.rpg.gear.GearType
 import be.bluexin.rpg.gear.Rarity
-import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.fire
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
@@ -193,9 +192,8 @@ enum class PrimaryStat(uuid: Array<String>) : Stat {
 
     override val uuid = uuid.map { UUID.fromString(it) }.toTypedArray()
 
-    override fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot): Int {
-        return RNG.nextInt(10) + ilvl // TODO: formulae
-    }
+    override fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot) =
+            FormulaeConfiguration(this,  ilvl, rarity, gearType, slot).roll()
 }
 
 @NamedDynamic(resourceLocation = "b:ss")
@@ -372,9 +370,8 @@ enum class SecondaryStat(uuid: Array<String>, attribute: IAttribute? = null) : S
 
     override val uuid = uuid.map { UUID.fromString(it) }.toTypedArray()
 
-    override fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot): Int {
-        return RNG.nextInt(10) + ilvl // TODO: formulae
-    }
+    override fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot) =
+            FormulaeConfiguration(this,  ilvl, rarity, gearType, slot).roll()
 }
 
 @NamedDynamic(resourceLocation = "b:fs")
@@ -412,9 +409,8 @@ enum class FixedStat(uuid: Array<String>, attribute: IAttribute? = null): Stat {
 
     override val uuid = uuid.map { UUID.fromString(it) }.toTypedArray()
 
-    override fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot): Int {
-        return RNG.nextInt(10) + ilvl // TODO: formulae
-    }
+    override fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot) =
+            FormulaeConfiguration(this,  ilvl, rarity, gearType, slot).roll()
 }
 
 @Savable
