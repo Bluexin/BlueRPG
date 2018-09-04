@@ -23,6 +23,7 @@ rpg.display.generator=Generator: %s
 rpg.display.generated=Generated: %s
 rpg.display.name=Name: %s
 rpg.display.namefield=Specify a name manually
+rpg.display.defaultrange=Default Range: [%1$d-%2$d]
 
 rpg.display.cyclerarity=Click to cycle trough the possible rarity values
 rpg.display.cyclebind=Click to cycle trough the possible binding values
@@ -64,6 +65,7 @@ rpg.charisma.long=Charisma
 rpg.health.long=Health
 rpg.armor.long=Armor
 rpg.base_damage.long=Normal Damage
+rpg.max_damage.long=Max Damage
 
 rpg.psyche.long=Psyche
 rpg.regen.long=Health Regeneration
@@ -96,7 +98,8 @@ rpg.charisma.short=CHA
 
 rpg.health.short=HP
 rpg.armor.short=AR
-rpg.base_damage.short=DG
+rpg.base_damage.short=DMG
+rpg.max_damage.short=MAX
 
 rpg.psyche.short=PSY
 rpg.regen.short=REG

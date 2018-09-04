@@ -382,7 +382,13 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                         })
                         add(ComponentRect(0, -1, 70, 10).apply {
                             color(Color(0, 0, 0, 0))
-                            render.tooltip(listOf(stat.longName()))
+                            render.tooltip {
+                                listOf(stat.longName(),
+                                        with(FormulaeConfiguration.invoke(stat, gearStats.ilvl, gearStats.rarity
+                                                ?: Rarity.COMMON, (iss.item as IRPGGear).type, (iss.item as IRPGGear).gearSlot)) {
+                                            "rpg.display.defaultrange".localize(this.min, this.max)
+                                        })
+                            }
                         })
                         add(ComponentVoid(75, 0).apply {
                             add(ComponentRect(-3, -1, 57, 9).apply {
