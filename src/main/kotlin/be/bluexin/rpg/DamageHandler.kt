@@ -155,7 +155,7 @@ object DamageHandler {
 
             var damage = event.amount.toDouble()
 
-            if ((mainhand?.type?.allowBlock == true || offhand?.type?.allowBlock == true) && tags.getLong("bluerpg:parrycd") <= time - parryCD && RNG.nextDouble() <= target[SecondaryStat.DODGE]) {
+            if ((mainhand?.type?.allowBlock == true || offhand?.type?.allowBlock == true) && tags.getLong("bluerpg:parrycd") <= time - parryCD && RNG.nextDouble() <= target[SecondaryStat.PARRY]) {
                 event.isCanceled = true
                 tags.setLong("bluerpg:parrycd", time)
                 damage *= 0.75

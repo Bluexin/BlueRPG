@@ -251,6 +251,14 @@ enum class SecondaryStat(uuid: Array<String>, attribute: IAttribute? = null) : S
             "6bef0de3-a540-4cb1-9257-0b9a00b36565",
             "b3e605ff-18c3-4455-8799-a18d1f4a6e76"
     )),
+    PARRY(arrayOf(
+            "1dae30c2-49db-402b-aaab-b229f44405a0",
+            "a8ae835a-bbce-48cf-8bd5-abeace6b6a51",
+            "a30cd452-95cc-4f36-a67b-9da26864729d",
+            "08e11150-06f8-41e3-84bb-7c8c8fa618fa",
+            "ac99c4b0-ef00-4d59-96ef-edacefd91791",
+            "cac0ca1b-ad3a-4497-b6d3-fdadd696e647"
+    )),
     SPEED(arrayOf(
             "ffb8012b-289a-45ed-b8cb-a477366b58b0",
             "44f0e78f-b319-47b8-b489-47227056ea4e",
@@ -434,7 +442,40 @@ enum class FixedStat(uuid: Array<String>, attribute: IAttribute? = null) : Stat 
             "d6fbfbfb-9e4e-43d2-aae3-537a8e490aac",
             "984c2e1d-f3e3-4b84-a89b-c8d55b299a98",
             "c7499cf3-8fe5-4db2-ad70-aac8b8bd3439"
-    ));
+    )),
+    F_CRIT_CHANCE(arrayOf(
+            "284dd4e5-51d9-4b95-81ac-901c1a1aaf40",
+            "fe2f7dfa-02f0-4669-a927-cdaf4b558733",
+            "02271477-d16f-4e46-b233-6159e3c6a78e",
+            "8a653af6-0522-448d-8c0b-003303278329",
+            "40eddb9d-3f59-4226-890d-203b340a2315",
+            "8d7c671b-d3c1-4fe7-944f-a495bedd7277"
+    ), SecondaryStat.CRIT_CHANCE.attribute) {
+        override val hasTransform = true
+        override fun invoke(from: Int) = from / 100.0
+    },
+    F_PARRY(arrayOf(
+            "ac805367-b1a0-4072-8a8f-19d64b60fa88",
+            "b2fd1831-4678-409e-b487-8c83e4cd8618",
+            "068bb180-4d3e-49d0-b185-7ac94b2992b5",
+            "6b361f13-2fdd-4a8e-989b-62fb7b4ac0ac",
+            "c5211798-006b-4ace-b73d-7e39c67e346e",
+            "849136e6-b673-4b71-bba4-61b118b275a1"
+    ), SecondaryStat.PARRY.attribute) {
+        override val hasTransform = true
+        override fun invoke(from: Int) = from / 100.0
+    },
+    F_BLOCK(arrayOf(
+            "8f2672ec-5aef-4b19-9428-e04a4cf9f470",
+            "7b0cc484-0848-4b42-b0ef-664a754107f6",
+            "0fa3e038-3358-4efe-a7ab-b8bbc60e3354",
+            "54e42766-fb1c-4602-a5fc-53eeeb40b215",
+            "dfef3323-e0f5-486f-9fb6-8adba23a486d",
+            "29a047e0-b6bc-4fef-a02e-f95dbd7e6cf9"
+    ), SecondaryStat.BLOCK.attribute) {
+        override val hasTransform = true
+        override fun invoke(from: Int) = from / 100.0
+    };
 
     override val shouldRegister = attribute == null
 
