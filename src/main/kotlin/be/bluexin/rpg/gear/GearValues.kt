@@ -163,7 +163,7 @@ enum class MeleeWeaponType(override val allowParry: Boolean = false) : GearType 
     AXE,
     SWORD_2H(allowParry = true),
     SPEAR,
-    STAFF;
+    BO;
 
     override fun invoke(i: Int) = ItemMeleeWeapon[this]
 
@@ -174,7 +174,8 @@ enum class MeleeWeaponType(override val allowParry: Boolean = false) : GearType 
 }
 
 enum class RangedWeaponType : GearType {
-    BOW;
+    BOW,
+    WAND;
 
     override fun invoke(i: Int) = ItemRangedWeapon[this]
 

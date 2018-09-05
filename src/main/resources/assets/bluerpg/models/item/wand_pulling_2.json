@@ -1,0 +1,6 @@
+{
+	"parent": "bluerpg:item/wand",
+	"textures": {
+		"layer0": "bluerpg:items/wand_pulling_2"
+	}
+}
