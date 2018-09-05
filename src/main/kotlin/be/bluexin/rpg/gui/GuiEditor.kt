@@ -33,7 +33,10 @@ import com.teamwizardry.librarianlib.features.guicontainer.ComponentSlot
 import com.teamwizardry.librarianlib.features.guicontainer.GuiContainerBase
 import com.teamwizardry.librarianlib.features.guicontainer.builtin.BaseLayouts
 import com.teamwizardry.librarianlib.features.helpers.vec
-import com.teamwizardry.librarianlib.features.kotlin.*
+import com.teamwizardry.librarianlib.features.kotlin.div
+import com.teamwizardry.librarianlib.features.kotlin.height
+import com.teamwizardry.librarianlib.features.kotlin.isNotEmpty
+import com.teamwizardry.librarianlib.features.kotlin.localize
 import com.teamwizardry.librarianlib.features.network.PacketHandler
 import net.minecraft.client.Minecraft
 import net.minecraft.client.resources.I18n
@@ -433,12 +436,12 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     scrollList.BUS.hook(ComponentScrollList.ScrollChangeEvent::class.java) { (it, _, new) ->
                         this.pos = vec(this.pos.x, maxY() * (new / it.maxScroll.toDouble()))
                     }
-                    BUS.hook(GuiComponentEvents.MouseDragEvent::class.java) {
+                    /*BUS.hook(GuiComponentEvents.MouseDragEvent::class.java) {
                         val p = (this.pos.y + it.mousePos.y).clamp(0.0, maxY())
                         val v = p / maxY()
                         val step = 1.0 / scrollList.maxScroll
                         scrollList.scroll = ((v + step / 2.0) * scrollList.maxScroll).toInt()
-                    }
+                    }*/
                 })
             })
         }
