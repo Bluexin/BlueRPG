@@ -17,10 +17,7 @@
 
 package be.bluexin.rpg
 
-import be.bluexin.rpg.stats.FixedStat
-import be.bluexin.rpg.stats.PrimaryStat
-import be.bluexin.rpg.stats.SecondaryStat
-import be.bluexin.rpg.stats.stats
+import be.bluexin.rpg.stats.*
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.Minecraft
@@ -30,6 +27,8 @@ import net.minecraft.util.text.TextComponentTranslation
 import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.event.ServerChatEvent
 import net.minecraftforge.event.entity.EntityEvent
+import net.minecraftforge.event.entity.living.LivingAttackEvent
+import net.minecraftforge.event.entity.living.LivingDamageEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.relauncher.Side
@@ -43,6 +42,8 @@ object CommonEventHandler {
             val stats = event.player.stats
             if (stats.dirty) stats.sync()
             if (event.player.health > event.player.maxHealth) event.player.health = event.player.maxHealth
+            else event.player.heal(event.player[SecondaryStat.REGEN].toFloat() / 20f)
+            // TODO: same for mana
         }
     }
 
@@ -62,6 +63,12 @@ object CommonEventHandler {
             }
         }
     }
+
+    @SubscribeEvent
+    fun hitEntity(event: LivingAttackEvent) = DamageHandler(event)
+
+    @SubscribeEvent
+    fun entityHit(event: LivingDamageEvent) = DamageHandler(event)
 }
 
 @SideOnly(Side.CLIENT)

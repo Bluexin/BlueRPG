@@ -66,7 +66,7 @@ object NameGenerator {
             MeleeWeaponType.AXE to arrayOf("Axe", "Hatchet", "Cleaver", "Chopper", "Francesca", "Carver"),
             MeleeWeaponType.SWORD_2H to arrayOf("Greatsword", "Claymore", "Greatedge", "Longsword", "Zweihänder", "Buster"),
             MeleeWeaponType.SPEAR to arrayOf("Spear", "Pike", "Halbard", "Lance", "Trident", "Spetum"),
-            MeleeWeaponType.STAFF to arrayOf("Staff", "Cane", "Pole", "Rod", "Stave", "Wand"),
+            MeleeWeaponType.BO to arrayOf("Staff", "Cane", "Pole", "Rod", "Stave", "Wand"),
             RangedWeaponType.BOW to arrayOf("Bow", "Recurve", "Composite", "Long Bow", "Reflex", "Repeater"),
             OffHandType.SHIELD to arrayOf("Shield", "Kite", "Buckler", "Tower Shield", "Aegis", "Heater"),
             OffHandType.PARRY_DAGGER to arrayOf("Dagger", "Spike", "Knife", "Shiv", "Shank", "Dirk"),

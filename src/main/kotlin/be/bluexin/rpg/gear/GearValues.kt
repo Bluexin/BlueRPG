@@ -127,6 +127,10 @@ interface GearType : Localizable {
     val weight: Int
         get() = 1
 
+    val allowBlock get() = false
+
+    val allowParry get() = false
+
     operator fun invoke(i: Int = 0): IRPGGear
 }
 
@@ -153,11 +157,11 @@ enum class ArmorType(
     }
 }
 
-enum class MeleeWeaponType : GearType {
+enum class MeleeWeaponType(override val allowParry: Boolean = false) : GearType {
     MACE,
-    SWORD,
+    SWORD(allowParry = true),
     AXE,
-    SWORD_2H,
+    SWORD_2H(allowParry = true),
     SPEAR,
     STAFF;
 
@@ -180,9 +184,9 @@ enum class RangedWeaponType : GearType {
     }
 }
 
-enum class OffHandType : GearType {
-    SHIELD,
-    PARRY_DAGGER,
+enum class OffHandType(override val allowBlock: Boolean = false, override val allowParry: Boolean = false) : GearType {
+    SHIELD(allowBlock = true),
+    PARRY_DAGGER(allowParry = true),
     FOCUS;
 
     override fun invoke(i: Int) = ItemOffHand[this]

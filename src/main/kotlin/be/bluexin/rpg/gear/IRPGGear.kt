@@ -109,7 +109,7 @@ interface IRPGGear { // TODO: use ISpecialArmor
         if (!stats.generated) return m
 
         stats.stats().forEach { (stat, value) ->
-            m[stat.attribute.name] = AttributeModifier(stat.uuid(this.gearSlot), stat.attribute.name, stat(value), 0)
+            m[stat.attribute.name] = AttributeModifier(stat.uuid(this.gearSlot), stat.attribute.name, if (stat.operation != 0) stat(value) / 100.0 else stat(value), stat.operation)
         }
 
         return m
