@@ -475,7 +475,9 @@ enum class FixedStat(uuid: Array<String>, attribute: IAttribute? = null) : Stat 
     ), SecondaryStat.BLOCK.attribute) {
         override val hasTransform = true
         override fun invoke(from: Int) = from / 100.0
-    };
+    },
+    DURABILITY(arrayOf()) // This stat does not go on gear, and is used to easily hook into formulae loader
+    ;
 
     override val shouldRegister = attribute == null
 

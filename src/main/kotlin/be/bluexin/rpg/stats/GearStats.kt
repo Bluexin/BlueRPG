@@ -72,6 +72,9 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
     var stats: StatsCollection = StatsCollection(WeakReference(itemStackIn))
         internal set
 
+    @Save
+    var durability: Int = 1
+
     fun generate(playerIn: EntityPlayer) {
         playerIn.world onServer {
             val gear = itemStackIn.item as? IRPGGear ?: return
@@ -97,6 +100,7 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
                     this.stats[FixedStat.MAX_DAMAGE] += FixedStat.MAX_DAMAGE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
                 }
             }
+            durability = FixedStat.DURABILITY.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
             generated = true
             if (name == null) name = NameGenerator(itemStackIn, playerIn)
             itemStackIn.setTagInfo("HideFlags", NBTTagInt(2))

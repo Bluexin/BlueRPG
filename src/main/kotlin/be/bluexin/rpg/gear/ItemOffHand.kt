@@ -71,6 +71,10 @@ class ItemOffHand private constructor(override val type: OffHandType) : ItemMod(
         return true
     }
 
+    override fun getMaxDamage(stack: ItemStack) = super<IRPGGear>.getMaxDamage(stack)
+
+    override fun setDamage(stack: ItemStack, damage: Int) = super<IRPGGear>.setDamage(stack, damage)
+
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
         if (r.type != EnumActionResult.PASS) return r

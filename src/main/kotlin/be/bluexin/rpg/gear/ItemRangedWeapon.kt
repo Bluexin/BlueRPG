@@ -100,6 +100,10 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
         return true
     }
 
+    override fun getMaxDamage(stack: ItemStack) = super<IRPGGear>.getMaxDamage(stack)
+
+    override fun setDamage(stack: ItemStack, damage: Int) = super<IRPGGear>.setDamage(stack, damage)
+
     override val item: Item
         get() = this
 

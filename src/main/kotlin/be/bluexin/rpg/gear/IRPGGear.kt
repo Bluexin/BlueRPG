@@ -40,6 +40,7 @@ import net.minecraft.util.EnumHand
 import net.minecraft.util.text.translation.I18n
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.ICapabilityProvider
+import kotlin.math.max
 
 interface IRPGGear { // TODO: use ISpecialArmor
 
@@ -75,7 +76,7 @@ interface IRPGGear { // TODO: use ISpecialArmor
         else {
             val spacer = "rpg.tooltip.spacer".localize()
             tooltip += "rpg.tooltip.desc".localize(
-                    stats.ilvl, stats.rarity?.localized?: "Error", "rpg.$key.name".localize()
+                    stats.ilvl, stats.rarity?.localized ?: "Error", "rpg.$key.name".localize()
             )
             tooltip += spacer
             tooltipizeFixedStats(stats).forEach { tooltip += it }
@@ -146,6 +147,12 @@ interface IRPGGear { // TODO: use ISpecialArmor
         val stats = stack.stats
         return if (stats == null || !stats.generated || stats.name == null) I18n.translateToLocal(this.getUnlocalizedNameInefficientlyTrick(stack) + ".name").trim { it <= ' ' }
         else stats.name!!
+    }
+
+    fun getMaxDamage(stack: ItemStack) = stack.stats?.durability ?: 1
+
+    fun setDamage(stack: ItemStack, damage: Int) {
+        if (stack.stats?.generated == true) stack.itemDamage = max(0, damage)
     }
 
     fun getUnlocalizedNameInefficientlyTrick(stack: ItemStack): String

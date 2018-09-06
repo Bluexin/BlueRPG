@@ -20,6 +20,7 @@ package be.bluexin.rpg.gear
 import be.bluexin.rpg.DamageHandler
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.GearStats
+import be.bluexin.rpg.stats.stats
 import be.bluexin.rpg.util.set
 import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.base.item.ItemModSword
@@ -51,7 +52,7 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) : 
     override fun getAttributeModifiers(slot: EntityEquipmentSlot, stack: ItemStack): Multimap<String, AttributeModifier> {
         val m = super<IRPGGear>.getAttributeModifiers(slot, stack)
 
-        for ((stat, value) in type.attributes) {
+        if (stack.stats?.generated == true) for ((stat, value) in type.attributes) {
             m[stat.attribute.name] = AttributeModifier(stat.uuid[0], stat.attribute.name, value, stat.operation)
         }
 
@@ -93,6 +94,10 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) : 
     override fun getShareTag(): Boolean {
         return true
     }
+
+    override fun getMaxDamage(stack: ItemStack) = super<IRPGGear>.getMaxDamage(stack)
+
+    override fun setDamage(stack: ItemStack, damage: Int) = super<IRPGGear>.setDamage(stack, damage)
 
     override fun onLeftClickEntity(stack: ItemStack, player: EntityPlayer, entity: Entity): Boolean {
         return if (player.world.isRemote) {

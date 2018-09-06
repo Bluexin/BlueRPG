@@ -76,6 +76,10 @@ class ItemArmor private constructor(override val type: ArmorType, material: Armo
         return true
     }
 
+    override fun getMaxDamage(stack: ItemStack) = super<IRPGGear>.getMaxDamage(stack)
+
+    override fun setDamage(stack: ItemStack, damage: Int) = super<IRPGGear>.setDamage(stack, damage)
+
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
         return if (r.type == EnumActionResult.PASS) super<ItemModArmor>.onItemRightClick(worldIn, playerIn, handIn) else r
