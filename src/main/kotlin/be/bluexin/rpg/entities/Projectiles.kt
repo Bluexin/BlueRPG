@@ -49,6 +49,7 @@ import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.awt.Color
+import java.util.*
 
 @Savable
 class EntityRpgArrow : ArrowEntityMod {
@@ -108,8 +109,14 @@ class EntityWandProjectile : ThrowableEntityMod {
     @Save
     var damage = 0.0
 
-    @Save
     var caster: EntityLivingBase? = null
+
+    @Save
+    var caster_uuid: UUID?
+        get() = caster?.persistentID
+        set(value) {
+            caster = if (value != null) world.getPlayerEntityByUUID(value) else null
+        }
 
     @Suppress("unused")
     constructor(world: World) : super(world)
