@@ -25,6 +25,7 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
+import com.teamwizardry.librarianlib.features.config.ConfigProperty
 import gnu.jel.CompilationException
 import gnu.jel.Evaluator
 import gnu.jel.Library
@@ -53,6 +54,11 @@ object FormulaeConfiguration {
 
     private val statFormulae = mutableMapOf<Key, MutableMap<Stat, Range>>()
 
+    @ConfigProperty("general", "(input: current level as ilvl) default is skewed ;-;")
+    var expToNextFormula = "50L * pow(ilvl, 2) + 50"
+    private lateinit var _expToNext: ExperienceExpressionWrapper
+    fun expToNext(currentLevel: Int) = _expToNext(currentLevel)
+
     private lateinit var f: File
 
     internal fun preInit(event: FMLPreInitializationEvent) = try {
@@ -65,7 +71,12 @@ object FormulaeConfiguration {
         BlueRPG.LOGGER.warn("Unable to load formulae file", e)
     }
 
+    internal fun init() {
+        _expToNext = ExperienceExpressionWrapper("(long) ($expToNextFormula)")
+    }
+
     fun reload() = try {
+
         val gson = GsonBuilder()
                 .setPrettyPrinting()
                 .registerTypeAdapter(Stat::class.java, StatDeserializer)
@@ -177,6 +188,31 @@ object FormulaeConfiguration {
 
         operator fun invoke(p1: GeneratorOptions): Int {
             return expression.evaluate_int(arrayOf(p1))
+        }
+    }
+
+    private class ExperienceExpressionWrapper(expression: String) {
+
+        private val expression = try {
+            Evaluator.compile(expression, LIB, java.lang.Long.TYPE)!!
+        } catch (e: CompilationException) {
+            val sb = StringBuilder("An error occurred during theme loading. See more info below.\n")
+                    .append("–––COMPILATION ERROR :\n")
+                    .append(e.message).append('\n')
+                    .append("                       ")
+                    .append(expression).append('\n')
+            val column = e.column
+            for (i in 0 until column + 23 - 1) sb.append(' ')
+            sb.append('^')
+            val w = StringWriter()
+            e.printStackTrace(PrintWriter(w))
+            sb.append('\n').append(w)
+            BlueRPG.LOGGER.warn(sb.toString())
+            Evaluator.compile("-1", LIB, java.lang.Long.TYPE)!!
+        }
+
+        operator fun invoke(p1: Int): Long {
+            return expression.evaluate_long(arrayOf(GeneratorOptions(p1, Rarity.COMMON)))
         }
     }
 

@@ -107,6 +107,7 @@ open class CommonProxy {
 
     open fun init(event: FMLInitializationEvent) {
         trickLiblib()
+        FormulaeConfiguration.init()
     }
 
     private fun trickLiblib() { // FIXME: remove once TeamWizardry/LibrarianLib#57 is fixed

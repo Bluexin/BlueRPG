@@ -25,6 +25,8 @@ import be.bluexin.saomclib.capabilities.AbstractCapability
 import be.bluexin.saomclib.capabilities.AbstractEntityCapability
 import be.bluexin.saomclib.capabilities.Key
 import be.bluexin.saomclib.onServer
+import com.teamwizardry.librarianlib.features.config.ConfigIntRange
+import com.teamwizardry.librarianlib.features.config.ConfigProperty
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Save
@@ -170,7 +172,7 @@ class Level(private val player: WeakReference<EntityPlayer>) {
         get() = if (level_a < LEVEL_CAP) {
             if (lastComputedLevel == level_a) field
             else {
-                field = 50L * level_a * level_a + 50 // TODO: find nice formula
+                field = FormulaeConfiguration.expToNext(level_a)
                 lastComputedLevel = level_a
                 field
             }
@@ -212,7 +214,9 @@ class Level(private val player: WeakReference<EntityPlayer>) {
     }
 
     companion object {
-        const val LEVEL_CAP = 100
+        @ConfigIntRange(0, Int.MAX_VALUE)
+        @ConfigProperty("general", "defaults and range are skewed ;-;")
+        var LEVEL_CAP = 100
     }
 }
 
