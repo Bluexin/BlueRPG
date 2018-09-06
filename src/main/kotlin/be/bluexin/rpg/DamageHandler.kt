@@ -96,13 +96,14 @@ object DamageHandler {
 
                 val source = RpgDamageSource(s)
                 val player = source.immediateSource as EntityPlayer
+                val t = player.entityData
                 var damage = event.amount.toDouble()
 
                 if (player.heldItemMainhand.item is ItemMeleeWeapon) {
                     val minD = player[FixedStat.BASE_DAMAGE]
                     val maxD = player[FixedStat.MAX_DAMAGE]
                     val r = max(1.0, maxD - minD)
-                    damage += (if (minD == maxD) minD else RNG.nextDouble() * r + minD) * player.entityData.getFloat("bluerpg:lastweaponcd")
+                    damage += (if (minD == maxD) minD else RNG.nextDouble() * r + minD) * t.getFloat("bluerpg:lastweaponcd")
                 }
 
                 if (RNG.nextDouble() <= player[SecondaryStat.CRIT_CHANCE]) {
@@ -110,6 +111,12 @@ object DamageHandler {
                 }
 
                 damage *= 1.0 + player[SecondaryStat.INCREASED_DAMAGE]
+
+                val lastTime = t.getLong("bluerpg:weapondamagetime")
+                if (lastTime != player.world.totalWorldTime) {
+                    t.setLong("bluerpg:weapondamagetime", player.world.totalWorldTime)
+                    player.heldItemMainhand.damageItem(1, player)
+                }
 
                 event.entity.attackEntityFrom(source, damage.toFloat())
             }
