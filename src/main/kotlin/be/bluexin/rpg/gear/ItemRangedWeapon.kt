@@ -118,7 +118,7 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
             if (f.toDouble() >= 0.1) {
                 worldIn onServer {
                     val entity = type.entity(worldIn, entityLiving)
-                    entity.shoot(entityLiving, entityLiving.rotationPitch, entityLiving.rotationYaw, 0.0f, f * 3.0f, 1.0f)
+                    entity.shoot(entityLiving, entityLiving.rotationPitch, entityLiving.rotationYaw, 0.0f, f, 1.0f)
 
                     var damage = entityLiving.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).attributeValue
                     val minD = entityLiving[FixedStat.BASE_DAMAGE]

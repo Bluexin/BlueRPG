@@ -55,7 +55,7 @@ import java.util.*
 interface RpgProjectile : IProjectile {
     var computedDamage: Double
     var knockback: Int
-    fun shoot(shooter: Entity, pitch: Float, yaw: Float, p_184547_4_: Float, velocity: Float, inaccuracy: Float)
+    fun shoot(shooter: Entity, pitch: Float, yaw: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float)
 }
 
 @Savable
@@ -77,12 +77,16 @@ class EntityRpgArrow : ArrowEntityMod, RpgProjectile {
         pickupStatus = EntityArrow.PickupStatus.DISALLOWED
     }
 
-    override fun shoot(shooter: Entity, pitch: Float, yaw: Float, p_184547_4_: Float, velocity: Float, inaccuracy: Float) {
-        super.shoot(shooter, pitch, yaw, p_184547_4_, velocity, inaccuracy)
-        isCritical = velocity >= 3f
+    override fun shoot(shooter: Entity, pitch: Float, yaw: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
+        super.shoot(shooter, pitch, yaw, pitchOffset, velocity * 3f, inaccuracy)
+        isCritical = velocity >= 1f
         initialX = super.posX
         initialY = super.posY
         initialZ = super.posZ
+    }
+
+    override fun getIsCritical(): Boolean {
+        return world.isRemote && super.getIsCritical()
     }
 
     override fun getArrowStack(): ItemStack = ItemStack.EMPTY
@@ -107,7 +111,7 @@ class EntityRpgArrow : ArrowEntityMod, RpgProjectile {
     override var computedDamage: Double
         get() = damage
         set(value) {
-            damage = value
+            damage = value / 3.0
         }
 
     override var knockback: Int = 0
@@ -166,8 +170,8 @@ class EntityWandProjectile : ThrowableEntityMod, RpgProjectile {
         }
     }
 
-    override fun shoot(entityThrower: Entity, rotationPitchIn: Float, rotationYawIn: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
-        super.shoot(entityThrower, rotationPitchIn, rotationYawIn, pitchOffset, velocity, inaccuracy)
+    override fun shoot(shooter: Entity, pitch: Float, yaw: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
+        super.shoot(shooter, pitch, yaw, pitchOffset, velocity * 1.5f, inaccuracy)
         initialX = super.posX
         initialY = super.posY
         initialZ = super.posZ
