@@ -17,20 +17,30 @@
 
 package be.bluexin.rpg.gear
 
+import be.bluexin.rpg.entities.EntityRpgArrow
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.GearStats
+import be.bluexin.rpg.stats.SecondaryStat
+import be.bluexin.rpg.stats.get
+import be.bluexin.rpg.util.RNG
 import com.teamwizardry.librarianlib.features.base.item.ItemModBow
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.entity.EntityLivingBase
+import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.init.SoundEvents
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.stats.StatList
 import net.minecraft.util.ActionResult
 import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
+import net.minecraft.util.SoundCategory
 import net.minecraft.world.World
+import kotlin.math.max
 
 class ItemRangedWeapon private constructor(override val type: RangedWeaponType) : ItemModBow(type.key), IRPGGear {
 
@@ -62,7 +72,13 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
-        return if (r.type == EnumActionResult.PASS) super<ItemModBow>.onItemRightClick(worldIn, playerIn, handIn) else r
+        return if (r.type == EnumActionResult.PASS) {
+            val itemstack = playerIn.getHeldItem(handIn)
+            val ret = net.minecraftforge.event.ForgeEventFactory.onArrowNock(itemstack, worldIn, playerIn, handIn, true)
+            if (ret != null) return ret
+            playerIn.activeHand = handIn
+            ActionResult(EnumActionResult.SUCCESS, itemstack)
+        } else r
     }
 
     override fun tooltipizeFixedStats(stats: GearStats) =
@@ -87,4 +103,43 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
 
     override val gearSlot: EntityEquipmentSlot
         get() = EntityEquipmentSlot.MAINHAND
+
+    override fun onPlayerStoppedUsing(stack: ItemStack, worldIn: World, entityLiving: EntityLivingBase, timeLeft: Int) {
+        if (entityLiving is EntityPlayer) {
+            var i = this.getMaxItemUseDuration(stack) - timeLeft
+            i = net.minecraftforge.event.ForgeEventFactory.onArrowLoose(stack, worldIn, entityLiving, i, true)
+            if (i < 0) return
+
+            val f = getArrowVelocity(i)
+
+            if (f.toDouble() >= 0.1) {
+                if (!worldIn.isRemote) {
+                    val entity = EntityRpgArrow(worldIn, entityLiving)
+                    entity.shoot(entityLiving, entityLiving.rotationPitch, entityLiving.rotationYaw, 0.0f, f * 3.0f, 1.0f)
+
+                    if (f == 1.0f) entity.isCritical = true
+
+                    var damage = entityLiving.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).attributeValue
+                    val minD = entityLiving[FixedStat.BASE_DAMAGE]
+                    val maxD = entityLiving[FixedStat.MAX_DAMAGE]
+                    val r = max(1.0, maxD - minD)
+                    damage += (if (minD == maxD) minD else RNG.nextDouble() * r + minD)
+                    if (RNG.nextDouble() <= entityLiving[SecondaryStat.CRIT_CHANCE]) {
+                        damage *= 1.0 + entityLiving[SecondaryStat.CRIT_DAMAGE]
+                    }
+                    damage *= 1.0 + entityLiving[SecondaryStat.INCREASED_DAMAGE]
+                    entity.damage = damage * f
+                    val kb = entityLiving[WeaponAttribute.KNOCKBACK]
+                    if (kb > 0) entity.setKnockbackStrength(kb.toInt() * 5)
+                    stack.damageItem(1, entityLiving)
+
+                    worldIn.spawnEntity(entity)
+                }
+
+                worldIn.playSound(null as EntityPlayer?, entityLiving.posX, entityLiving.posY, entityLiving.posZ, SoundEvents.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0f, 1.0f / (Item.itemRand.nextFloat() * 0.4f + 1.2f) + f * 0.5f)
+
+                entityLiving.addStat(StatList.getObjectUseStats(this)!!)
+            }
+        }
+    }
 }

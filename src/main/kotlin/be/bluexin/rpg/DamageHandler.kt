@@ -89,7 +89,7 @@ object DamageHandler {
         val s = event.source
         if (s.trueSource is EntityPlayer && s !is RpgDamageSource) when (s) {
             is EntityDamageSourceIndirect -> {
-                // TODO
+                // TODO... Or maybe not?
             }
             is EntityDamageSource -> {
                 event.isCanceled = true

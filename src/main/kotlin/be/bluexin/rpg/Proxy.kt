@@ -21,6 +21,8 @@ package be.bluexin.rpg
 
 import be.bluexin.rpg.blocks.BlockEditor
 import be.bluexin.rpg.containers.ContainerEditor
+import be.bluexin.rpg.entities.EntityRpgArrow
+import be.bluexin.rpg.entities.RenderRpgArrow
 import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.items.DebugExpItem
 import be.bluexin.rpg.items.DebugStatsItem
@@ -35,10 +37,13 @@ import net.minecraft.entity.ai.attributes.BaseAttribute
 import net.minecraft.entity.ai.attributes.RangedAttribute
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
+import net.minecraft.util.ResourceLocation
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.capabilities.CapabilityManager
+import net.minecraftforge.fml.client.registry.RenderingRegistry
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import net.minecraftforge.fml.common.registry.EntityRegistry
 import net.minecraftforge.fml.relauncher.ReflectionHelper
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
@@ -48,6 +53,7 @@ open class CommonProxy {
     open fun preInit(event: FMLPreInitializationEvent) {
         classLoadItems()
         vanillaHax()
+        registerEntities()
 
         CapabilitiesHandler.registerEntityCapability(PlayerStats::class.java, PlayerStats.Storage) { it is EntityPlayer }
         // Not using SAOMCLib for this one because we don't want it autoregistered
@@ -91,6 +97,10 @@ open class CommonProxy {
         ContainerEditor
     }
 
+    private fun registerEntities() {
+        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_rpg_arrow"), EntityRpgArrow::class.java, "entity_rpg_arrow", 1, BlueRPG, 256, 1, true)
+    }
+
     open fun init(event: FMLInitializationEvent) {
         trickLiblib()
     }
@@ -118,7 +128,13 @@ class ClientProxy: CommonProxy() {
     override fun preInit(event: FMLPreInitializationEvent) {
         super.preInit(event)
 
+        registerEntityRenderers()
+
         MinecraftForge.EVENT_BUS.register(ClientEventHandler)
+    }
+
+    private fun registerEntityRenderers() {
+        RenderingRegistry.registerEntityRenderingHandler(EntityRpgArrow::class.java, ::RenderRpgArrow)
     }
 }
 

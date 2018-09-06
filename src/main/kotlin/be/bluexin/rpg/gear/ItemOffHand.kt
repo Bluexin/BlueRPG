@@ -19,7 +19,6 @@ package be.bluexin.rpg.gear
 
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.GearStats
-import com.teamwizardry.librarianlib.features.base.IModelGenerator
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
@@ -35,7 +34,7 @@ import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 
-class ItemOffHand private constructor(override val type: OffHandType) : ItemMod(type.key), IModelGenerator, IRPGGear {
+class ItemOffHand private constructor(override val type: OffHandType) : ItemMod(type.key), IRPGGear {
 
     companion object {
         private val pieces = Array(OffHandType.values().size) { typeIdx ->
