@@ -18,11 +18,13 @@
 package be.bluexin.rpg.gear
 
 import be.bluexin.rpg.entities.EntityRpgArrow
+import be.bluexin.rpg.entities.EntityWandProjectile
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.GearStats
 import be.bluexin.rpg.stats.SecondaryStat
 import be.bluexin.rpg.stats.get
 import be.bluexin.rpg.util.RNG
+import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.base.item.ItemModBow
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
@@ -113,32 +115,54 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
             val f = getArrowVelocity(i)
 
             if (f.toDouble() >= 0.1) {
-                if (!worldIn.isRemote) {
-                    val entity = EntityRpgArrow(worldIn, entityLiving)
-                    entity.shoot(entityLiving, entityLiving.rotationPitch, entityLiving.rotationYaw, 0.0f, f * 3.0f, 1.0f)
+                if (type == RangedWeaponType.BOW) {
+                    worldIn onServer {
+                        val entity = EntityRpgArrow(worldIn, entityLiving)
+                        entity.shoot(entityLiving, entityLiving.rotationPitch, entityLiving.rotationYaw, 0.0f, f * 3.0f, 1.0f)
 
-                    if (f == 1.0f) entity.isCritical = true
+                        if (f == 1.0f) entity.isCritical = true
 
-                    var damage = entityLiving.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).attributeValue
-                    val minD = entityLiving[FixedStat.BASE_DAMAGE]
-                    val maxD = entityLiving[FixedStat.MAX_DAMAGE]
-                    val r = max(1.0, maxD - minD)
-                    damage += (if (minD == maxD) minD else RNG.nextDouble() * r + minD)
-                    if (RNG.nextDouble() <= entityLiving[SecondaryStat.CRIT_CHANCE]) {
-                        damage *= 1.0 + entityLiving[SecondaryStat.CRIT_DAMAGE]
+                        var damage = entityLiving.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).attributeValue
+                        val minD = entityLiving[FixedStat.BASE_DAMAGE]
+                        val maxD = entityLiving[FixedStat.MAX_DAMAGE]
+                        val r = max(1.0, maxD - minD)
+                        damage += (if (minD == maxD) minD else RNG.nextDouble() * r + minD)
+                        if (RNG.nextDouble() <= entityLiving[SecondaryStat.CRIT_CHANCE]) {
+                            damage *= 1.0 + entityLiving[SecondaryStat.CRIT_DAMAGE]
+                        }
+                        damage *= 1.0 + entityLiving[SecondaryStat.INCREASED_DAMAGE]
+                        entity.damage = damage * f
+                        val kb = entityLiving[WeaponAttribute.KNOCKBACK]
+                        if (kb > 0) entity.setKnockbackStrength(kb.toInt() * 5)
+                        stack.damageItem(1, entityLiving)
+
+                        worldIn.spawnEntity(entity)
                     }
-                    damage *= 1.0 + entityLiving[SecondaryStat.INCREASED_DAMAGE]
-                    entity.damage = damage * f
-                    val kb = entityLiving[WeaponAttribute.KNOCKBACK]
-                    if (kb > 0) entity.setKnockbackStrength(kb.toInt() * 5)
-                    stack.damageItem(1, entityLiving)
 
-                    worldIn.spawnEntity(entity)
+                    worldIn.playSound(null as EntityPlayer?, entityLiving.posX, entityLiving.posY, entityLiving.posZ, SoundEvents.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0f, 1.0f / (Item.itemRand.nextFloat() * 0.4f + 1.2f) + f * 0.5f)
+                    entityLiving.addStat(StatList.getObjectUseStats(this)!!)
+                } else {
+                    worldIn onServer {
+                        val entity = EntityWandProjectile(worldIn, entityLiving)
+                        entity.shoot(entityLiving, entityLiving.rotationPitch, entityLiving.rotationYaw, 0.0f, f * 1.5f, 1.0f)
+
+                        var damage = entityLiving.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).attributeValue
+                        val minD = entityLiving[FixedStat.BASE_DAMAGE]
+                        val maxD = entityLiving[FixedStat.MAX_DAMAGE]
+                        val r = max(1.0, maxD - minD)
+                        damage += (if (minD == maxD) minD else RNG.nextDouble() * r + minD)
+                        if (RNG.nextDouble() <= entityLiving[SecondaryStat.CRIT_CHANCE]) {
+                            damage *= 1.0 + entityLiving[SecondaryStat.CRIT_DAMAGE]
+                        }
+                        damage *= 1.0 + entityLiving[SecondaryStat.INCREASED_DAMAGE]
+                        entity.damage = damage * f
+                        val kb = entityLiving[WeaponAttribute.KNOCKBACK]
+//                    if (kb > 0) entity.setKnockbackStrength(kb.toInt() * 5)
+                        stack.damageItem(1, entityLiving)
+
+                        worldIn.spawnEntity(entity)
+                    }
                 }
-
-                worldIn.playSound(null as EntityPlayer?, entityLiving.posX, entityLiving.posY, entityLiving.posZ, SoundEvents.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0f, 1.0f / (Item.itemRand.nextFloat() * 0.4f + 1.2f) + f * 0.5f)
-
-                entityLiving.addStat(StatList.getObjectUseStats(this)!!)
             }
         }
     }

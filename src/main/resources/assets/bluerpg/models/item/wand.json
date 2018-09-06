@@ -1,9 +1,9 @@
 {
 	"parent": "item/bow",
 	"textures": {
-		"layer0": "bluerpg:items/wand"
+		"layer0": "bluerpg:items/weapon/wand"
 	},
-	"overrides": [
+	"_overrides": [
 		{
 			"predicate": {
 				"pulling": 1

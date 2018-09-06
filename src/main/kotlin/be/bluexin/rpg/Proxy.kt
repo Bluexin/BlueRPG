@@ -22,7 +22,9 @@ package be.bluexin.rpg
 import be.bluexin.rpg.blocks.BlockEditor
 import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.entities.EntityRpgArrow
+import be.bluexin.rpg.entities.EntityWandProjectile
 import be.bluexin.rpg.entities.RenderRpgArrow
+import be.bluexin.rpg.entities.RenderWandProjectile
 import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.items.DebugExpItem
 import be.bluexin.rpg.items.DebugStatsItem
@@ -98,7 +100,9 @@ open class CommonProxy {
     }
 
     private fun registerEntities() {
-        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_rpg_arrow"), EntityRpgArrow::class.java, "entity_rpg_arrow", 1, BlueRPG, 256, 1, true)
+        var id = 0
+        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_rpg_arrow"), EntityRpgArrow::class.java, "entity_rpg_arrow", ++id, BlueRPG, 256, 1, true)
+        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_wand_projectile"), EntityWandProjectile::class.java, "entity_wand_projectile", ++id, BlueRPG, 256, 1, true)
     }
 
     open fun init(event: FMLInitializationEvent) {
@@ -135,6 +139,7 @@ class ClientProxy: CommonProxy() {
 
     private fun registerEntityRenderers() {
         RenderingRegistry.registerEntityRenderingHandler(EntityRpgArrow::class.java, ::RenderRpgArrow)
+        RenderingRegistry.registerEntityRenderingHandler(EntityWandProjectile::class.java, ::RenderWandProjectile)
     }
 }
 

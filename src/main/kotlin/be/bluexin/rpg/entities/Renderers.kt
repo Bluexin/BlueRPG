@@ -17,12 +17,27 @@
 
 package be.bluexin.rpg.entities
 
+import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.entity.RenderArrow
 import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.util.ResourceLocation
+import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.relauncher.SideOnly
 
+@SideOnly(Side.CLIENT)
 class RenderRpgArrow(renderManagerIn: RenderManager) : RenderArrow<EntityRpgArrow>(renderManagerIn) {
     private val RES_ARROW = ResourceLocation("textures/entity/projectiles/arrow.png")
 
     override fun getEntityTexture(entity: EntityRpgArrow) = RES_ARROW
+}
+
+@SideOnly(Side.CLIENT)
+class RenderWandProjectile(renderManager: RenderManager) : Render<EntityWandProjectile>(renderManager) {
+    override fun doRender(entity: EntityWandProjectile, x: Double, y: Double, z: Double, entityYaw: Float, partialTicks: Float) {
+        // nop
+    }
+
+    override fun getEntityTexture(entity: EntityWandProjectile): ResourceLocation? {
+        return null
+    }
 }

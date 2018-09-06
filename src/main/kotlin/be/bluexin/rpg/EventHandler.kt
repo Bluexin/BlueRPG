@@ -19,6 +19,7 @@ package be.bluexin.rpg
 
 import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.stats.*
+import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import com.teamwizardry.librarianlib.features.network.PacketHandler
@@ -28,6 +29,7 @@ import net.minecraft.entity.ai.attributes.IAttributeInstance
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.text.TextComponentTranslation
 import net.minecraftforge.client.event.RenderGameOverlayEvent
+import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.event.ServerChatEvent
 import net.minecraftforge.event.entity.EntityEvent
 import net.minecraftforge.event.entity.living.LivingAttackEvent
@@ -129,6 +131,12 @@ object ClientEventHandler {
                 player.rotationYaw = yaw
             }
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    @SubscribeEvent
+    fun onTextureStitchEvent(event: TextureStitchEvent) {
+        event.map.registerSprite(Resources.PARTICLE)
     }
 }
 
