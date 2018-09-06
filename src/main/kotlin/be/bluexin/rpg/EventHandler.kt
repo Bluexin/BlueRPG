@@ -47,11 +47,18 @@ object CommonEventHandler {
 
     @SubscribeEvent
     fun playerTick(event: TickEvent.PlayerTickEvent) {
+        if (event.phase != TickEvent.Phase.END) return
         event.player.world onServer {
             val stats = event.player.stats
             if (stats.dirty) stats.sync()
             if (event.player.health > event.player.maxHealth) event.player.health = event.player.maxHealth
-            else event.player.heal(event.player[SecondaryStat.REGEN].toFloat() / 20f)
+            var regenTick = event.player.entityData.getInteger("bluerpg:regen")
+            if (--regenTick <= 0) {
+                regenTick = 100
+                val combat = event.player.combatTracker.inCombat
+                event.player.heal((event.player[SecondaryStat.REGEN] * if (combat) 0.2 else 1.0).toFloat())
+            }
+            event.player.entityData.setInteger("bluerpg:regen", regenTick)
             // TODO: same for mana
         }
     }

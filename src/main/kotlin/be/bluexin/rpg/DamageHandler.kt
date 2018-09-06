@@ -33,7 +33,7 @@ import com.teamwizardry.librarianlib.features.utilities.RaycastUtils
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.potion.Potion
+import net.minecraft.init.MobEffects
 import net.minecraft.potion.PotionEffect
 import net.minecraft.util.DamageSource
 import net.minecraft.util.EntityDamageSource
@@ -119,6 +119,11 @@ object DamageHandler {
     }
 
     operator fun invoke(event: LivingAttackEvent) {
+        val t = (event.source.trueSource as? EntityLivingBase?)?.combatTracker
+        t?.inCombat = true
+        t?.lastDamageTime = event.source.trueSource?.ticksExisted ?: 0
+        t?.takingDamage = true
+
         /*
         We hit entity.
         Cancel vanilla damage, apply our own with damage from weapon, crit and whatever.
@@ -194,9 +199,9 @@ object DamageHandler {
                 tags.setLong("bluerpg:blockcd", time)
                 val pct = event.amount / target.maxHealth
                 if (pct >= 0.25f) {
-                    target.addPotionEffect(PotionEffect(slow, 60, 1))
+                    target.addPotionEffect(PotionEffect(MobEffects.SLOWNESS, 60, 1))
                 } else if (pct >= 0.05f) {
-                    target.addPotionEffect(PotionEffect(slow, 40, 0))
+                    target.addPotionEffect(PotionEffect(MobEffects.SLOWNESS, 40, 0))
                 }
                 return
             }
@@ -234,20 +239,18 @@ object DamageHandler {
             }
 
             if (atags.getLong("bluerpg:rootcd") <= time - rootCD && RNG.nextDouble() <= attacker[SecondaryStat.ROOT]) {
-                target.addPotionEffect(PotionEffect(slow, 60, 98))
+                target.addPotionEffect(PotionEffect(MobEffects.SLOWNESS, 60, 98))
                 atags.setLong("bluerpg:rootcd", time)
             }
 
             if (atags.getLong("bluerpg:slowcd") <= time - slowCD && RNG.nextDouble() <= attacker[SecondaryStat.SLOW]) {
-                target.addPotionEffect(PotionEffect(slow, 100, 1))
+                target.addPotionEffect(PotionEffect(MobEffects.SLOWNESS, 100, 1))
                 atags.setLong("bluerpg:slowcd", time)
             }
         }
 
         event.amount = damage.toFloat()
     }
-
-    private val slow by lazy { Potion.getPotionFromResourceLocation("slowness")!! }
 
     class RpgDamageSource(private val original: EntityDamageSource) : EntityDamageSource(original.damageType, original.immediateSource) {
         override fun setDamageAllowedInCreativeMode(): DamageSource = original.setDamageAllowedInCreativeMode()

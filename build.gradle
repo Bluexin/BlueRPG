@@ -68,6 +68,12 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 10, 'minutes'
 }
 
+jar {
+    manifest {
+        attributes 'FMLAT': 'bluerpg_at.cfg'
+    }
+}
+
 kotlin {
     experimental {
         coroutines "enable"
