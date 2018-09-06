@@ -17,16 +17,14 @@
 
 package be.bluexin.rpg.gear
 
-import be.bluexin.rpg.stats.GearStats
-import be.bluexin.rpg.stats.PrimaryStat
-import be.bluexin.rpg.stats.SecondaryStat
-import be.bluexin.rpg.stats.stats
+import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.ItemCapabilityWrapper
 import be.bluexin.rpg.util.set
 import be.bluexin.saomclib.onServer
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.kotlin.localize
+import net.minecraft.client.Minecraft
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.ai.attributes.AttributeModifier
 import net.minecraft.entity.player.EntityPlayer
@@ -80,8 +78,14 @@ interface IRPGGear { // TODO: use ISpecialArmor
             tooltip += spacer
             tooltipizeFixedStats(stats).forEach { tooltip += it }
             tooltip += spacer
-            tooltip += "rpg.tooltip.levelreq".localize(stats.levelReq) // TODO: color req based on met criteria
-            // TODO: Add stats requirements once that's done
+            val p = Minecraft.getMinecraft().player
+            tooltip += "rpg.tooltip.levelreq".localize(
+                    "rpg.tooltip.${if (stats.levelReqMet(p)) "metreq" else "unmetreq"}".localize(stats.levelReq)
+            )
+            if (stats.requiredValue > 0) tooltip += "rpg.tooltip.statreq".localize(
+                    stats.requiredStat!!.longName(),
+                    "rpg.tooltip.${if (stack.statsReqMet(p)) "metreq" else "unmetreq"}".localize(stats.requiredValue)
+            )
             tooltip += spacer
             PrimaryStat.values().forEach {
                 if (stats[it] != 0) tooltip += "rpg.tooltip.pstat".localize(
@@ -105,6 +109,7 @@ interface IRPGGear { // TODO: use ISpecialArmor
     fun getAttributeModifiers(slot: EntityEquipmentSlot, stack: ItemStack): Multimap<String, AttributeModifier> {
         val m = HashMultimap.create<String, AttributeModifier>()
         if (slot != this.gearSlot) return m
+        if (stack.tagCompound?.getByte("bluerpg:disabled") != 0.toByte()) return m
         val stats = stack.stats ?: return m
         if (!stats.generated) return m
 

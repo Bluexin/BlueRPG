@@ -39,6 +39,7 @@ data class Roll(val min: Int, val max: Int) {
 }
 
 fun <T> Array<T>.random(): T = this[RNG.nextInt(this.size)]
+fun <T> List<T>.random(): T = this[RNG.nextInt(this.size)]
 
 operator fun <K, V> Multimap<K, V>.set(key: K, value: V) {
     this.put(key, value)

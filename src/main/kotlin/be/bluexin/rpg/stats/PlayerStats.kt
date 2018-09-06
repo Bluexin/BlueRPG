@@ -126,7 +126,7 @@ class PlayerStats : AbstractEntityCapability(), StatCapability {
 @SaveInPlace
 class Level(private val player: WeakReference<EntityPlayer>) {
 
-    // TODO: rename thel to level and exp once liblib is fixed
+    // TODO: rename these to level and exp once liblib is fixed
     var level_a
         get() = _level
         private set(value) {

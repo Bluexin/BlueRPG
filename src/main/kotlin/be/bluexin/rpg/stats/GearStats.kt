@@ -19,6 +19,8 @@ package be.bluexin.rpg.stats
 
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.gear.*
+import be.bluexin.rpg.util.RNG
+import be.bluexin.rpg.util.random
 import be.bluexin.saomclib.capabilities.Key
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
@@ -75,6 +77,12 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
     @Save
     var durability: Int = 1
 
+    @Save
+    var requiredStat: PrimaryStat? = null
+
+    @Save
+    var requiredValue: Int = 0
+
     fun generate(playerIn: EntityPlayer) {
         playerIn.world onServer {
             val gear = itemStackIn.item as? IRPGGear ?: return
@@ -100,7 +108,12 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
                     this.stats[FixedStat.MAX_DAMAGE] += FixedStat.MAX_DAMAGE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
                 }
             }
-            durability = FixedStat.DURABILITY.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
+            durability = TrickStat.DURABILITY.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
+            if (requiredValue != -1 && RNG.nextInt(100) < TrickStat.REQUIREMENT_CHANCE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)) {
+                val primaries = stats.mapNotNull { it as? PrimaryStat }
+                requiredStat = primaries.random()
+                requiredValue = (this[requiredStat!!] * TrickStat.REQUIREMENT_MULTIPLIER.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot) / 100.0).toInt()
+            } else requiredValue = -1
             generated = true
             if (name == null) name = NameGenerator(itemStackIn, playerIn)
             itemStackIn.setTagInfo("HideFlags", NBTTagInt(2))
@@ -156,3 +169,18 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
 }
 
 val ItemStack.stats get() = this.getCapability(GearStats.Capability, null)
+
+fun ItemStack.requirementMet(player: EntityPlayer): Boolean {
+    val s = stats?: return false
+    return if (!s.levelReqMet(player)) false
+    else statsReqMet(player)
+}
+
+fun GearStats.levelReqMet(player: EntityPlayer) = levelReq <= player.stats.level.level_a
+
+fun ItemStack.statsReqMet(player: EntityPlayer): Boolean {
+    val s = stats?: return false
+    val r = s.requiredStat?: return true
+    val f = player.equipmentAndArmor.contains(this)
+    return player[r] - (if (f) s[r] else 0) >= s.requiredValue
+}

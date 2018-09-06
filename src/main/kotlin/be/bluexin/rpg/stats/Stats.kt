@@ -475,9 +475,7 @@ enum class FixedStat(uuid: Array<String>, attribute: IAttribute? = null) : Stat 
     ), SecondaryStat.BLOCK.attribute) {
         override val hasTransform = true
         override fun invoke(from: Int) = from / 100.0
-    },
-    DURABILITY(arrayOf()) // This stat does not go on gear, and is used to easily hook into formulae loader
-    ;
+    };
 
     override val shouldRegister = attribute == null
 
@@ -487,6 +485,23 @@ enum class FixedStat(uuid: Array<String>, attribute: IAttribute? = null) : Stat 
     }
 
     override val uuid = uuid.map { UUID.fromString(it) }.toTypedArray()
+
+    override fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot) =
+            FormulaeConfiguration(this, ilvl, rarity, gearType, slot).roll()
+}
+
+/**
+ *  These stats do not go on gear, and are used to easily hook into formulae loader
+ */
+enum class TrickStat: Stat {
+    DURABILITY,
+    REQUIREMENT_CHANCE,
+    REQUIREMENT_MULTIPLIER;
+
+    override val uuid: Array<UUID>
+        get() = throw IllegalStateException("$this is not a true stat!")
+    override val attribute: IAttribute
+        get() = throw IllegalStateException("$this is not a true stat!")
 
     override fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot) =
             FormulaeConfiguration(this, ilvl, rarity, gearType, slot).roll()

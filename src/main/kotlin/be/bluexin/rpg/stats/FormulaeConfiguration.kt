@@ -75,12 +75,13 @@ object FormulaeConfiguration {
                 s += EntityEquipmentSlot.values().asSequence().filter { it.index == it.slotIndex - 1 }.map { Key(t, it) }
             }
             val r = FalseRoll(
-                    "(int) ((4 + pow(ilvl, 1.5) / 6) * pow(rarity.ordinal() / 11.0 + 1, 1.8))",
-                    "(int) ((8 + pow(ilvl, 1.5) / 4) * pow(rarity.ordinal() / 9.0 + 1, 1.8))"
+                    "(4 + pow(ilvl, 1.5) / 6) * pow(rarity.ordinal() / 11.0 + 1, 1.8)",
+                    "(8 + pow(ilvl, 1.5) / 4) * pow(rarity.ordinal() / 9.0 + 1, 1.8)"
             )
             val m = (PrimaryStat.values().asSequence<Stat>() +
                     SecondaryStat.values().asSequence() +
-                    FixedStat.values().asSequence()).map { it to r }.toMap()
+                    FixedStat.values().asSequence() +
+                    TrickStat.values().asSequence()).map { it to r }.toMap()
             val a = s.map { TrickingDumbGsonWrite(it, m) }
             FileWriter(f).use { gson.toJson(a.toList(), it) }
         }
@@ -107,6 +108,10 @@ object FormulaeConfiguration {
             }
             try {
                 return FixedStat.valueOf(s)
+            } catch (_: Exception) {
+            }
+            try {
+                return TrickStat.valueOf(s)
             } catch (_: Exception) {
             }
             throw IllegalArgumentException("Invalid Stat: $s")
@@ -138,7 +143,7 @@ object FormulaeConfiguration {
 
     private object ExpressionDeserializer : JsonDeserializer<ExpressionWrapper> {
         override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext) =
-                ExpressionWrapper(json.asString)
+                ExpressionWrapper("(int) (${json.asString})")
     }
 
     @Suppress("unused")

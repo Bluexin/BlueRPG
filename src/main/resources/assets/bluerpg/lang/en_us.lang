@@ -45,6 +45,9 @@ rpg.tooltip.spacer=§7§r
 rpg.tooltip.desc=§8-=[A Level %1$d %2$s %3$s]=-§r
 rpg.tooltip.fstat=§7%2$s: §f%1$s§r
 rpg.tooltip.levelreq=§7Level Req: %d§r
+rpg.tooltip.statreq=§7%1$s Req: %2$d§r
+rpg.tooltip.metreq=§a%d§r
+rpg.tooltip.unmetreq=§c%d§r
 rpg.tooltip.pstat=§a+%1$s %2$s§r
 rpg.tooltip.sstat=§a+%1$s §7%2$s§r
 rpg.tooltip.flatstat=%d

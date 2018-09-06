@@ -58,10 +58,12 @@ object CommonEventHandler {
 
     @SubscribeEvent
     fun changeGear(event: LivingEquipmentChangeEvent) {
+        val p = event.entityLiving as? EntityPlayer?: return
+
         @Suppress("NON_EXHAUSTIVE_WHEN")
         when (event.slot) {
             EntityEquipmentSlot.MAINHAND -> {
-                val offHand = event.entityLiving.heldItemOffhand
+                val offHand = p.heldItemOffhand
                 if (!offHand.isEmpty) {
                     val from = (event.from.item as? IRPGGear)?.type as? WeaponType
                     val to = (event.to.item as? IRPGGear)?.type as? WeaponType
@@ -73,10 +75,14 @@ object CommonEventHandler {
                 }
             }
             EntityEquipmentSlot.OFFHAND -> {
-                val mainhand = (event.entityLiving.heldItemMainhand.item as? IRPGGear)?.type as? WeaponType
+                val mainhand = (p.heldItemMainhand.item as? IRPGGear)?.type as? WeaponType
                 val to = event.to
                 if (to.item is IRPGGear) to.setTagInfo("bluerpg:twohandflag", NBTTagByte(if (mainhand?.twoHander == true) 1 else 0))
             }
+        }
+
+        p.equipmentAndArmor.forEach {
+            it.setTagInfo("bluerpg:disabled", NBTTagByte(if (it.requirementMet(p)) 0 else 1))
         }
     }
 
