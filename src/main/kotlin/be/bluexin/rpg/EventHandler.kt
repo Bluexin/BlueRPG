@@ -34,7 +34,9 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent
 import net.minecraftforge.event.entity.living.LivingDamageEvent
 import net.minecraftforge.event.entity.living.LivingHurtEvent
 import net.minecraftforge.event.entity.living.LivingKnockBackEvent
+import net.minecraftforge.event.entity.player.CriticalHitEvent
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
+import net.minecraftforge.fml.common.eventhandler.Event
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.relauncher.Side
@@ -86,6 +88,11 @@ object CommonEventHandler {
     fun knockBack(event: LivingKnockBackEvent) {
         val a = event.attacker as? EntityPlayer ?: return
         event.strength += a[WeaponAttribute.KNOCKBACK].toFloat() * a.entityData.getFloat("bluerpg:lastweaponcd")
+    }
+
+    @SubscribeEvent
+    fun vanillaCrit(event: CriticalHitEvent) {
+        event.result = Event.Result.DENY
     }
 }
 
