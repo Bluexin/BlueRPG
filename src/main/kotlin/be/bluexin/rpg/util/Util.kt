@@ -17,8 +17,11 @@
 
 package be.bluexin.rpg.util
 
+import be.bluexin.rpg.gear.IRPGGear
+import be.bluexin.rpg.gear.WeaponType
 import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.kotlin.localize
+import net.minecraft.entity.EntityLivingBase
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.Event
 
@@ -40,6 +43,20 @@ fun <T> Array<T>.random(): T = this[RNG.nextInt(this.size)]
 operator fun <K, V> Multimap<K, V>.set(key: K, value: V) {
     this.put(key, value)
 }
+
+val EntityLivingBase.allowBlock: Boolean
+    get() {
+        val mainhand = heldItemMainhand.item as? IRPGGear
+        val offhand = heldItemOffhand.item as? IRPGGear
+        return mainhand?.type?.allowBlock == true || ((mainhand?.type as? WeaponType)?.twoHander != true && offhand?.type?.allowBlock == true)
+    }
+
+val EntityLivingBase.allowParry: Boolean
+    get() {
+        val mainhand = heldItemMainhand.item as? IRPGGear
+        val offhand = heldItemOffhand.item as? IRPGGear
+        return mainhand?.type?.allowParry == true || ((mainhand?.type as? WeaponType)?.twoHander != true && offhand?.type?.allowParry == true)
+    }
 
 interface Localizable {
     val name: String

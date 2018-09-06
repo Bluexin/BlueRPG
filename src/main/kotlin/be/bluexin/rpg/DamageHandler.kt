@@ -17,13 +17,14 @@
 
 package be.bluexin.rpg
 
-import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.ItemMeleeWeapon
 import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.SecondaryStat
 import be.bluexin.rpg.stats.get
 import be.bluexin.rpg.util.RNG
+import be.bluexin.rpg.util.allowBlock
+import be.bluexin.rpg.util.allowParry
 import be.bluexin.saomclib.capabilities.getPartyCapability
 import com.teamwizardry.librarianlib.features.config.ConfigIntRange
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
@@ -172,12 +173,12 @@ object DamageHandler {
         Change damage based on armor, dodge and whatnot.
         As well as life/mana steal.
          */
-        // TODO: life/mana steal on non-players
+        var damage = event.amount.toDouble()
         val target = event.entityLiving
+        val time = target.world.totalWorldTime
+        val attacker = event.source.trueSource as? EntityLivingBase
         if (!event.source.isUnblockable && target is EntityPlayer) {
-            val attacker = event.source.trueSource as? EntityLivingBase
             val tags = target.entityData
-            val time = target.world.totalWorldTime
 
             if (tags.getLong("bluerpg:reflectcd") <= time - reflectCD && RNG.nextDouble() <= target[SecondaryStat.REFLECT]) {
                 event.isCanceled = true
@@ -188,10 +189,7 @@ object DamageHandler {
                 return
             }
 
-            val mainhand = target.heldItemMainhand.item as? IRPGGear
-            val offhand = target.heldItemOffhand.item as? IRPGGear
-
-            if ((mainhand?.type?.allowBlock == true || offhand?.type?.allowBlock == true) && tags.getLong("bluerpg:blockcd") <= time - blockCD && RNG.nextDouble() <= target[SecondaryStat.BLOCK]) {
+            if (target.allowBlock && tags.getLong("bluerpg:blockcd") <= time - blockCD && RNG.nextDouble() <= target[SecondaryStat.BLOCK]) {
                 event.isCanceled = true
                 tags.setLong("bluerpg:blockcd", time)
                 val pct = event.amount / target.maxHealth
@@ -209,9 +207,7 @@ object DamageHandler {
                 return
             }
 
-            var damage = event.amount.toDouble()
-
-            if ((mainhand?.type?.allowBlock == true || offhand?.type?.allowBlock == true) && tags.getLong("bluerpg:parrycd") <= time - parryCD && RNG.nextDouble() <= target[SecondaryStat.PARRY]) {
+            if (target.allowParry && tags.getLong("bluerpg:parrycd") <= time - parryCD && RNG.nextDouble() <= target[SecondaryStat.PARRY]) {
                 event.isCanceled = true
                 tags.setLong("bluerpg:parrycd", time)
                 damage *= 0.75
@@ -221,31 +217,34 @@ object DamageHandler {
 
             if (attacker is EntityPlayer) {
                 damage *= 1.0 - target[SecondaryStat.RESISTANCE]
-                val atags = attacker.entityData
+            }
+        }
 
-                if (atags.getLong("bluerpg:lifestealcd") <= time - lifeStealCD && RNG.nextDouble() <= attacker[SecondaryStat.LIFE_STEAL_CHANCE]) {
-                    attacker.heal((damage * attacker[SecondaryStat.LIFE_STEAL]).toFloat())
-                    atags.setLong("bluerpg:lifestealcd", time)
-                }
+        if (attacker is EntityPlayer) {
+            val atags = attacker.entityData
 
-                if (atags.getLong("bluerpg:manastealcd") <= time - manaStealCD && RNG.nextDouble() <= attacker[SecondaryStat.MANA_LEECH_CHANCE]) {
-                    // TODO: steal mana
-                    atags.setLong("bluerpg:manastealcd", time)
-                }
-
-                if (atags.getLong("bluerpg:rootcd") <= time - rootCD && RNG.nextDouble() <= attacker[SecondaryStat.ROOT]) {
-                    target.addPotionEffect(PotionEffect(slow, 60, 98))
-                    atags.setLong("bluerpg:rootcd", time)
-                }
-
-                if (atags.getLong("bluerpg:slowcd") <= time - slowCD && RNG.nextDouble() <= attacker[SecondaryStat.SLOW]) {
-                    target.addPotionEffect(PotionEffect(slow, 100, 1))
-                    atags.setLong("bluerpg:slowcd", time)
-                }
+            if (atags.getLong("bluerpg:lifestealcd") <= time - lifeStealCD && RNG.nextDouble() <= attacker[SecondaryStat.LIFE_STEAL_CHANCE]) {
+                attacker.heal((damage * attacker[SecondaryStat.LIFE_STEAL]).toFloat())
+                atags.setLong("bluerpg:lifestealcd", time)
             }
 
-            event.amount = damage.toFloat()
+            if (atags.getLong("bluerpg:manastealcd") <= time - manaStealCD && RNG.nextDouble() <= attacker[SecondaryStat.MANA_LEECH_CHANCE]) {
+                // TODO: steal mana
+                atags.setLong("bluerpg:manastealcd", time)
+            }
+
+            if (atags.getLong("bluerpg:rootcd") <= time - rootCD && RNG.nextDouble() <= attacker[SecondaryStat.ROOT]) {
+                target.addPotionEffect(PotionEffect(slow, 60, 98))
+                atags.setLong("bluerpg:rootcd", time)
+            }
+
+            if (atags.getLong("bluerpg:slowcd") <= time - slowCD && RNG.nextDouble() <= attacker[SecondaryStat.SLOW]) {
+                target.addPotionEffect(PotionEffect(slow, 100, 1))
+                atags.setLong("bluerpg:slowcd", time)
+            }
         }
+
+        event.amount = damage.toFloat()
     }
 
     private val slow by lazy { Potion.getPotionFromResourceLocation("slowness")!! }

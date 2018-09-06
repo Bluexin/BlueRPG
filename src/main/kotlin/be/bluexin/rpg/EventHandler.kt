@@ -17,7 +17,9 @@
 
 package be.bluexin.rpg
 
+import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.WeaponAttribute
+import be.bluexin.rpg.gear.WeaponType
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
@@ -25,15 +27,14 @@ import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.ai.attributes.IAttributeInstance
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.inventory.EntityEquipmentSlot
+import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.text.TextComponentTranslation
 import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.event.ServerChatEvent
 import net.minecraftforge.event.entity.EntityEvent
-import net.minecraftforge.event.entity.living.LivingAttackEvent
-import net.minecraftforge.event.entity.living.LivingDamageEvent
-import net.minecraftforge.event.entity.living.LivingHurtEvent
-import net.minecraftforge.event.entity.living.LivingKnockBackEvent
+import net.minecraftforge.event.entity.living.*
 import net.minecraftforge.event.entity.player.CriticalHitEvent
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.fml.common.eventhandler.Event
@@ -52,6 +53,30 @@ object CommonEventHandler {
             if (event.player.health > event.player.maxHealth) event.player.health = event.player.maxHealth
             else event.player.heal(event.player[SecondaryStat.REGEN].toFloat() / 20f)
             // TODO: same for mana
+        }
+    }
+
+    @SubscribeEvent
+    fun changeGear(event: LivingEquipmentChangeEvent) {
+        @Suppress("NON_EXHAUSTIVE_WHEN")
+        when (event.slot) {
+            EntityEquipmentSlot.MAINHAND -> {
+                val offHand = event.entityLiving.heldItemOffhand
+                if (!offHand.isEmpty) {
+                    val from = (event.from.item as? IRPGGear)?.type as? WeaponType
+                    val to = (event.to.item as? IRPGGear)?.type as? WeaponType
+                    if (to?.twoHander == true && from?.twoHander != true) {
+                        offHand.setTagInfo("bluerpg:twohandflag", NBTTagByte(1))
+                    } else if (from?.twoHander == true && to?.twoHander != true) {
+                        offHand.setTagInfo("bluerpg:twohandflag", NBTTagByte(0))
+                    }
+                }
+            }
+            EntityEquipmentSlot.OFFHAND -> {
+                val mainhand = (event.entityLiving.heldItemMainhand.item as? IRPGGear)?.type as? WeaponType
+                val to = event.to
+                if (to.item is IRPGGear) to.setTagInfo("bluerpg:twohandflag", NBTTagByte(if (mainhand?.twoHander == true) 1 else 0))
+            }
         }
     }
 

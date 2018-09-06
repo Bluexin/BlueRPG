@@ -167,7 +167,11 @@ enum class ArmorType(
     }
 }
 
-enum class MeleeWeaponType(override val allowBlock: Boolean = false, override val allowParry: Boolean = false, val attributes: Array<WAValue> = arrayOf()) : GearType {
+interface WeaponType: GearType {
+    val twoHander: Boolean
+}
+
+enum class MeleeWeaponType(override val twoHander: Boolean = false, override val allowBlock: Boolean = false, override val allowParry: Boolean = false, val attributes: Array<WAValue> = arrayOf()) : WeaponType {
     MACE(attributes = arrayOf(
             WeaponAttribute.KNOCKBACK to 0.4,
             WeaponAttribute.ATTACK_SPEED to -2.4,
@@ -182,16 +186,16 @@ enum class MeleeWeaponType(override val allowBlock: Boolean = false, override va
             WeaponAttribute.ATTACK_SPEED to -3.2,
             WeaponAttribute.RANGE to 3.0
     )),
-    SWORD_2H(allowBlock = true, attributes = arrayOf(
+    SWORD_2H(twoHander = true, allowBlock = true, attributes = arrayOf(
             WeaponAttribute.ANGLE to 90.0,
             WeaponAttribute.ATTACK_SPEED to -3.2,
             WeaponAttribute.RANGE to 5.0
     )),
-    SPEAR(attributes = arrayOf(
+    SPEAR(twoHander = true, attributes = arrayOf(
             WeaponAttribute.ATTACK_SPEED to -2.4,
             WeaponAttribute.RANGE to 6.0
     )),
-    BO(allowParry = true, attributes = arrayOf(
+    BO(twoHander = true, allowParry = true, attributes = arrayOf(
             WeaponAttribute.ATTACK_SPEED to -1.6,
             WeaponAttribute.RANGE to 6.0
     ));
@@ -204,8 +208,8 @@ enum class MeleeWeaponType(override val allowBlock: Boolean = false, override va
     }
 }
 
-enum class RangedWeaponType(val entity: (World, EntityLivingBase) -> RpgProjectile, val sound: SoundEvent? = null) : GearType {
-    BOW(::EntityRpgArrow),
+enum class RangedWeaponType(val entity: (World, EntityLivingBase) -> RpgProjectile, override val twoHander: Boolean = false, val sound: SoundEvent? = null) : WeaponType {
+    BOW(::EntityRpgArrow, twoHander = true),
     WAND(::EntityWandProjectile);
 
     override fun invoke(i: Int) = ItemRangedWeapon[this]
