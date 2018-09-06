@@ -18,10 +18,12 @@
 package be.bluexin.rpg
 
 import be.bluexin.rpg.gear.IRPGGear
+import be.bluexin.rpg.gear.ItemMeleeWeapon
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.SecondaryStat
 import be.bluexin.rpg.stats.get
 import be.bluexin.rpg.util.RNG
+import be.bluexin.saomclib.capabilities.getPartyCapability
 import com.teamwizardry.librarianlib.features.config.ConfigIntRange
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
 import net.minecraft.entity.EntityLivingBase
@@ -34,6 +36,7 @@ import net.minecraft.util.EntityDamageSourceIndirect
 import net.minecraft.util.text.ITextComponent
 import net.minecraftforge.event.entity.living.LivingAttackEvent
 import net.minecraftforge.event.entity.living.LivingDamageEvent
+import net.minecraftforge.event.entity.living.LivingHurtEvent
 import kotlin.math.max
 
 object DamageHandler {
@@ -95,10 +98,12 @@ object DamageHandler {
                 val player = source.immediateSource as EntityPlayer
                 var damage = event.amount.toDouble()
 
-                val minD = player[FixedStat.BASE_DAMAGE]
-                val maxD = player[FixedStat.MAX_DAMAGE]
-                val r = max(1.0, maxD - minD)
-                damage += if (minD == maxD) minD else RNG.nextDouble() * r + minD
+                if (player.heldItemMainhand.item is ItemMeleeWeapon) {
+                    val minD = player[FixedStat.BASE_DAMAGE]
+                    val maxD = player[FixedStat.MAX_DAMAGE]
+                    val r = max(1.0, maxD - minD)
+                    damage += (if (minD == maxD) minD else RNG.nextDouble() * r + minD) * player.entityData.getFloat("bluerpg:lastweaponcd")
+                }
 
                 if (RNG.nextDouble() <= player[SecondaryStat.CRIT_CHANCE]) {
                     damage *= 1.0 + player[SecondaryStat.CRIT_DAMAGE]
@@ -111,12 +116,20 @@ object DamageHandler {
         }
     }
 
+    operator fun invoke(event: LivingHurtEvent) {
+        val attacker = event.source.trueSource as? EntityPlayer ?: return
+        val target = event.entityLiving as? EntityPlayer ?: return
+
+        if (attacker.getPartyCapability().party?.isMember(target) == true) event.isCanceled = true
+    }
+
     operator fun invoke(event: LivingDamageEvent) {
         /*
         An entity was hit.
         Change damage based on armor, dodge and whatnot.
         As well as life/mana steal.
          */
+        // TODO: life/mana steal on non-players
         val target = event.entityLiving
         if (!event.source.isUnblockable && target is EntityPlayer) {
             val attacker = event.source.trueSource as? EntityLivingBase

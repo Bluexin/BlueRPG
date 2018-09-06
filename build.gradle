@@ -28,9 +28,6 @@ minecraft {
 reobf {
     jar {
         extraLines += ["PK: gnu/jel saoui/shade/gnu/jel"]
-        extraLines += ["PK: com/helger saoui/shade/com/helger"]
-//        extraLines += ["PK: edu/umd saoui/shade/edu/umd"]
-        extraLines += ["PK: org/slf4j saoui/shade/org/slf4j"]
     }
 }
 

@@ -17,7 +17,7 @@
 
 package be.bluexin.rpg.util
 
-import com.google.common.collect.HashMultimap
+import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.Event
@@ -37,7 +37,7 @@ data class Roll(val min: Int, val max: Int) {
 
 fun <T> Array<T>.random(): T = this[RNG.nextInt(this.size)]
 
-operator fun <K, V> HashMultimap<K, V>.set(key: K, value: V) {
+operator fun <K, V> Multimap<K, V>.set(key: K, value: V) {
     this.put(key, value)
 }
 

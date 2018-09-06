@@ -18,6 +18,7 @@
 package be.bluexin.rpg
 
 import be.bluexin.rpg.containers.ContainerEditor
+import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.stats.*
 import com.teamwizardry.librarianlib.features.autoregister.PacketRegister
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
@@ -73,7 +74,7 @@ class PacketSetEditorStats(pos: BlockPos, stats: StatCapability?) : PacketBase()
 }
 
 @PacketRegister(Side.SERVER)
-class PacketSaveLoadEditorItem(pos: BlockPos, saving: Boolean): PacketBase() {
+class PacketSaveLoadEditorItem(pos: BlockPos, saving: Boolean) : PacketBase() {
     @Save
     var saving = saving
         internal set
@@ -94,4 +95,22 @@ class PacketSaveLoadEditorItem(pos: BlockPos, saving: Boolean): PacketBase() {
         }
     }
 
+}
+
+@PacketRegister(Side.SERVER)
+class PacketAttack(entityID: Int) : PacketBase() {
+    @Save
+    var entityID = entityID
+        internal set
+
+    @Suppress("unused")
+    internal constructor() : this(0)
+
+    override fun handle(ctx: MessageContext) {
+        val player = ctx.serverHandler.player
+        val target = player.world.getEntityByID(entityID) ?: return
+        val reach = player[WeaponAttribute.RANGE]
+        if (player.positionVector.squareDistanceTo(target.positionVector) > reach * reach) return
+        player.attackTargetEntityWithCurrentItem(target)
+    }
 }

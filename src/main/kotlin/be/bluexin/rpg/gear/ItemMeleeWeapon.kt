@@ -17,11 +17,19 @@
 
 package be.bluexin.rpg.gear
 
+import be.bluexin.rpg.PacketAttack
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.GearStats
+import be.bluexin.rpg.stats.get
+import be.bluexin.rpg.util.set
+import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.base.item.ItemModSword
 import com.teamwizardry.librarianlib.features.kotlin.localize
+import com.teamwizardry.librarianlib.features.network.PacketHandler
+import com.teamwizardry.librarianlib.features.utilities.RaycastUtils
 import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.entity.Entity
+import net.minecraft.entity.ai.attributes.AttributeModifier
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.Item
@@ -33,7 +41,7 @@ import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 
 class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) : ItemModSword(type.key, ToolMaterial.IRON), IRPGGear {
-
+    // Could use EntityPlayer.REACH_DISTANCE and SharedMonsterAttributes.ATTACK_SPEED attributes to implement mechanics
     companion object {
         private val pieces = Array(MeleeWeaponType.values().size) { typeIdx ->
             val type = MeleeWeaponType.values()[typeIdx]
@@ -43,8 +51,15 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) : 
         operator fun get(type: MeleeWeaponType) = pieces[type.ordinal]
     }
 
-    override fun getAttributeModifiers(slot: EntityEquipmentSlot, stack: ItemStack) =
-            super<IRPGGear>.getAttributeModifiers(slot, stack)
+    override fun getAttributeModifiers(slot: EntityEquipmentSlot, stack: ItemStack): Multimap<String, AttributeModifier> {
+        val m = super<IRPGGear>.getAttributeModifiers(slot, stack)
+
+        for ((stat, value) in type.attributes) {
+            m[stat.attribute.name] = AttributeModifier(stat.uuid[0], stat.attribute.name, value, stat.operation)
+        }
+
+        return m
+    }
 
     override fun initCapabilities(stack: ItemStack, nbt: NBTTagCompound?) =
             super<IRPGGear>.initCapabilities(stack, nbt)
@@ -80,6 +95,33 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) : 
 
     override fun getShareTag(): Boolean {
         return true
+    }
+
+    override fun onLeftClickEntity(stack: ItemStack, player: EntityPlayer, entity: Entity): Boolean {
+        return if (player.world.isRemote) {
+            val aoeRadius = player[WeaponAttribute.ANGLE].toInt()
+            if (aoeRadius > 0) {
+                val reach = player[WeaponAttribute.RANGE]
+                val yaw = player.rotationYaw
+                for (i in (yaw.toInt() - aoeRadius / 2)..(yaw.toInt() + aoeRadius / 2) step 15) {
+                    player.rotationYaw = i.toFloat()
+                    val t = RaycastUtils.getEntityLookedAt(player, reach)
+                    if (t != null) {
+                        PacketHandler.NETWORK.sendToServer(PacketAttack(t.entityId))
+                    }
+                }
+                player.rotationYaw = yaw
+            }
+            true
+        } else {
+            val t = player.entityData
+            val lastTime = t.getLong("bluerpg:weapontime")
+            if (lastTime != player.world.totalWorldTime) {
+                t.setLong("bluerpg:weapontime", player.world.totalWorldTime)
+                t.setFloat("bluerpg:lastweaponcd", player.getCooledAttackStrength(0f))
+            }
+            super.onLeftClickEntity(stack, player, entity)
+        }
     }
 
     override val item: Item

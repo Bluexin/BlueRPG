@@ -17,9 +17,12 @@
 
 package be.bluexin.rpg
 
+import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.stats.*
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.kotlin.localize
+import com.teamwizardry.librarianlib.features.network.PacketHandler
+import com.teamwizardry.librarianlib.features.utilities.RaycastUtils
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.ai.attributes.IAttributeInstance
 import net.minecraft.entity.player.EntityPlayer
@@ -29,6 +32,9 @@ import net.minecraftforge.event.ServerChatEvent
 import net.minecraftforge.event.entity.EntityEvent
 import net.minecraftforge.event.entity.living.LivingAttackEvent
 import net.minecraftforge.event.entity.living.LivingDamageEvent
+import net.minecraftforge.event.entity.living.LivingHurtEvent
+import net.minecraftforge.event.entity.living.LivingKnockBackEvent
+import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.relauncher.Side
@@ -61,6 +67,9 @@ object CommonEventHandler {
             FixedStat.values().forEach {
                 if (it.shouldRegister) m.registerAttribute(it.attribute)
             }
+            WeaponAttribute.values().forEach {
+                if (it.shouldRegister) m.registerAttribute(it.attribute)
+            }
         }
     }
 
@@ -68,7 +77,16 @@ object CommonEventHandler {
     fun hitEntity(event: LivingAttackEvent) = DamageHandler(event)
 
     @SubscribeEvent
+    fun livingHurt(event: LivingHurtEvent) = DamageHandler(event)
+
+    @SubscribeEvent
     fun entityHit(event: LivingDamageEvent) = DamageHandler(event)
+
+    @SubscribeEvent
+    fun knockBack(event: LivingKnockBackEvent) {
+        val a = event.attacker as? EntityPlayer ?: return
+        event.strength += a[WeaponAttribute.KNOCKBACK].toFloat() * a.entityData.getFloat("bluerpg:lastweaponcd")
+    }
 }
 
 @SideOnly(Side.CLIENT)
@@ -79,9 +97,31 @@ object ClientEventHandler {
         event.left.add("(temporary)")
         event.left.addAll(PrimaryStat.values().map {
             val att: IAttributeInstance? = player.getEntityAttribute(it.attribute)
-            val base = att?.baseValue?.toInt()?: 0
+            val base = att?.baseValue?.toInt() ?: 0
             "rpg.display.stat".localize(it.longName(), "$base +${(att?.attributeValue?.toInt() ?: 0) - base}")
         })
+    }
+
+    @SubscribeEvent
+    fun hitEmpty(event: PlayerInteractEvent.LeftClickEmpty) {
+        val player = event.entityPlayer
+        val reach = player[WeaponAttribute.RANGE]
+        val target = RaycastUtils.getEntityLookedAt(event.entityPlayer, reach)
+        if (target != null) PacketHandler.NETWORK.sendToServer(PacketAttack(target.entityId))
+        else {
+            val aoeRadius = player[WeaponAttribute.ANGLE].toInt()
+            if (aoeRadius > 0) {
+                val yaw = player.rotationYaw
+                for (i in (yaw.toInt() - aoeRadius / 2)..(yaw.toInt() + aoeRadius / 2) step 15) {
+                    player.rotationYaw = i.toFloat()
+                    val t = RaycastUtils.getEntityLookedAt(player, reach)
+                    if (t != null) {
+                        PacketHandler.NETWORK.sendToServer(PacketAttack(t.entityId))
+                    }
+                }
+                player.rotationYaw = yaw
+            }
+        }
     }
 }
 

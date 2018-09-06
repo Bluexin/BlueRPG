@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg.gear
 
+import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.gear.Rarity.*
 import be.bluexin.rpg.stats.PrimaryStat
 import be.bluexin.rpg.stats.SecondaryStat
@@ -24,6 +25,9 @@ import be.bluexin.rpg.stats.Stat
 import be.bluexin.rpg.util.Localizable
 import be.bluexin.rpg.util.RNG
 import com.teamwizardry.librarianlib.features.kotlin.plus
+import net.minecraft.entity.SharedMonsterAttributes
+import net.minecraft.entity.ai.attributes.IAttribute
+import net.minecraft.entity.ai.attributes.RangedAttribute
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.ItemArmor
 import net.minecraft.util.text.TextFormatting
@@ -157,13 +161,34 @@ enum class ArmorType(
     }
 }
 
-enum class MeleeWeaponType(override val allowBlock: Boolean = false, override val allowParry: Boolean = false) : GearType {
-    MACE,
-    SWORD(allowParry = true),
-    AXE,
-    SWORD_2H(allowBlock = true),
-    SPEAR,
-    BO(allowParry = true);
+enum class MeleeWeaponType(override val allowBlock: Boolean = false, override val allowParry: Boolean = false, val attributes: Array<WAValue> = arrayOf()) : GearType {
+    MACE(attributes = arrayOf(
+            WeaponAttribute.KNOCKBACK to 0.4,
+            WeaponAttribute.ATTACK_SPEED to -2.4,
+            WeaponAttribute.RANGE to 3.0
+    )),
+    SWORD(allowParry = true, attributes = arrayOf(
+            WeaponAttribute.ATTACK_SPEED to -2.4,
+            WeaponAttribute.RANGE to 3.0
+    )),
+    AXE(attributes = arrayOf(
+            WeaponAttribute.ANGLE to 120.0,
+            WeaponAttribute.ATTACK_SPEED to -3.2,
+            WeaponAttribute.RANGE to 3.0
+    )),
+    SWORD_2H(allowBlock = true, attributes = arrayOf(
+            WeaponAttribute.ANGLE to 90.0,
+            WeaponAttribute.ATTACK_SPEED to -3.2,
+            WeaponAttribute.RANGE to 5.0
+    )),
+    SPEAR(attributes = arrayOf(
+            WeaponAttribute.ATTACK_SPEED to -2.4,
+            WeaponAttribute.RANGE to 6.0
+    )),
+    BO(allowParry = true, attributes = arrayOf(
+            WeaponAttribute.ATTACK_SPEED to -1.6,
+            WeaponAttribute.RANGE to 6.0
+    ));
 
     override fun invoke(i: Int) = ItemMeleeWeapon[this]
 
@@ -196,6 +221,28 @@ enum class OffHandType(override val allowBlock: Boolean = false, override val al
         @Suppress("LeakingThis")
         GearTypeGenerator += this
     }
+}
+
+data class WAValue(val attribute: WeaponAttribute, val value: Double)
+
+infix fun WeaponAttribute.to(value: Double) = WAValue(this, value)
+
+enum class WeaponAttribute(uuid: String, attribute: IAttribute? = null) : Stat {
+    RANGE("d11ea045-59f1-4318-9388-d50355a544e2"),
+    ANGLE("18be9aac-8a1f-4e31-a386-806843161d8d"),
+    KNOCKBACK("f2dac0e3-60df-4c8e-934c-25bf2e4b1dac"),
+    ATTACK_SPEED("196414ec-f1c4-421f-ae1d-0a1b9742ddfe", SharedMonsterAttributes.ATTACK_SPEED);
+
+    override val uuid = arrayOf(UUID.fromString(uuid))
+
+    override val shouldRegister = attribute == null
+
+    override val attribute: IAttribute by lazy {
+        attribute
+                ?: RangedAttribute(null, "${BlueRPG.MODID}.${this.name.toLowerCase()}", baseValue, 0.0, Double.MAX_VALUE).setShouldWatch(true)
+    }
+
+    override fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot) = 0
 }
 
 enum class Binding : Localizable {
