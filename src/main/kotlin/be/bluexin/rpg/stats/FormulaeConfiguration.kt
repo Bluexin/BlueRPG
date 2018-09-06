@@ -33,7 +33,6 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import java.io.*
 import java.lang.reflect.Type
 
-
 object FormulaeConfiguration {
 
     operator fun invoke(stat: Stat, ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot): Roll {
@@ -54,11 +53,19 @@ object FormulaeConfiguration {
 
     private val statFormulae = mutableMapOf<Key, MutableMap<Stat, Range>>()
 
+    private lateinit var f: File
+
     internal fun preInit(event: FMLPreInitializationEvent) = try {
         val dir = File(event.modConfigurationDirectory, BlueRPG.MODID)
         if (!dir.exists()) dir.mkdir()
         if (!dir.isDirectory) throw IllegalStateException("$dir exists and is not a directory")
+        f = File(dir, "stat_formulae.json")
+        reload()
+    } catch (e: Exception) {
+        BlueRPG.LOGGER.warn("Unable to load formulae file", e)
+    }
 
+    fun reload() = try {
         val gson = GsonBuilder()
                 .setPrettyPrinting()
                 .registerTypeAdapter(Stat::class.java, StatDeserializer)
@@ -66,7 +73,6 @@ object FormulaeConfiguration {
                 .registerTypeAdapter(ExpressionWrapper::class.java, ExpressionDeserializer)
                 .create()
 
-        val f = File(dir, "stat_formulae.json")
         if (!f.exists()) {
             var s = MeleeWeaponType.values().asSequence().map { Key(it) } +
                     RangedWeaponType.values().asSequence().map { Key(it) } +
