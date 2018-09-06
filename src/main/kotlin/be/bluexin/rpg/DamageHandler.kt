@@ -19,6 +19,7 @@ package be.bluexin.rpg
 
 import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.ItemMeleeWeapon
+import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.SecondaryStat
 import be.bluexin.rpg.stats.get
@@ -26,6 +27,9 @@ import be.bluexin.rpg.util.RNG
 import be.bluexin.saomclib.capabilities.getPartyCapability
 import com.teamwizardry.librarianlib.features.config.ConfigIntRange
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
+import com.teamwizardry.librarianlib.features.network.PacketHandler
+import com.teamwizardry.librarianlib.features.utilities.RaycastUtils
+import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.potion.Potion
@@ -37,6 +41,9 @@ import net.minecraft.util.text.ITextComponent
 import net.minecraftforge.event.entity.living.LivingAttackEvent
 import net.minecraftforge.event.entity.living.LivingDamageEvent
 import net.minecraftforge.event.entity.living.LivingHurtEvent
+import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.relauncher.SideOnly
+import java.util.*
 import kotlin.math.max
 
 object DamageHandler {
@@ -80,6 +87,35 @@ object DamageHandler {
     @ConfigProperty("cooldowns", "(in ticks) defaults and range are skewed ;-;")
     var slowCD = 100
         internal set
+
+    @SideOnly(Side.CLIENT)
+    fun handleRange(player: EntityPlayer) {
+        val reach = player[WeaponAttribute.RANGE]
+        val target = RaycastUtils.getEntityLookedAt(player, reach)
+        if (target != null) PacketHandler.NETWORK.sendToServer(PacketAttack(target.entityId))
+        else handleAoe(player)
+    }
+
+    @SideOnly(Side.CLIENT)
+    fun handleAoe(player: EntityPlayer) {
+        val aoeRadius = player[WeaponAttribute.ANGLE].toInt()
+        val ents = LinkedList<Entity>()
+        if (aoeRadius > 0) {
+            val reach = player[WeaponAttribute.RANGE]
+            val yaw = player.rotationYaw
+            for (i in (yaw.toInt() - aoeRadius / 2)..(yaw.toInt() + aoeRadius / 2) step 15) {
+                player.rotationYaw = i.toFloat()
+                val t = RaycastUtils.getEntityLookedAt(player, reach)
+                if (t != null) {
+                    ents += t
+                }
+            }
+            player.rotationYaw = yaw
+        }
+        ents.forEach {
+            PacketHandler.NETWORK.sendToServer(PacketAttack(it.entityId))
+        }
+    }
 
     operator fun invoke(event: LivingAttackEvent) {
         /*

@@ -22,8 +22,6 @@ import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.kotlin.localize
-import com.teamwizardry.librarianlib.features.network.PacketHandler
-import com.teamwizardry.librarianlib.features.utilities.RaycastUtils
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.ai.attributes.IAttributeInstance
 import net.minecraft.entity.player.EntityPlayer
@@ -112,26 +110,7 @@ object ClientEventHandler {
     }
 
     @SubscribeEvent
-    fun hitEmpty(event: PlayerInteractEvent.LeftClickEmpty) {
-        val player = event.entityPlayer
-        val reach = player[WeaponAttribute.RANGE]
-        val target = RaycastUtils.getEntityLookedAt(event.entityPlayer, reach)
-        if (target != null) PacketHandler.NETWORK.sendToServer(PacketAttack(target.entityId))
-        else {
-            val aoeRadius = player[WeaponAttribute.ANGLE].toInt()
-            if (aoeRadius > 0) {
-                val yaw = player.rotationYaw
-                for (i in (yaw.toInt() - aoeRadius / 2)..(yaw.toInt() + aoeRadius / 2) step 15) {
-                    player.rotationYaw = i.toFloat()
-                    val t = RaycastUtils.getEntityLookedAt(player, reach)
-                    if (t != null) {
-                        PacketHandler.NETWORK.sendToServer(PacketAttack(t.entityId))
-                    }
-                }
-                player.rotationYaw = yaw
-            }
-        }
-    }
+    fun hitEmpty(event: PlayerInteractEvent.LeftClickEmpty) = DamageHandler.handleRange(event.entityPlayer)
 
     @SideOnly(Side.CLIENT)
     @SubscribeEvent

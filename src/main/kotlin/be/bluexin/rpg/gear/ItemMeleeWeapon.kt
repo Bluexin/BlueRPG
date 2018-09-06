@@ -17,16 +17,13 @@
 
 package be.bluexin.rpg.gear
 
-import be.bluexin.rpg.PacketAttack
+import be.bluexin.rpg.DamageHandler
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.GearStats
-import be.bluexin.rpg.stats.get
 import be.bluexin.rpg.util.set
 import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.base.item.ItemModSword
 import com.teamwizardry.librarianlib.features.kotlin.localize
-import com.teamwizardry.librarianlib.features.network.PacketHandler
-import com.teamwizardry.librarianlib.features.utilities.RaycastUtils
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.Entity
 import net.minecraft.entity.ai.attributes.AttributeModifier
@@ -99,20 +96,8 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) : 
 
     override fun onLeftClickEntity(stack: ItemStack, player: EntityPlayer, entity: Entity): Boolean {
         return if (player.world.isRemote) {
-            val aoeRadius = player[WeaponAttribute.ANGLE].toInt()
-            if (aoeRadius > 0) {
-                val reach = player[WeaponAttribute.RANGE]
-                val yaw = player.rotationYaw
-                for (i in (yaw.toInt() - aoeRadius / 2)..(yaw.toInt() + aoeRadius / 2) step 15) {
-                    player.rotationYaw = i.toFloat()
-                    val t = RaycastUtils.getEntityLookedAt(player, reach)
-                    if (t != null) {
-                        PacketHandler.NETWORK.sendToServer(PacketAttack(t.entityId))
-                    }
-                }
-                player.rotationYaw = yaw
-            }
-            true
+            DamageHandler.handleAoe(player)
+            return true
         } else {
             val t = player.entityData
             val lastTime = t.getLong("bluerpg:weapontime")
