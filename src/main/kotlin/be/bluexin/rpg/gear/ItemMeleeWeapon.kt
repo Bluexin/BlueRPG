@@ -97,7 +97,9 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) : 
 
     override fun getMaxDamage(stack: ItemStack) = super<IRPGGear>.getMaxDamage(stack)
 
-    override fun setDamage(stack: ItemStack, damage: Int) = super<IRPGGear>.setDamage(stack, damage)
+    override fun setDamage(stack: ItemStack, damage: Int) {
+        if (stack.stats?.generated == true) super.setDamage(stack, damage)
+    }
 
     override fun onLeftClickEntity(stack: ItemStack, player: EntityPlayer, entity: Entity): Boolean {
         return if (player.world.isRemote) {

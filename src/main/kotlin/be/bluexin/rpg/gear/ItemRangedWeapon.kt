@@ -17,10 +17,7 @@
 
 package be.bluexin.rpg.gear
 
-import be.bluexin.rpg.stats.FixedStat
-import be.bluexin.rpg.stats.GearStats
-import be.bluexin.rpg.stats.SecondaryStat
-import be.bluexin.rpg.stats.get
+import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.RNG
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.base.item.ItemModBow
@@ -100,7 +97,9 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
 
     override fun getMaxDamage(stack: ItemStack) = super<IRPGGear>.getMaxDamage(stack)
 
-    override fun setDamage(stack: ItemStack, damage: Int) = super<IRPGGear>.setDamage(stack, damage)
+    override fun setDamage(stack: ItemStack, damage: Int) {
+        if (stack.stats?.generated == true) super.setDamage(stack, damage)
+    }
 
     override val item: Item
         get() = this

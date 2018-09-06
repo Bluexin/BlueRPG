@@ -19,6 +19,7 @@ package be.bluexin.rpg.gear
 
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.GearStats
+import be.bluexin.rpg.stats.stats
 import com.teamwizardry.librarianlib.features.base.item.ItemModArmor
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
@@ -78,7 +79,9 @@ class ItemArmor private constructor(override val type: ArmorType, material: Armo
 
     override fun getMaxDamage(stack: ItemStack) = super<IRPGGear>.getMaxDamage(stack)
 
-    override fun setDamage(stack: ItemStack, damage: Int) = super<IRPGGear>.setDamage(stack, damage)
+    override fun setDamage(stack: ItemStack, damage: Int) {
+        if (stack.stats?.generated == true) super.setDamage(stack, damage)
+    }
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
