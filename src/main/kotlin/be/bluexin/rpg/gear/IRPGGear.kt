@@ -101,8 +101,14 @@ interface IRPGGear { // TODO: use ISpecialArmor
             tooltip += spacer
             tooltip += if (stats.bound != null) "rpg.tooltip.bound".localize()
             else "rpg.tooltip.binding".localize(stats.binding.localized)
-            // TODO: coloring on durability
-            tooltip += "rpg.tooltip.durability".localize(stack.maxDamage - stack.itemDamage, stack.maxDamage)
+            val d = if (stack.maxDamage > 0) ((stack.maxDamage - stack.itemDamage) / stack.maxDamage.toFloat()) else 0f
+            tooltip += "rpg.tooltip.durability.${
+            when {
+                d < 0.25f -> "low"
+                d < 0.50f -> "medium"
+                else -> "high"
+            }
+            }".localize(stack.maxDamage - stack.itemDamage, stack.maxDamage)
         }
     }
 

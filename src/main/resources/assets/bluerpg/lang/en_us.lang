@@ -54,7 +54,9 @@ rpg.tooltip.flatstat=%d
 rpg.tooltip.pctstat=%d%%
 rpg.tooltip.bound=§cSoulbound§r
 rpg.tooltip.binding=§c%s§r
-rpg.tooltip.durability=§7Durability §a%1$d/%2$d§r
+rpg.tooltip.durability.high=§7Durability §a%1$d/%2$d§r
+rpg.tooltip.durability.medium=§7Durability §e%1$d/%2$d§r
+rpg.tooltip.durability.low=§7Durability §c%1$d/%2$d§r
 
 # Stats
 rpg.attributepoints.long=Attribute Points
