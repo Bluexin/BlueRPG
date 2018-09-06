@@ -40,6 +40,7 @@ import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
+import net.minecraft.entity.IProjectile
 import net.minecraft.entity.projectile.EntityArrow
 import net.minecraft.item.ItemStack
 import net.minecraft.util.DamageSource
@@ -51,8 +52,14 @@ import net.minecraftforge.fml.relauncher.SideOnly
 import java.awt.Color
 import java.util.*
 
+interface RpgProjectile : IProjectile {
+    var computedDamage: Double
+    var knockback: Int
+    fun shoot(shooter: Entity, pitch: Float, yaw: Float, p_184547_4_: Float, velocity: Float, inaccuracy: Float)
+}
+
 @Savable
-class EntityRpgArrow : ArrowEntityMod {
+class EntityRpgArrow : ArrowEntityMod, RpgProjectile {
 
     @Save
     var initialX = 0.0
@@ -72,6 +79,7 @@ class EntityRpgArrow : ArrowEntityMod {
 
     override fun shoot(shooter: Entity, pitch: Float, yaw: Float, p_184547_4_: Float, velocity: Float, inaccuracy: Float) {
         super.shoot(shooter, pitch, yaw, p_184547_4_, velocity, inaccuracy)
+        isCritical = velocity >= 3f
         initialX = super.posX
         initialY = super.posY
         initialZ = super.posZ
@@ -95,9 +103,21 @@ class EntityRpgArrow : ArrowEntityMod {
             world.removeEntity(this)
         }
     }
+
+    override var computedDamage: Double
+        get() = damage
+        set(value) {
+            damage = value
+        }
+
+    override var knockback: Int = 0
+        set(value) {
+            field = value
+            setKnockbackStrength(knockback)
+        }
 }
 
-class EntityWandProjectile : ThrowableEntityMod {
+class EntityWandProjectile : ThrowableEntityMod, RpgProjectile {
 
     @Save
     var initialX = 0.0
@@ -107,7 +127,10 @@ class EntityWandProjectile : ThrowableEntityMod {
     var initialZ = 0.0
 
     @Save
-    var damage = 0.0
+    override var computedDamage = 0.0
+
+    @Save
+    override var knockback: Int = 0
 
     var caster: EntityLivingBase? = null
 
@@ -154,7 +177,7 @@ class EntityWandProjectile : ThrowableEntityMod {
         val e = result.entityHit
         if (e != null) {
             val s = DamageSource.causeIndirectMagicDamage(this, caster ?: this)
-            e.attackEntityFrom(s, damage.toFloat())
+            e.attackEntityFrom(s, computedDamage.toFloat())
         }
 
         world onServer {

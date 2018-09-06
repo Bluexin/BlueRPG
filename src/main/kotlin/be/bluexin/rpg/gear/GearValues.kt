@@ -18,6 +18,9 @@
 package be.bluexin.rpg.gear
 
 import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.entities.EntityRpgArrow
+import be.bluexin.rpg.entities.EntityWandProjectile
+import be.bluexin.rpg.entities.RpgProjectile
 import be.bluexin.rpg.gear.Rarity.*
 import be.bluexin.rpg.stats.PrimaryStat
 import be.bluexin.rpg.stats.SecondaryStat
@@ -25,13 +28,16 @@ import be.bluexin.rpg.stats.Stat
 import be.bluexin.rpg.util.Localizable
 import be.bluexin.rpg.util.RNG
 import com.teamwizardry.librarianlib.features.kotlin.plus
+import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.attributes.IAttribute
 import net.minecraft.entity.ai.attributes.RangedAttribute
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.ItemArmor
+import net.minecraft.util.SoundEvent
 import net.minecraft.util.text.TextFormatting
 import net.minecraft.util.text.TextFormatting.*
+import net.minecraft.world.World
 import java.util.*
 
 enum class Rarity(
@@ -198,9 +204,9 @@ enum class MeleeWeaponType(override val allowBlock: Boolean = false, override va
     }
 }
 
-enum class RangedWeaponType : GearType {
-    BOW,
-    WAND;
+enum class RangedWeaponType(val entity: (World, EntityLivingBase) -> RpgProjectile, val sound: SoundEvent? = null) : GearType {
+    BOW(::EntityRpgArrow),
+    WAND(::EntityWandProjectile);
 
     override fun invoke(i: Int) = ItemRangedWeapon[this]
 
