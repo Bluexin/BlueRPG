@@ -18,6 +18,7 @@
 package be.bluexin.rpg
 
 import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.SidedProxy
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
@@ -57,6 +58,8 @@ object BlueRPG {
     fun preInit(event: FMLPreInitializationEvent) {
         MinecraftForge.EVENT_BUS.register(CommonEventHandler)
         proxy.preInit(event)
+
+        if (Loader.isModLoaded("customnpcs")) CNPCEventHandler
     }
 
     @Mod.EventHandler

@@ -37,8 +37,7 @@ import net.minecraftforge.event.entity.EntityEvent
 import net.minecraftforge.event.entity.living.*
 import net.minecraftforge.event.entity.player.CriticalHitEvent
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
-import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent
+import net.minecraftforge.event.entity.player.PlayerPickupXpEvent
 import net.minecraftforge.fml.common.eventhandler.Event
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
@@ -133,6 +132,11 @@ object CommonEventHandler {
     @SubscribeEvent
     fun vanillaCrit(event: CriticalHitEvent) {
         event.result = Event.Result.DENY
+    }
+
+    @SubscribeEvent
+    fun pickupXp(event: PlayerPickupXpEvent) {
+        event.entityPlayer.stats.level += event.orb.xpValue.toLong()
     }
 }
 
