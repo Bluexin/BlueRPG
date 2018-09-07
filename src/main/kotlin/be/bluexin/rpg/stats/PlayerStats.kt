@@ -179,6 +179,9 @@ class Level(private val player: WeakReference<EntityPlayer>) {
         } else -1L
         private set
 
+    val progression: Float
+        get() = if (level_a == LEVEL_CAP) 1f else exp_a / toNext.toFloat()
+
     private var lastComputedLevel = 1
 
     operator fun plusAssign(exp: Long) {

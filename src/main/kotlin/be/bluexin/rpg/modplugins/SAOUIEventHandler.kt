@@ -15,21 +15,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package be.bluexin.rpg
+package be.bluexin.rpg.modplugins
 
 import be.bluexin.rpg.stats.stats
+import com.saomc.saoui.api.events.EventInitStatsProvider
+import com.saomc.saoui.api.info.IPlayerStatsProvider
+import net.minecraft.entity.player.EntityPlayer
+import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import noppes.npcs.api.NpcAPI
-import noppes.npcs.api.event.QuestEvent
 
-object CNPCEventHandler {
+object SAOUIEventHandler {
 
     init {
-        NpcAPI.Instance().events().register(this)
+        MinecraftForge.EVENT_BUS.register(this)
     }
 
     @SubscribeEvent
-    fun questComplete(event: QuestEvent.QuestTurnedInEvent) {
-        event.player.mcEntity.stats.level += event.expReward.toLong()
+    fun initStats(event: EventInitStatsProvider) {
+        event.implementation = object : IPlayerStatsProvider {
+
+            private val defaultImpl = event.implementation
+
+            override fun getStatsString(player: EntityPlayer) = defaultImpl.getStatsString(player)
+
+            override fun getLevel(player: EntityPlayer) = player.stats.level.level_a
+
+            override fun getExpPct(player: EntityPlayer) = player.stats.level.progression
+        }
     }
 }
