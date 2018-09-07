@@ -45,28 +45,6 @@ interface IRPGGear { // TODO: use ISpecialArmor
 
     val gearSlot: EntityEquipmentSlot
 
-    /*
-&d&lThe Butt-tailed Spear of doinking   <--- Name
-&8-=[A Level 37 Epic Spear]=-           <--- center it below the name ?
-&7
-&7Normal Damage: &7112-155             <--- Second color will change for element later.
-&7
-&7Level Req:&a 12                       <-- can we get these to be &a if good and &c if not met?
-&7Strength Req:&a 23
-&7
-&a+12 Strength
-&a+11 Intelligence
-&7
-&a+1.23% &7Speed
-&a+2.34% &7Block Chance
-&a+15.25% &7Crit Chance
-&a+1.25% &7Bonus Damage
-&7
-&cBind on Equip    or  &6Soulbound
-&7Durability &a800/800                  <-- can this transition from &a to &e / &c at 50/25% ?
-
-     */
-
     fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
         val stats = stack.stats
         if (stats?.generated != true) tooltip += "rpg.display.notgenerated".localize()
