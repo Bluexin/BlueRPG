@@ -119,10 +119,10 @@ object DamageHandler {
     }
 
     operator fun invoke(event: LivingAttackEvent) {
-        val t = (event.source.trueSource as? EntityLivingBase?)?.combatTracker
-        t?.inCombat = true
-        t?.lastDamageTime = event.source.trueSource?.ticksExisted ?: 0
-        t?.takingDamage = true
+        val tr = (event.source.trueSource as? EntityLivingBase?)?.combatTracker
+        tr?.inCombat = true
+        tr?.lastDamageTime = event.source.trueSource?.ticksExisted ?: 0
+        tr?.takingDamage = true
 
         /*
         We hit entity.
