@@ -55,7 +55,7 @@ import java.util.*
 interface RpgProjectile : IProjectile {
     var computedDamage: Double
     var knockback: Int
-    fun shoot(shooter: Entity, pitch: Float, yaw: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float)
+    fun realShoot(shooter: Entity, pitch: Float, yaw: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float)
 }
 
 @Savable
@@ -77,7 +77,7 @@ class EntityRpgArrow : ArrowEntityMod, RpgProjectile {
         pickupStatus = EntityArrow.PickupStatus.DISALLOWED
     }
 
-    override fun shoot(shooter: Entity, pitch: Float, yaw: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
+    override fun realShoot(shooter: Entity, pitch: Float, yaw: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
         super.shoot(shooter, pitch, yaw, pitchOffset, velocity * 3f, inaccuracy)
         isCritical = velocity >= 1f
         initialX = super.posX
@@ -170,7 +170,7 @@ class EntityWandProjectile : ThrowableEntityMod, RpgProjectile {
         }
     }
 
-    override fun shoot(shooter: Entity, pitch: Float, yaw: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
+    override fun realShoot(shooter: Entity, pitch: Float, yaw: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
         super.shoot(shooter, pitch, yaw, pitchOffset, velocity * 1.5f, inaccuracy)
         initialX = super.posX
         initialY = super.posY
