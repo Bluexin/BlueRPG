@@ -193,11 +193,11 @@ enum class MeleeWeaponType(override val twoHander: Boolean = false, override val
     )),
     SPEAR(twoHander = true, attributes = arrayOf(
             WeaponAttribute.ATTACK_SPEED to -2.4,
-            WeaponAttribute.RANGE to 6.0
+            WeaponAttribute.RANGE to 7.0
     )),
     BO(twoHander = true, allowParry = true, attributes = arrayOf(
             WeaponAttribute.ATTACK_SPEED to -1.6,
-            WeaponAttribute.RANGE to 6.0
+            WeaponAttribute.RANGE to 7.0
     ));
 
     override fun invoke(i: Int) = ItemMeleeWeapon[this]
