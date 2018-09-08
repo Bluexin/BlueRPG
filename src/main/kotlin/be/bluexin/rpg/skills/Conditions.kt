@@ -18,57 +18,66 @@
 package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.util.XoRoRNG
-import be.bluexin.saomclib.capabilities.getPartyCapability
 import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.runBlocking
 import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.Item
 import net.minecraft.potion.Potion
 
-interface Condition {
-    operator fun invoke(caster: EntityLivingBase, target: EntityLivingBase): Boolean
+interface Condition<TARGET: Target> {
+    operator fun invoke(caster: EntityLivingBase, target: TARGET): Boolean
 }
 
-data class Random(val chance: Double) : Condition {
+object IsLiving : Condition<Target> {
+    override fun invoke(caster: EntityLivingBase, target: Target) = target.it is EntityLivingBase
+
+    @Suppress("UNCHECKED_CAST")
+    val living get() = this as Condition<LivingHolder<*>>
+}
+
+object HasPosition : Condition<Target> {
+    override fun invoke(caster: EntityLivingBase, target: Target) = target is TargetWithPosition
+}
+
+data class MultiCondition<TARGET: Target>(val c1: Condition<TARGET>, val c2: Condition<TARGET>, val mode: LinkMode) : Condition<TARGET> {
+    override fun invoke(caster: EntityLivingBase, target: TARGET) = when (mode) {
+        MultiCondition.LinkMode.AND -> c1(caster, target) && c2(caster, target)
+        MultiCondition.LinkMode.OR -> c1(caster, target) || c2(caster, target)
+        MultiCondition.LinkMode.XOR -> c1(caster, target) xor c2(caster, target)
+    }
+
+    enum class LinkMode {
+        AND,
+        OR,
+        XOR
+    }
+}
+
+data class Inverted<TARGET: Target>(val c1: Condition<TARGET>) : Condition<TARGET> {
+    override fun invoke(caster: EntityLivingBase, target: TARGET) = !c1(caster, target)
+}
+
+data class Random<TARGET: Target>(val chance: Double) : Condition<TARGET> {
     private val rng = produce(capacity = 5) {
         val rng = XoRoRNG()
         while (isActive) send(rng.nextDouble())
     }
 
-    override fun invoke(caster: EntityLivingBase, target: EntityLivingBase): Boolean {
+    override fun invoke(caster: EntityLivingBase, target: TARGET): Boolean {
         val r = rng.poll() ?: runBlocking { rng.receive() }
         return r < chance
     }
 }
 
-data class RequiresGear(val slot: EntityEquipmentSlot, val item: Item) : Condition {
-    override fun invoke(caster: EntityLivingBase, target: EntityLivingBase) = target.getItemStackFromSlot(slot).item == item
+data class RequiresGear<TARGET: TargetWithGear>(val slot: EntityEquipmentSlot, val item: Item) : Condition<TARGET> {
+    override fun invoke(caster: EntityLivingBase, target: TARGET) = target.getItemStackFromSlot(slot).item == item
 }
 
-enum class RequireStatus : Condition {
-    SELF {
-        override fun invoke(caster: EntityLivingBase, target: EntityLivingBase) = caster == target
-    },
-    FRIENDLY {
-        override fun invoke(caster: EntityLivingBase, target: EntityLivingBase): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-    },
-    AGGRESSIVE {
-        override fun invoke(caster: EntityLivingBase, target: EntityLivingBase): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-    },
-    PARTY {
-        override fun invoke(caster: EntityLivingBase, target: EntityLivingBase): Boolean {
-            return caster is EntityPlayer && target is EntityPlayer &&
-                    caster.getPartyCapability().party?.contains(target) ?: false
-        }
-    };
+data class RequireStatus<TARGET: TargetWithStatus>(val status: Status) : Condition<TARGET> {
+    override fun invoke(caster: EntityLivingBase, target: TARGET) = target.isStatusFor(status, caster.holder)
 }
 
-data class RequirePotion(val effect: Potion, val level: Int = 0, val invert: Boolean = false) : Condition {
-    override fun invoke(caster: EntityLivingBase, target: EntityLivingBase) = target.getActivePotionEffect(effect)?.amplifier ?: -1 >= level == !invert
+data class RequirePotion<TARGET: TargetWithEffects>(val effect: Potion, val level: Int = 0) : Condition<TARGET> {
+    override fun invoke(caster: EntityLivingBase, target: TARGET) = target.getPotionEffect(effect)?.amplifier ?: -1 >= level
 }

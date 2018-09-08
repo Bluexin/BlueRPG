@@ -57,6 +57,4 @@ data class SkillData(
         val processor: Processor
 ) : IForgeRegistryEntry.Impl<SkillData>()
 
-data class Processor(val t: Int)
-
 data class Placeholder(val t: Int)

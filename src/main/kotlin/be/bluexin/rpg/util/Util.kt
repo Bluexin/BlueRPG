@@ -21,6 +21,8 @@ import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.WeaponType
 import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.kotlin.localize
+import kotlinx.coroutines.experimental.channels.SendChannel
+import kotlinx.coroutines.experimental.launch
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.util.IThreadListener
 import net.minecraftforge.common.MinecraftForge
@@ -73,4 +75,18 @@ interface Localizable {
 inline fun IThreadListener.runMainThread(crossinline block: () -> Unit) {
     if (this.isCallingFromMinecraftThread) block()
     else this.addScheduledTask { block() }
+}
+
+fun <T> SendChannel<T>.offerOrSend(it: T) {
+    if (!offer(it)) launch {
+        send(it)
+    }
+}
+
+fun <T> SendChannel<T>.offerOrSendAndClose(it: T) {
+    if (offer(it)) close()
+    else launch {
+        send(it)
+        close()
+    }
 }

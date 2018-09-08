@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg.gear
 
+import be.bluexin.rpg.skills.LivingHolder
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.RNG
 import be.bluexin.saomclib.onServer
@@ -118,8 +119,7 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
             if (f.toDouble() >= 0.1) {
                 worldIn onServer {
                     val entity = type.entity(worldIn, entityLiving)
-                    entity.realShoot(entityLiving, entityLiving.rotationPitch, entityLiving.rotationYaw, 0.0f, f, 1.0f)
-
+                    entity.realShoot(LivingHolder(entityLiving), 0.0f, f, 1.0f)
                     var damage = entityLiving.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).attributeValue
                     val minD = entityLiving[FixedStat.BASE_DAMAGE]
                     val maxD = entityLiving[FixedStat.MAX_DAMAGE]

@@ -110,7 +110,7 @@ object DebugSkillItem : ItemMod("debug_skill") {
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         val stack = playerIn.getHeldItem(handIn)
-        if (playerIn.isSneaking) stack.itemDamage = (stack.itemDamage + 1) % 9
+        if (playerIn.isSneaking) stack.itemDamage = (stack.itemDamage + 1) % 4
         else playerIn.activeHand = handIn
 
         return ActionResult.newResult(EnumActionResult.SUCCESS, stack)
@@ -125,18 +125,52 @@ object DebugSkillItem : ItemMod("debug_skill") {
             BlueRPG.LOGGER.warn("Use ${System.currentTimeMillis()} - timeLeft: $timeLeft")
             val channel = Channel<EntityLivingBase>(capacity = Channel.UNLIMITED)
             when (stack.itemDamage) {
-                0 -> Projectile()(entityLiving, channel)
-                1 -> Caster()(entityLiving, channel)
-                2 -> Raycast()(entityLiving, channel)
-                3 -> Channelling(500, 10, Projectile())(entityLiving, channel)
-                4 -> Channelling(200, 10, Caster())(entityLiving, channel)
-                5 -> Channelling(500, 10, Raycast())(entityLiving, channel)
-                6 -> AoE()(entityLiving, channel)
-                7 -> AoE(shape = AoE.Shape.SQUARE)(entityLiving, channel)
-                8 -> Chain()(entityLiving, channel)
+                0 -> {
+                    val p = Processor()
+                    p.addElement(
+                            Projectile<PlayerHolder, LivingHolder<*>>(condition = RequireStatus(Status.AGGRESSIVE)),
+                            null,
+                            Damage(3.0)
+                    )
+                    p.process(entityLiving)
+                }
+                1 -> {
+                    val p = Processor()
+                    p.addElement(
+                            AoE<PlayerHolder, LivingHolder<*>>(),
+                            RequireStatus(Status.AGGRESSIVE),
+                            Damage(3.0)
+                    )
+                    p.process(entityLiving)
+                }
+                2 -> {
+                    val p = Processor()
+                    p.addElement(
+                            AoE<PlayerHolder, LivingHolder<*>>(),
+                            RequireStatus(Status.AGGRESSIVE),
+                            Skill(Chain<LivingHolder<*>>(
+                                    maxTargets = 3,
+                                    condition = RequireStatus(Status.AGGRESSIVE)),
+                                    Damage(2.0)
+                            )
+                    )
+                    p.process(entityLiving)
+                }
+                3 -> {
+                    val p = Processor()
+                    p.addElement(
+                            Channelling<PlayerHolder, LivingHolder<*>>(
+                                    delayMillis = 1000,
+                                    procs = 10,
+                                    targeting = Self<PlayerHolder>().cast()
+                            ),
+                            null,
+                            Damage(-3.0)
+                    )
+                    p.process(entityLiving)
+                }
                 else -> channel.close()
             }
-            Damage(-2.0)(channel)
         }
     }
 

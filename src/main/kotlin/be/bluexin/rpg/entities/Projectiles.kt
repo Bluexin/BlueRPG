@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg.entities
 
+import be.bluexin.rpg.skills.*
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onClient
 import be.bluexin.saomclib.onServer
@@ -35,14 +36,14 @@ import com.teamwizardry.librarianlib.features.particle.functions.TickFunction
 import com.teamwizardry.librarianlib.features.particle.spawn
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
-import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.runBlocking
-import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.IProjectile
 import net.minecraft.entity.projectile.EntityArrow
 import net.minecraft.item.ItemStack
 import net.minecraft.util.DamageSource
+import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
@@ -55,7 +56,7 @@ import java.util.*
 interface RpgProjectile : IProjectile {
     var computedDamage: Double
     var knockback: Int
-    fun realShoot(shooter: Entity, pitch: Float, yaw: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float)
+    fun realShoot(shooter: TargetWithLookVec, pitchOffset: Float, velocity: Float, inaccuracy: Float)
 }
 
 @Savable
@@ -77,12 +78,22 @@ class EntityRpgArrow : ArrowEntityMod, RpgProjectile {
         pickupStatus = EntityArrow.PickupStatus.DISALLOWED
     }
 
-    override fun realShoot(shooter: Entity, pitch: Float, yaw: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
-        super.shoot(shooter, pitch, yaw, pitchOffset, velocity * 3f, inaccuracy)
+    override fun realShoot(shooter: TargetWithLookVec, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
         isCritical = velocity >= 1f
         initialX = super.posX
         initialY = super.posY
         initialZ = super.posZ
+        val lookVec = shooter.lookVec
+        this.shoot(lookVec.x, lookVec.y, lookVec.z, velocity, inaccuracy)
+
+        if (shooter is TargetWithMovement) {
+            this.motionX += shooter.motionX
+            this.motionZ += shooter.motionZ
+
+            if (shooter is TargetWithCollision && !shooter.onGround) {
+                this.motionY += shooter.motionY
+            }
+        }
     }
 
     override fun getIsCritical(): Boolean {
@@ -169,11 +180,21 @@ class EntityWandProjectile : ThrowableEntityMod, RpgProjectile {
         }
     }
 
-    override fun realShoot(shooter: Entity, pitch: Float, yaw: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
-        super.shoot(shooter, pitch, yaw, pitchOffset, velocity * 1.5f, inaccuracy)
+    override fun realShoot(shooter: TargetWithLookVec, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
         initialX = super.posX
         initialY = super.posY
         initialZ = super.posZ
+        val lookVec = shooter.lookVec
+        this.shoot(lookVec.x, lookVec.y, lookVec.z, velocity, inaccuracy)
+
+        if (shooter is TargetWithMovement) {
+            this.motionX += shooter.motionX
+            this.motionZ += shooter.motionZ
+
+            if (shooter is TargetWithCollision && !shooter.onGround) {
+                this.motionY += shooter.motionY
+            }
+        }
     }
 
     override fun onImpact(result: RayTraceResult) {
@@ -275,7 +296,8 @@ class EntityWandProjectile : ThrowableEntityMod, RpgProjectile {
 }
 
 @Savable
-class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
+class EntitySkillProjectile<RESULT> : ThrowableEntityMod, RpgProjectile
+        where RESULT : TargetWithPosition, RESULT : TargetWithWorld {
 
     private companion object {
         private val RANGE = EntitySkillProjectile::class.createFloatKey()
@@ -294,26 +316,30 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
     @Save
     override var knockback: Int = 0
 
-    var caster: EntityLivingBase? = null
+    var caster: PlayerHolder? = null
 
     @Save
     var caster_uuid: UUID?
-        get() = caster?.persistentID
+        get() = caster?.uuid
         set(value) {
-            caster = if (value != null) world.getPlayerEntityByUUID(value) else null
+            caster = if (value != null) PlayerHolder(world.getPlayerEntityByUUID(value)!!) else null
         }
 
     var range by managedValue(RANGE)
 
-    private var result: Channel<EntityLivingBase>? = null
+    private var result: SendChannel<RESULT>? = null
+
+    private var filter: Condition<RESULT>? = null
 
     @Suppress("unused")
     constructor(world: World) : super(world)
 
-    constructor(world: World, caster: EntityLivingBase, range: Double, result: Channel<EntityLivingBase>) : super(world, caster) {
+    constructor(world: World, caster: PlayerHolder?, origin: TargetWithPosition, range: Double, result: SendChannel<RESULT>, filter: Condition<RESULT>? = null) : super(world, origin.x, origin.y, origin.z) {
         this.caster = caster
         this.result = result
         this.range = pow(range, 2.0).toFloat()
+        this.thrower = caster?.it
+        this.filter = filter
     }
 
     override fun entityInit() { // Warning: this runs before CTOR
@@ -338,25 +364,48 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
         }
     }
 
-    override fun realShoot(shooter: Entity, pitch: Float, yaw: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
-        super.shoot(shooter, pitch, yaw, pitchOffset, velocity * 1.5f, inaccuracy)
+    override fun realShoot(shooter: TargetWithLookVec, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
         initialX = super.posX
         initialY = super.posY
         initialZ = super.posZ
+        val lookVec = shooter.lookVec
+        this.shoot(lookVec.x, lookVec.y, lookVec.z, velocity, inaccuracy)
+
+        if (shooter is TargetWithMovement) {
+            this.motionX += shooter.motionX
+            this.motionZ += shooter.motionZ
+
+            if (shooter is TargetWithCollision && !shooter.onGround) {
+                this.motionY += shooter.motionY
+            }
+        }
     }
 
     override fun onImpact(result: RayTraceResult) {
         world onServer {
             val r = this.result
             if (r != null) {
-                val e = result.entityHit as? EntityLivingBase
-                if (e != null) runBlocking {
-                    r.send(e)
-                    r.close()
+                val e = result.entityHit
+                if (e is EntityLivingBase) {
+                    @Suppress("UNCHECKED_CAST")
+                    val h = LivingHolder(e) as RESULT
+                    val f = filter
+                    val c = caster
+                    if (f == null || c == null || f(c.it, h)) {
+                        runBlocking { r.send(h) }
+                        setDead() // TODO: allow to hit multiple
+                    }
+                } else if (e is BlockPos) {
+                    @Suppress("UNCHECKED_CAST")
+                    val h = WorldPosHolder(world, e) as RESULT
+                    val f = filter
+                    val c = caster
+                    if (f == null || c == null || f(c.it, h)) {
+                        runBlocking { r.send(h) }
+                        setDead() // TODO: allow to hit multiple
+                    }
                 }
             }
-
-            setDead()
         }
     }
 

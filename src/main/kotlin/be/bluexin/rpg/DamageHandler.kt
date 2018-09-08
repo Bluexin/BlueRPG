@@ -90,7 +90,7 @@ object DamageHandler {
         internal set
 
     @SideOnly(Side.CLIENT)
-    fun handleRange(player: EntityPlayer) {
+    fun handleRange(player: EntityPlayer) { // TODO: optimize this (see info in liblib with `azerty` marker)
         val reach = player[WeaponAttribute.RANGE]
         val target = RaycastUtils.getEntityLookedAt(player, reach)
         if (target != null) PacketHandler.NETWORK.sendToServer(PacketAttack(target.entityId))
