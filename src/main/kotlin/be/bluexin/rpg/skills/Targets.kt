@@ -35,12 +35,12 @@ import java.lang.StrictMath.pow
 import java.util.*
 
 interface Target {
-    fun activate(entity: EntityLivingBase, result: Channel<EntityLivingBase>)
+    operator fun invoke(entity: EntityLivingBase, result: Channel<EntityLivingBase>)
     val range: Double
 }
 
 data class Projectile(override val range: Double = 15.0, val velocity: Float = 1f, val inaccuracy: Float = 1f) : Target {
-    override fun activate(entity: EntityLivingBase, result: Channel<EntityLivingBase>) {
+    override operator fun invoke(entity: EntityLivingBase, result: Channel<EntityLivingBase>) {
         entity.server!!.run {
             entity.world.spawnEntity(EntitySkillProjectile(entity.world, entity, range, result).apply {
                 realShoot(entity, entity.rotationPitch, entity.rotationYaw, 0.0f, velocity, inaccuracy)
@@ -50,7 +50,7 @@ data class Projectile(override val range: Double = 15.0, val velocity: Float = 1
 }
 
 data class Caster(val unused: Boolean = false) : Target {
-    override fun activate(entity: EntityLivingBase, result: Channel<EntityLivingBase>) {
+    override operator fun invoke(entity: EntityLivingBase, result: Channel<EntityLivingBase>) {
         launch {
             result.send(entity)
             result.close()
@@ -62,7 +62,7 @@ data class Caster(val unused: Boolean = false) : Target {
 }
 
 data class Raycast(override val range: Double = 3.0) : Target {
-    override fun activate(entity: EntityLivingBase, result: Channel<EntityLivingBase>) {
+    override operator fun invoke(entity: EntityLivingBase, result: Channel<EntityLivingBase>) {
         launch {
             val e = RaycastUtils.getEntityLookedAt(entity, range)
             if (e is EntityLivingBase) result.send(e)
@@ -72,13 +72,13 @@ data class Raycast(override val range: Double = 3.0) : Target {
 }
 
 data class Channelling(val delayMillis: Long, val procs: Int, val target: Target) : Target by target {
-    override fun activate(entity: EntityLivingBase, result: Channel<EntityLivingBase>) {
+    override operator fun invoke(entity: EntityLivingBase, result: Channel<EntityLivingBase>) {
         launch {
             val p = produce(capacity = Channel.UNLIMITED) {
                 repeat(procs) {
                     if (it != 0) delay(delayMillis)
                     val c = Channel<EntityLivingBase>(capacity = Channel.UNLIMITED)
-                    target.activate(entity, c)
+                    target.invoke(entity, c)
                     send(c)
                 }
             }
@@ -107,7 +107,7 @@ data class Channelling(val delayMillis: Long, val procs: Int, val target: Target
 }
 
 data class AoE(override val range: Double = 3.0, val shape: Shape = Shape.CIRCLE) : Target {
-    override fun activate(entity: EntityLivingBase, result: Channel<EntityLivingBase>) {
+    override operator fun invoke(entity: EntityLivingBase, result: Channel<EntityLivingBase>) {
         val dist = pow(range, 2.0)
         val entPos = entity.position
         val w = BlockPos(range, range, range)
@@ -129,14 +129,14 @@ data class AoE(override val range: Double = 3.0, val shape: Shape = Shape.CIRCLE
 }
 
 data class Chain(override val range: Double = 3.0, val maxTargets: Int = 5, val delayMillis: Long = 500, val repeat: Boolean = false) : Target {
-    override fun activate(entity: EntityLivingBase, result: Channel<EntityLivingBase>) {
+    override operator fun invoke(entity: EntityLivingBase, result: Channel<EntityLivingBase>) {
         val w = BlockPos(range, range, range)
         val dist = pow(range, 2.0)
         launch {
             val targets = LinkedHashSet<EntityLivingBase>()
             var previousTarget = entity
             repeat(maxTargets) { c ->
-                if (c != 0 && delayMillis > 0) delay(delayMillis)
+                if (c != 0) delay(delayMillis)
                 val entPos = previousTarget.position
                 val minPos = entPos - w
                 val maxPos = entPos + w
