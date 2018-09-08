@@ -23,10 +23,7 @@ import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.base.entity.ArrowEntityMod
 import com.teamwizardry.librarianlib.features.base.entity.ThrowableEntityMod
 import com.teamwizardry.librarianlib.features.helpers.vec
-import com.teamwizardry.librarianlib.features.kotlin.div
-import com.teamwizardry.librarianlib.features.kotlin.minus
-import com.teamwizardry.librarianlib.features.kotlin.motionVec
-import com.teamwizardry.librarianlib.features.kotlin.plus
+import com.teamwizardry.librarianlib.features.kotlin.*
 import com.teamwizardry.librarianlib.features.math.interpolate.InterpFunction
 import com.teamwizardry.librarianlib.features.math.interpolate.StaticInterp
 import com.teamwizardry.librarianlib.features.math.interpolate.numeric.InterpFloatInOut
@@ -38,6 +35,8 @@ import com.teamwizardry.librarianlib.features.particle.functions.TickFunction
 import com.teamwizardry.librarianlib.features.particle.spawn
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
+import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.experimental.runBlocking
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.IProjectile
@@ -50,6 +49,7 @@ import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.awt.Color
+import java.lang.StrictMath.pow
 import java.util.*
 
 interface RpgProjectile : IProjectile {
@@ -121,6 +121,7 @@ class EntityRpgArrow : ArrowEntityMod, RpgProjectile {
         }
 }
 
+@Savable
 class EntityWandProjectile : ThrowableEntityMod, RpgProjectile {
 
     @Save
@@ -274,4 +275,182 @@ class EntityWandProjectile : ThrowableEntityMod, RpgProjectile {
         return 0.001f
     }
 
+}
+
+@Savable
+class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
+
+    private companion object {
+        private val RANGE = EntitySkillProjectile::class.createFloatKey()
+    }
+
+    @Save
+    var initialX = 0.0
+    @Save
+    var initialY = 0.0
+    @Save
+    var initialZ = 0.0
+
+    @Save
+    override var computedDamage = 0.0
+
+    @Save
+    override var knockback: Int = 0
+
+    var caster: EntityLivingBase? = null
+
+    @Save
+    var caster_uuid: UUID?
+        get() = caster?.persistentID
+        set(value) {
+            caster = if (value != null) world.getPlayerEntityByUUID(value) else null
+        }
+
+    var range by managedValue(RANGE)
+
+    private var result: Channel<EntityLivingBase>? = null
+
+    @Suppress("unused")
+    constructor(world: World) : super(world)
+
+    constructor(world: World, caster: EntityLivingBase, range: Double, result: Channel<EntityLivingBase>) : super(world, caster) {
+        this.caster = caster
+        this.result = result
+        this.range = pow(range, 2.0).toFloat()
+    }
+
+    override fun entityInit() { // Warning: this runs before CTOR
+        super.entityInit()
+        this.getDataManager().register(RANGE, 15f)
+    }
+
+    override fun onUpdate() {
+        super.onUpdate()
+
+        world onClient {
+            renderParticles()
+            if (initialX == 0.0) {
+                initialX = super.posX
+                initialY = super.posY
+                initialZ = super.posZ
+            }
+        }
+
+        if (this.inWater || this.getDistanceSq(initialX, initialY, initialZ) > range) {
+            this.setDead()
+            world.removeEntity(this)
+        }
+    }
+
+    override fun realShoot(shooter: Entity, pitch: Float, yaw: Float, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
+        super.shoot(shooter, pitch, yaw, pitchOffset, velocity * 1.5f, inaccuracy)
+        initialX = super.posX
+        initialY = super.posY
+        initialZ = super.posZ
+    }
+
+    override fun onImpact(result: RayTraceResult) {
+        world onServer {
+            val r = this.result
+            if (r != null) {
+                val e = result.entityHit as? EntityLivingBase
+                if (e != null) runBlocking {
+                    r.send(e)
+                    r.close()
+                }
+            }
+
+            setDead()
+            world.removeEntity(this)
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private fun renderParticles() {
+        val from = Color(0x0055BB)
+        val to = Color(0x00BB55)
+        val center = positionVector + vec(0, height / 2, 0)
+
+        val trail = ParticleBuilder(10).apply {
+            setAlphaFunction(object : InterpFunction<Float> {
+                override fun get(i: Float): Float {
+                    val a = 0.05f
+                    val b = 0.6f
+
+                    var alpha = if (i < 1 && i > a) 1f else 0f
+
+                    if (i <= a * 2) alpha = (i - a) / a
+                    else if (i >= 1 - b) {
+                        alpha = 1 - (i - (1 - b)) / b
+                    }
+                    return if (alpha < 0) 0f else alpha
+                }
+            })
+            setRender(Resources.PARTICLE)
+            setCollision(true)
+            canBounce = true
+            setColorFunction(InterpColorHSV(from, to))
+        }
+
+        trail.setMotion(Vec3d.ZERO)
+        trail.setAcceleration(Vec3d.ZERO)
+        ParticleSpawner.spawn(trail, world, StaticInterp(center), 6, 1) { _, b ->
+            b.setScaleFunction(object : InterpFunction<Float> {
+                private val start = rand.nextFloat() / 2 + 0.3f
+                private val finish = 0f
+
+                override operator fun get(i: Float): Float {
+                    return Math.abs(start * (1 - i) + finish * i)
+                }
+            })
+            b.setPositionOffset(b.positionOffset - motionVec / 6)
+            b.setLifetime(rand.nextInt(20) + 20)
+            b.addMotion(Vec3d(
+                    rand.nextDouble() * 0.02 - 0.01,
+                    rand.nextDouble() * 0.02 - 0.01,
+                    rand.nextDouble() * 0.02 - 0.01
+            ))
+            b.addAcceleration(Vec3d(
+                    rand.nextDouble() * 0.001 - 0.0005,
+                    rand.nextDouble() * 0.001 - 0.0005,
+                    rand.nextDouble() * 0.001 - 0.0005
+            ))
+        }
+
+        val core = ParticleBuilder(10).apply {
+            setAlphaFunction(InterpFloatInOut(0.3f, 0.6f))
+            setRender(Resources.PARTICLE)
+            setCollision(false)
+            canBounce = false
+            setColorFunction(InterpColorHSV(from, to))
+            setAcceleration(Vec3d.ZERO)
+        }
+
+        core.setMotion(motionVec)
+        core.setTick(object : TickFunction {
+            override fun tick(particle: ParticleBase) {
+                if (isDead) particle.setExpired()
+            }
+        })
+        ParticleSpawner.spawn(core, world, StaticInterp(center), 6, 1) { _, build ->
+            build.setLifetime(rand.nextInt(15) + 5)
+            build.setScaleFunction(object : InterpFunction<Float> {
+                private val start = rand.nextFloat() / 2 + 1.5f
+                private val finish = 0f
+
+                override operator fun get(i: Float): Float {
+                    return Math.abs(start * (1 - i) + finish * i)
+                }
+            })
+        }
+    }
+
+    override fun getGravityVelocity(): Float {
+        return 0.001f
+    }
+
+    override fun setDead() {
+        result?.close()
+        super.setDead()
+    }
 }

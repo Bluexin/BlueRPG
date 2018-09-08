@@ -22,6 +22,7 @@ import be.bluexin.rpg.gear.WeaponType
 import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.entity.EntityLivingBase
+import net.minecraft.util.IThreadListener
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.Event
 
@@ -67,4 +68,9 @@ interface Localizable {
 
     val key: String
         get() = name.toLowerCase()
+}
+
+inline fun IThreadListener.run(crossinline block: () -> Unit) {
+    if (this.isCallingFromMinecraftThread) block()
+    else this.addScheduledTask { block() }
 }

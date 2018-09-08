@@ -17,7 +17,9 @@
 
 package be.bluexin.rpg.items
 
+import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.gui.GuiAttributes
+import be.bluexin.rpg.skills.*
 import be.bluexin.rpg.stats.PlayerStats
 import be.bluexin.rpg.stats.exp
 import be.bluexin.rpg.stats.stats
@@ -25,9 +27,12 @@ import be.bluexin.saomclib.onClient
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.kotlin.localize
+import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.experimental.launch
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ActionResult
@@ -46,7 +51,7 @@ object DebugStatsItem : ItemMod("debug_stats") {
 
     @SideOnly(Side.CLIENT)
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
-        val stats = Minecraft.getMinecraft().player?.stats?: return
+        val stats = Minecraft.getMinecraft().player?.stats ?: return
         val shift = GuiScreen.isShiftKeyDown()
 
         tooltip.add("rpg.display.stats".localize())
@@ -96,4 +101,48 @@ object DebugExpItem : ItemMod("debug_exp") {
 
         return super.onItemRightClick(worldIn, playerIn, handIn)
     }
+}
+
+object DebugSkillItem : ItemMod("debug_skill") {
+    init {
+        maxStackSize = 1
+        maxDamage = 3000
+    }
+
+    override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
+        val stack = playerIn.getHeldItem(handIn)
+        if (playerIn.isSneaking) stack.itemDamage = (stack.itemDamage + 1) % 9
+        else playerIn.activeHand = handIn
+
+        return ActionResult.newResult(EnumActionResult.SUCCESS, stack)
+    }
+
+    override fun getMaxItemUseDuration(stack: ItemStack) = 72000
+
+    override fun getItemStackDisplayName(stack: ItemStack) = "Skill ${stack.itemDamage}"
+
+    override fun onPlayerStoppedUsing(stack: ItemStack, worldIn: World, entityLiving: EntityLivingBase, timeLeft: Int) {
+        worldIn onServer {
+            BlueRPG.LOGGER.warn("Use ${System.currentTimeMillis()} - timeLeft: $timeLeft")
+            val channel = Channel<EntityLivingBase>(capacity = Channel.UNLIMITED)
+            when (stack.itemDamage) {
+                0 -> Projectile().activate(entityLiving, channel)
+                1 -> Caster().activate(entityLiving, channel)
+                2 -> Raycast().activate(entityLiving, channel)
+                3 -> Channelling(500, 10, Projectile()).activate(entityLiving, channel)
+                4 -> Channelling(200, 10, Caster()).activate(entityLiving, channel)
+                5 -> Channelling(500, 10, Raycast()).activate(entityLiving, channel)
+                6 -> AoE().activate(entityLiving, channel)
+                7 -> AoE(shape = AoE.Shape.SQUARE).activate(entityLiving, channel)
+                8 -> Chain().activate(entityLiving, channel)
+                else -> channel.close()
+            }
+            launch {
+                for (t in channel) BlueRPG.LOGGER.warn("Found target: $t")
+                BlueRPG.LOGGER.warn("Closed channel")
+            }
+        }
+    }
+
+    override fun showDurabilityBar(stack: ItemStack) = false
 }

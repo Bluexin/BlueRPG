@@ -21,12 +21,10 @@ package be.bluexin.rpg
 
 import be.bluexin.rpg.blocks.BlockEditor
 import be.bluexin.rpg.containers.ContainerEditor
-import be.bluexin.rpg.entities.EntityRpgArrow
-import be.bluexin.rpg.entities.EntityWandProjectile
-import be.bluexin.rpg.entities.RenderRpgArrow
-import be.bluexin.rpg.entities.RenderWandProjectile
+import be.bluexin.rpg.entities.*
 import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.items.DebugExpItem
+import be.bluexin.rpg.items.DebugSkillItem
 import be.bluexin.rpg.items.DebugStatsItem
 import be.bluexin.rpg.stats.*
 import be.bluexin.saomclib.capabilities.CapabilitiesHandler
@@ -90,6 +88,7 @@ open class CommonProxy {
         ItemGearToken
         DebugStatsItem
         DebugExpItem
+        DebugSkillItem
         ItemArmor
         ItemMeleeWeapon
         ItemRangedWeapon
@@ -103,6 +102,7 @@ open class CommonProxy {
         var id = 0
         EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_rpg_arrow"), EntityRpgArrow::class.java, "entity_rpg_arrow", ++id, BlueRPG, 256, 1, true)
         EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_wand_projectile"), EntityWandProjectile::class.java, "entity_wand_projectile", ++id, BlueRPG, 256, 1, true)
+        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_skill_projectile"), EntitySkillProjectile::class.java, "entity_skill_projectile", ++id, BlueRPG, 256, 1, true)
     }
 
     open fun init(event: FMLInitializationEvent) {
@@ -141,6 +141,7 @@ class ClientProxy: CommonProxy() {
     private fun registerEntityRenderers() {
         RenderingRegistry.registerEntityRenderingHandler(EntityRpgArrow::class.java, ::RenderRpgArrow)
         RenderingRegistry.registerEntityRenderingHandler(EntityWandProjectile::class.java, ::RenderWandProjectile)
+        RenderingRegistry.registerEntityRenderingHandler(EntitySkillProjectile::class.java, ::RenderSkillProjectile)
     }
 }
 

@@ -20,6 +20,7 @@ package be.bluexin.rpg
 import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.gear.WeaponType
+import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
@@ -32,6 +33,7 @@ import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.text.TextComponentTranslation
 import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.client.event.TextureStitchEvent
+import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.event.ServerChatEvent
 import net.minecraftforge.event.entity.EntityEvent
 import net.minecraftforge.event.entity.living.*
@@ -137,6 +139,11 @@ object CommonEventHandler {
     @SubscribeEvent
     fun pickupXp(event: PlayerPickupXpEvent) {
         event.entityPlayer.stats.level += event.orb.xpValue.toLong()
+    }
+
+    @SubscribeEvent
+    fun newRegistry(event: RegistryEvent.NewRegistry) {
+        SkillRegistry
     }
 }
 

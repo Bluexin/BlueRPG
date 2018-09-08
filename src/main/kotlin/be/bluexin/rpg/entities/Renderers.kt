@@ -20,6 +20,7 @@ package be.bluexin.rpg.entities
 import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.entity.RenderArrow
 import net.minecraft.client.renderer.entity.RenderManager
+import net.minecraft.entity.Entity
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
@@ -32,12 +33,18 @@ class RenderRpgArrow(renderManagerIn: RenderManager) : RenderArrow<EntityRpgArro
 }
 
 @SideOnly(Side.CLIENT)
-class RenderWandProjectile(renderManager: RenderManager) : Render<EntityWandProjectile>(renderManager) {
-    override fun doRender(entity: EntityWandProjectile, x: Double, y: Double, z: Double, entityYaw: Float, partialTicks: Float) {
+abstract class RenderRpgProjectile<T: Entity>(renderManager: RenderManager) : Render<T>(renderManager) {
+    override fun doRender(entity: T, x: Double, y: Double, z: Double, entityYaw: Float, partialTicks: Float) {
         // nop
     }
 
-    override fun getEntityTexture(entity: EntityWandProjectile): ResourceLocation? {
+    override fun getEntityTexture(entity: T): ResourceLocation? {
         return null
     }
 }
+
+@SideOnly(Side.CLIENT)
+class RenderWandProjectile(renderManager: RenderManager) : RenderRpgProjectile<EntityWandProjectile>(renderManager)
+
+@SideOnly(Side.CLIENT)
+class RenderSkillProjectile(renderManager: RenderManager) : RenderRpgProjectile<EntitySkillProjectile>(renderManager)
