@@ -40,7 +40,7 @@ data class Damage(val value: Double) : Effect { // TODO: take caster stats into 
     }
 }
 
-data class Status(val effect: PotionEffect) : Effect {
+data class PotionEffect(val effect: PotionEffect) : Effect {
     override fun invoke(targets: Channel<EntityLivingBase>) {
         launch {
             for (e in targets) e.server?.runMainThread {
