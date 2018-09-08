@@ -104,7 +104,6 @@ class EntityRpgArrow : ArrowEntityMod, RpgProjectile {
 
         if (this.getDistanceSq(initialX, initialY, initialZ) > 200) {
             this.setDead()
-            world.removeEntity(this)
         }
     }
 
@@ -167,7 +166,6 @@ class EntityWandProjectile : ThrowableEntityMod, RpgProjectile {
 
         if (this.inWater || this.getDistanceSq(initialX, initialY, initialZ) > 200) {
             this.setDead()
-            world.removeEntity(this)
         }
     }
 
@@ -187,7 +185,6 @@ class EntityWandProjectile : ThrowableEntityMod, RpgProjectile {
 
         world onServer {
             setDead()
-            world.removeEntity(this)
         }
     }
 
@@ -338,7 +335,6 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
 
         if (this.inWater || this.getDistanceSq(initialX, initialY, initialZ) > range) {
             this.setDead()
-            world.removeEntity(this)
         }
     }
 
@@ -361,7 +357,6 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
             }
 
             setDead()
-            world.removeEntity(this)
         }
     }
 

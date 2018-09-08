@@ -70,7 +70,7 @@ interface Localizable {
         get() = name.toLowerCase()
 }
 
-inline fun IThreadListener.run(crossinline block: () -> Unit) {
+inline fun IThreadListener.runMainThread(crossinline block: () -> Unit) {
     if (this.isCallingFromMinecraftThread) block()
     else this.addScheduledTask { block() }
 }

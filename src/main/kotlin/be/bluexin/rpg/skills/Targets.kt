@@ -18,7 +18,7 @@
 package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.entities.EntitySkillProjectile
-import be.bluexin.rpg.util.run
+import be.bluexin.rpg.util.runMainThread
 import com.google.common.base.Predicate
 import com.teamwizardry.librarianlib.features.kotlin.minus
 import com.teamwizardry.librarianlib.features.kotlin.plus
@@ -41,7 +41,7 @@ interface Target {
 
 data class Projectile(override val range: Double = 15.0, val velocity: Float = 1f, val inaccuracy: Float = 1f) : Target {
     override operator fun invoke(entity: EntityLivingBase, result: Channel<EntityLivingBase>) {
-        entity.server!!.run {
+        entity.server!!.runMainThread {
             entity.world.spawnEntity(EntitySkillProjectile(entity.world, entity, range, result).apply {
                 realShoot(entity, entity.rotationPitch, entity.rotationYaw, 0.0f, velocity, inaccuracy)
             })
@@ -113,9 +113,11 @@ data class AoE(override val range: Double = 3.0, val shape: Shape = Shape.CIRCLE
         val w = BlockPos(range, range, range)
         val minPos = entPos - w
         val maxPos = entPos + w
-        val e = entity.world.getEntitiesWithinAABB(EntityLivingBase::class.java, AxisAlignedBB(minPos, maxPos), if (shape == Shape.SQUARE) null else Predicate<EntityLivingBase> {
-            entity.getDistanceSq(it!!) <= dist
-        })
+        val e = entity.world.getEntitiesWithinAABB(EntityLivingBase::class.java, AxisAlignedBB(minPos, maxPos),
+                if (shape == Shape.SQUARE) null else Predicate<EntityLivingBase> {
+                    entity.getDistanceSq(it!!) <= dist
+                }
+        )
         launch {
             e.forEach { result.send(it) }
             result.close()

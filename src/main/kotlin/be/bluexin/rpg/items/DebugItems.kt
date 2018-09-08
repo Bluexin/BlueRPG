@@ -28,7 +28,6 @@ import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.launch
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.util.ITooltipFlag
@@ -137,10 +136,7 @@ object DebugSkillItem : ItemMod("debug_skill") {
                 8 -> Chain()(entityLiving, channel)
                 else -> channel.close()
             }
-            launch {
-                for (t in channel) BlueRPG.LOGGER.warn("Found target: $t")
-                BlueRPG.LOGGER.warn("Closed channel")
-            }
+            Damage(-2.0)(channel)
         }
     }
 
