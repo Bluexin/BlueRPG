@@ -123,7 +123,7 @@ open class CommonProxy {
             level = Level(WeakReference<EntityPlayer>(null))
         }), false)
         AbstractSaveHandler.writeAutoNBT(T2(PrimaryStat.DEXTERITY), false)
-        AbstractSaveHandler.writeAutoNBT(T2(SecondaryStat.PSYCHE), false)
+        AbstractSaveHandler.writeAutoNBT(T2(SecondaryStat.REGEN), false)
         AbstractSaveHandler.writeAutoNBT(T2(FixedStat.HEALTH), false)
     }
 }

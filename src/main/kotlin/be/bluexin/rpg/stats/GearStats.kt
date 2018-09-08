@@ -93,10 +93,12 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
             when (gear) {
                 is ItemArmor -> {
                     this.stats[FixedStat.HEALTH] += FixedStat.HEALTH.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
+                    this.stats[FixedStat.PSYCHE] += FixedStat.PSYCHE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
                     this.stats[FixedStat.ARMOR] += FixedStat.ARMOR.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
                 }
                 is ItemOffHand -> {
                     this.stats[FixedStat.HEALTH] += FixedStat.HEALTH.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
+                    this.stats[FixedStat.PSYCHE] += FixedStat.PSYCHE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
                     when (gear.type) {
                         OffHandType.SHIELD -> this.stats[FixedStat.F_BLOCK] += FixedStat.F_BLOCK.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
                         OffHandType.PARRY_DAGGER -> this.stats[FixedStat.F_PARRY] += FixedStat.F_PARRY.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)

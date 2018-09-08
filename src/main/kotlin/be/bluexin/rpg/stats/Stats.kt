@@ -194,17 +194,6 @@ enum class PrimaryStat(uuid: Array<String>) : Stat {
 
 @NamedDynamic(resourceLocation = "b:ss")
 enum class SecondaryStat(uuid: Array<String>, attribute: IAttribute? = null) : Stat {
-    PSYCHE(arrayOf(
-            "596b8658-6e31-479b-9d8c-75312bf7fde9",
-            "3a44ded3-8f78-4e0f-a889-9a3943235bbb",
-            "f502aa88-f9e7-4140-b257-a8d5470537c3",
-            "cf9d3c18-5acf-4e78-8464-5c3840a2b952",
-            "45779a50-cf0b-44fa-b972-17dda742287c",
-            "48c52ea4-9a41-461e-a565-75b7d8aa987a"
-    )) {
-        override val hasTransform = false
-        override fun invoke(from: Int) = from.toDouble()
-    },
     REGEN(arrayOf(
             "6bd4b8bf-d010-4a12-8cff-326bd4f9a377",
             "3ac37444-6228-4a66-8bde-f5917f164df3",
@@ -416,6 +405,14 @@ enum class FixedStat(uuid: Array<String>, attribute: IAttribute? = null) : Stat 
             "b5b44c14-e9a8-4a1a-959f-946afbcf8cc8",
             "1c770de6-adf9-4a81-b1d8-baf0002334ec"
     ), SharedMonsterAttributes.MAX_HEALTH),
+    PSYCHE(arrayOf(
+            "596b8658-6e31-479b-9d8c-75312bf7fde9",
+            "3a44ded3-8f78-4e0f-a889-9a3943235bbb",
+            "f502aa88-f9e7-4140-b257-a8d5470537c3",
+            "cf9d3c18-5acf-4e78-8464-5c3840a2b952",
+            "45779a50-cf0b-44fa-b972-17dda742287c",
+            "48c52ea4-9a41-461e-a565-75b7d8aa987a"
+    )),
     ARMOR(arrayOf(
             "1293882c-9486-4c18-a569-6a0918e440fb",
             "8c8c8869-fcfc-4094-88c6-2cad8a1977b4",
