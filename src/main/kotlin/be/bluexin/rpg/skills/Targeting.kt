@@ -25,6 +25,9 @@ import be.bluexin.rpg.util.runMainThread
 import com.google.common.base.Predicate
 import com.teamwizardry.librarianlib.features.kotlin.minus
 import com.teamwizardry.librarianlib.features.kotlin.plus
+import com.teamwizardry.librarianlib.features.saving.NamedDynamic
+import com.teamwizardry.librarianlib.features.saving.Savable
+import com.teamwizardry.librarianlib.features.utilities.RaycastUtils
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.channels.produce
@@ -38,11 +41,17 @@ import net.minecraft.util.math.Vec3d
 import java.lang.StrictMath.pow
 import java.util.*
 
+// TODO Some of these need to be ported to the new system to handle targeting both blocks & entities
+
+@Savable
+@NamedDynamic("t:t")
 interface Targeting<FROM : Target, RESULT : Target> {
     operator fun invoke(caster: EntityLivingBase, from: FROM, result: SendChannel<RESULT>)
     val range: Double
 }
 
+@Savable
+@NamedDynamic("t:p")
 data class Projectile<FROM, RESULT>(
         override val range: Double = 15.0, val velocity: Float = 1f, val inaccuracy: Float = 1f,
         val condition: Condition<RESULT>? = null
@@ -59,6 +68,8 @@ data class Projectile<FROM, RESULT>(
     }
 }
 
+@Savable
+@NamedDynamic("t:s")
 data class Self<T : Target>(val unused: Boolean = false) : Targeting<T, T> {
     override operator fun invoke(caster: EntityLivingBase, from: T, result: SendChannel<T>) {
         result.offerOrSendAndClose(from)
@@ -67,23 +78,26 @@ data class Self<T : Target>(val unused: Boolean = false) : Targeting<T, T> {
     override val range: Double
         get() = 0.0
 
-    fun <FROM: T, RESULT: Target> cast() = this as Targeting<FROM, RESULT>
+    fun <FROM : T, RESULT : Target> cast() = this as Targeting<FROM, RESULT>
 }
 
+@Savable
+@NamedDynamic("t:r")
 data class Raycast<FROM, RESULT>(
         override val range: Double = 3.0, val condition: Condition<RESULT>? = null
 ) : Targeting<FROM, RESULT> where FROM : TargetWithLookVec, FROM : TargetWithPosition, FROM : TargetWithWorld,
                                   RESULT : TargetWithPosition, RESULT : TargetWithWorld {
     override operator fun invoke(caster: EntityLivingBase, from: FROM, result: SendChannel<RESULT>) {
         launch {
-            //            val e = RaycastUtils.getEntityLookedAt(from, range)
-//            if (e is EntityLivingBase) result.send(e)
-            TODO("Port to new system")
+            val e = RaycastUtils.getEntityLookedAt((from as LivingHolder<*>).it, range)
+            if (e is EntityLivingBase) result.send(e.holder as RESULT)
             result.close()
         }
     }
 }
 
+@Savable
+@NamedDynamic("t:c")
 data class Channelling<FROM : Target, RESULT : Target>(
         val delayMillis: Long, val procs: Int, val targeting: Targeting<FROM, RESULT>
 ) : Targeting<FROM, RESULT> by targeting {
@@ -124,6 +138,8 @@ data class Channelling<FROM : Target, RESULT : Target>(
     }
 }
 
+@Savable
+@NamedDynamic("t:a")
 data class AoE<FROM, RESULT>(
         override val range: Double = 3.0, val shape: Shape = Shape.CIRCLE
 ) : Targeting<FROM, RESULT> where FROM : TargetWithLookVec, FROM : TargetWithPosition, FROM : TargetWithWorld,
@@ -151,6 +167,8 @@ data class AoE<FROM, RESULT>(
     }
 }
 
+@Savable
+@NamedDynamic("t:i")
 data class Chain<T>(
         override val range: Double = 3.0, val maxTargets: Int = 5, val delayMillis: Long = 500, val repeat: Boolean = false,
         val condition: Condition<T>? = null
@@ -173,7 +191,9 @@ data class Chain<T>(
                         h != previousTarget && previousTarget.getDistanceSq(h) <= dist &&
                                 (repeat || h !in targets) && (condition == null || condition!!(caster, h))
                     }
-                } catch (_: Exception) { listOf<EntityLivingBase>() }
+                } catch (_: Exception) {
+                    listOf<EntityLivingBase>()
+                }
                 val e = es.minBy { previousTarget.getDistanceSq(LivingHolder(it!!)) }
                 if (e != null) {
                     val h = LivingHolder(e) as T

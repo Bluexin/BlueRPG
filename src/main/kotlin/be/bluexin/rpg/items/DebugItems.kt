@@ -27,7 +27,7 @@ import be.bluexin.saomclib.onClient
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.kotlin.localize
-import kotlinx.coroutines.experimental.channels.Channel
+import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.util.ITooltipFlag
@@ -110,7 +110,7 @@ object DebugSkillItem : ItemMod("debug_skill") {
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         val stack = playerIn.getHeldItem(handIn)
-        if (playerIn.isSneaking) stack.itemDamage = (stack.itemDamage + 1) % 4
+        if (playerIn.isSneaking) stack.itemDamage = (stack.itemDamage + 1) % 5
         else playerIn.activeHand = handIn
 
         return ActionResult.newResult(EnumActionResult.SUCCESS, stack)
@@ -122,8 +122,6 @@ object DebugSkillItem : ItemMod("debug_skill") {
 
     override fun onPlayerStoppedUsing(stack: ItemStack, worldIn: World, entityLiving: EntityLivingBase, timeLeft: Int) {
         worldIn onServer {
-            BlueRPG.LOGGER.warn("Use ${System.currentTimeMillis()} - timeLeft: $timeLeft")
-            val channel = Channel<EntityLivingBase>(capacity = Channel.UNLIMITED)
             when (stack.itemDamage) {
                 0 -> {
                     val p = Processor()
@@ -169,7 +167,26 @@ object DebugSkillItem : ItemMod("debug_skill") {
                     )
                     p.process(entityLiving)
                 }
-                else -> channel.close()
+                4 -> {
+                    val p = Processor()
+                    p.addElement(
+                            Channelling<PlayerHolder, LivingHolder<*>>(
+                                    delayMillis = 1000,
+                                    procs = 10,
+                                    targeting = Self<PlayerHolder>().cast()
+                            ),
+                            null,
+                            Damage(-3.0)
+                    )
+                    try {
+                        BlueRPG.LOGGER.warn("Serializing $p")
+                        val nbt = AbstractSaveHandler.writeAutoNBT(p, false)
+                        BlueRPG.LOGGER.warn("Result: $nbt")
+                        BlueRPG.LOGGER.warn("Loaded: ${AbstractSaveHandler.readAutoNBTByClass(Processor::class.java, nbt, false)}")
+                    } catch (e: Exception) {
+                        BlueRPG.LOGGER.warn("Unable to save Processor :", e)
+                    }
+                }
             }
         }
     }

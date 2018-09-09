@@ -18,6 +18,8 @@
 package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.util.XoRoRNG
+import com.teamwizardry.librarianlib.features.saving.NamedDynamic
+import com.teamwizardry.librarianlib.features.saving.Savable
 import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.runBlocking
 import net.minecraft.entity.EntityLivingBase
@@ -25,10 +27,14 @@ import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.Item
 import net.minecraft.potion.Potion
 
+@Savable
+@NamedDynamic("t:t")
 interface Condition<TARGET: Target> {
     operator fun invoke(caster: EntityLivingBase, target: TARGET): Boolean
 }
 
+@Savable
+@NamedDynamic("t:l")
 object IsLiving : Condition<Target> {
     override fun invoke(caster: EntityLivingBase, target: Target) = target.it is EntityLivingBase
 
@@ -36,10 +42,14 @@ object IsLiving : Condition<Target> {
     val living get() = this as Condition<LivingHolder<*>>
 }
 
+@Savable
+@NamedDynamic("t:h")
 object HasPosition : Condition<Target> {
     override fun invoke(caster: EntityLivingBase, target: Target) = target is TargetWithPosition
 }
 
+@Savable
+@NamedDynamic("t:m")
 data class MultiCondition<TARGET: Target>(val c1: Condition<TARGET>, val c2: Condition<TARGET>, val mode: LinkMode) : Condition<TARGET> {
     override fun invoke(caster: EntityLivingBase, target: TARGET) = when (mode) {
         MultiCondition.LinkMode.AND -> c1(caster, target) && c2(caster, target)
@@ -54,10 +64,14 @@ data class MultiCondition<TARGET: Target>(val c1: Condition<TARGET>, val c2: Con
     }
 }
 
+@Savable
+@NamedDynamic("t:i")
 data class Inverted<TARGET: Target>(val c1: Condition<TARGET>) : Condition<TARGET> {
     override fun invoke(caster: EntityLivingBase, target: TARGET) = !c1(caster, target)
 }
 
+@Savable
+@NamedDynamic("t:r")
 data class Random<TARGET: Target>(val chance: Double) : Condition<TARGET> {
     private val rng = produce(capacity = 5) {
         val rng = XoRoRNG()
@@ -70,14 +84,20 @@ data class Random<TARGET: Target>(val chance: Double) : Condition<TARGET> {
     }
 }
 
+@Savable
+@NamedDynamic("t:g")
 data class RequiresGear<TARGET: TargetWithGear>(val slot: EntityEquipmentSlot, val item: Item) : Condition<TARGET> {
     override fun invoke(caster: EntityLivingBase, target: TARGET) = target.getItemStackFromSlot(slot).item == item
 }
 
+@Savable
+@NamedDynamic("t:s")
 data class RequireStatus<TARGET: TargetWithStatus>(val status: Status) : Condition<TARGET> {
     override fun invoke(caster: EntityLivingBase, target: TARGET) = target.isStatusFor(status, caster.holder)
 }
 
+@Savable
+@NamedDynamic("t:p")
 data class RequirePotion<TARGET: TargetWithEffects>(val effect: Potion, val level: Int = 0) : Condition<TARGET> {
     override fun invoke(caster: EntityLivingBase, target: TARGET) = target.getPotionEffect(effect)?.amplifier ?: -1 >= level
 }

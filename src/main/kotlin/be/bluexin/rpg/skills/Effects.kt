@@ -19,6 +19,8 @@ package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.DamageHandler
 import be.bluexin.rpg.util.runMainThread
+import com.teamwizardry.librarianlib.features.saving.NamedDynamic
+import com.teamwizardry.librarianlib.features.saving.Savable
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
@@ -30,10 +32,14 @@ import net.minecraft.util.EntityDamageSource
 import java.util.*
 import kotlin.math.abs
 
+@Savable
+@NamedDynamic("e:e")
 interface Effect<TARGET : Target> {
     operator fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>)
 }
 
+@Savable
+@NamedDynamic("e:d")
 data class Damage<TARGET>(val value: Double) : Effect<TARGET>
         where TARGET : TargetWithHealth, TARGET : TargetWithWorld { // TODO: take caster stats into account
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {
@@ -46,6 +52,8 @@ data class Damage<TARGET>(val value: Double) : Effect<TARGET>
     }
 }
 
+@Savable
+@NamedDynamic("e:b") // TODO: (de)serialization of PotionEffects
 data class Buff<TARGET>(val effect: PotionEffect) : Effect<TARGET>
         where TARGET : TargetWithEffects, TARGET : TargetWithWorld {
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {
@@ -57,6 +65,8 @@ data class Buff<TARGET>(val effect: PotionEffect) : Effect<TARGET>
     }
 }
 
+@Savable
+@NamedDynamic("e:s")
 data class Skill<TARGET: Target, RESULT: Target>(val targeting: Targeting<TARGET, RESULT>, val effect: Effect<RESULT>) : Effect<TARGET> {
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {
         launch {
@@ -96,6 +106,8 @@ data class Skill<TARGET: Target, RESULT: Target>(val targeting: Targeting<TARGET
     }
 }
 
+@Savable
+@NamedDynamic("e:m")
 data class MultiEffect<TARGET: Target>(val effects: Array<Effect<TARGET>>) : Effect<TARGET> {
 
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {

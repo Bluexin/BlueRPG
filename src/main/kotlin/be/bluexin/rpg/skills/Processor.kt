@@ -17,13 +17,15 @@
 
 package be.bluexin.rpg.skills
 
+import com.teamwizardry.librarianlib.features.saving.Savable
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.produce
 import net.minecraft.entity.EntityLivingBase
 import java.util.*
 
+@Savable
 class Processor {
-    private val chain = LinkedList<Triple<Targeting<Target, Target>, Condition<Target>?, Effect<Target>>>()
+    private var chain = LinkedList<Triple<Targeting<Target, Target>, Condition<Target>?, Effect<Target>>>()
 
     fun process(caster: EntityLivingBase) {
         chain.forEach { (t, c, e) ->
@@ -36,5 +38,9 @@ class Processor {
     fun <FROM: Target, TARGET: Target> addElement(targeting: Targeting<FROM, TARGET>, condition: Condition<TARGET>?, effect: Effect<TARGET>) {
         @Suppress("UNCHECKED_CAST")
         chain.add(Triple(targeting as Targeting<Target, Target>, condition as Condition<Target>?, effect as Effect<Target>))
+    }
+
+    override fun toString(): String {
+        return "Processor(chain=$chain)"
     }
 }
