@@ -26,6 +26,9 @@ import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.items.DebugExpItem
 import be.bluexin.rpg.items.DebugSkillItem
 import be.bluexin.rpg.items.DebugStatsItem
+import be.bluexin.rpg.pets.EggItem
+import be.bluexin.rpg.pets.EntityPet
+import be.bluexin.rpg.pets.RenderPet
 import be.bluexin.rpg.stats.*
 import be.bluexin.saomclib.capabilities.CapabilitiesHandler
 import com.teamwizardry.librarianlib.features.base.ModCreativeTab
@@ -96,13 +99,16 @@ open class CommonProxy {
 
         BlockEditor
         ContainerEditor
+
+        EggItem
     }
 
     private fun registerEntities() {
         var id = 0
-        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_rpg_arrow"), EntityRpgArrow::class.java, "entity_rpg_arrow", ++id, BlueRPG, 256, 1, true)
-        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_wand_projectile"), EntityWandProjectile::class.java, "entity_wand_projectile", ++id, BlueRPG, 256, 1, true)
-        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_skill_projectile"), EntitySkillProjectile::class.java, "entity_skill_projectile", ++id, BlueRPG, 256, 1, true)
+        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_rpg_arrow"), EntityRpgArrow::class.java, "entity_rpg_arrow", ++id, BlueRPG, 128, 1, true)
+        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_wand_projectile"), EntityWandProjectile::class.java, "entity_wand_projectile", ++id, BlueRPG, 128, 1, true)
+        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_skill_projectile"), EntitySkillProjectile::class.java, "entity_skill_projectile", ++id, BlueRPG, 128, 1, true)
+        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_pet"), EntityPet::class.java, "entity_pet", ++id, BlueRPG, 128, 1, true)
     }
 
     open fun init(event: FMLInitializationEvent) {
@@ -142,6 +148,7 @@ class ClientProxy: CommonProxy() {
         RenderingRegistry.registerEntityRenderingHandler(EntityRpgArrow::class.java, ::RenderRpgArrow)
         RenderingRegistry.registerEntityRenderingHandler(EntityWandProjectile::class.java, ::RenderWandProjectile)
         RenderingRegistry.registerEntityRenderingHandler(EntitySkillProjectile::class.java, ::RenderSkillProjectile)
+        RenderingRegistry.registerEntityRenderingHandler(EntityPet::class.java, ::RenderPet)
     }
 }
 

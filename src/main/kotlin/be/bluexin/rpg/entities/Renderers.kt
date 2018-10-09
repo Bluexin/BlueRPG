@@ -27,20 +27,18 @@ import net.minecraftforge.fml.relauncher.SideOnly
 
 @SideOnly(Side.CLIENT)
 class RenderRpgArrow(renderManagerIn: RenderManager) : RenderArrow<EntityRpgArrow>(renderManagerIn) {
-    private val RES_ARROW = ResourceLocation("textures/entity/projectiles/arrow.png")
+    private companion object {
+        private val RES_ARROW = ResourceLocation("textures/entity/projectiles/arrow.png")
+    }
 
     override fun getEntityTexture(entity: EntityRpgArrow) = RES_ARROW
 }
 
 @SideOnly(Side.CLIENT)
 abstract class RenderRpgProjectile<T: Entity>(renderManager: RenderManager) : Render<T>(renderManager) {
-    override fun doRender(entity: T, x: Double, y: Double, z: Double, entityYaw: Float, partialTicks: Float) {
-        // nop
-    }
+    override fun doRender(entity: T, x: Double, y: Double, z: Double, entityYaw: Float, partialTicks: Float) = Unit
 
-    override fun getEntityTexture(entity: T): ResourceLocation? {
-        return null
-    }
+    override fun getEntityTexture(entity: T): ResourceLocation? = null
 }
 
 @SideOnly(Side.CLIENT)
