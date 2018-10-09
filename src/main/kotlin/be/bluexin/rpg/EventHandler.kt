@@ -92,7 +92,7 @@ object CommonEventHandler {
         }
 
         p.equipmentAndArmor.forEach {
-            it.setTagInfo("bluerpg:disabled", NBTTagByte(if (it.requirementMet(p)) 0 else 1))
+            if (it.item is IRPGGear) it.setTagInfo("bluerpg:disabled", NBTTagByte(if (it.requirementMet(p)) 0 else 1))
         }
     }
 
