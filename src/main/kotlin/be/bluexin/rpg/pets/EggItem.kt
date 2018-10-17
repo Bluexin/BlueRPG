@@ -41,6 +41,7 @@ object EggItem : ItemMod("egg") {
             val blockpos = pos.offset(facing)
             val entity = EntityPet(worldIn)
             entity.setPosition(blockpos.x + .5, blockpos.y + this.getYOffset(worldIn, blockpos), blockpos.z + .5)
+            entity.setOwner(player)
             worldIn.spawnEntity(entity)
 
             applyItemEntityDataToEntity(worldIn, player, itemstack, entity)

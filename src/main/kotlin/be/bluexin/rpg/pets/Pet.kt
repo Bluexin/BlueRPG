@@ -19,6 +19,7 @@ package be.bluexin.rpg.pets
 
 import com.teamwizardry.librarianlib.features.base.entity.LivingEntityMod
 import com.teamwizardry.librarianlib.features.kotlin.tagCompound
+import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.utilities.profile
 import moe.plushie.armourers_workshop.client.render.SkinPartRenderer
 import moe.plushie.armourers_workshop.client.skin.cache.ClientSkinCache
@@ -30,14 +31,19 @@ import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.entity.Entity
+import net.minecraft.entity.IEntityOwnable
 import net.minecraft.entity.SharedMonsterAttributes
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.ResourceLocation
 import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import org.lwjgl.opengl.GL11
+import java.util.*
 
-class EntityPet(worldIn: World) : LivingEntityMod(worldIn) {
+class EntityPet(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
+    @Save
+    private var playerUUID: UUID? = null
 
     init {
         setSize(.8f, .8f)
@@ -46,10 +52,21 @@ class EntityPet(worldIn: World) : LivingEntityMod(worldIn) {
     override fun applyEntityAttributes() {
         super.applyEntityAttributes()
         this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).baseValue = 35.0
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).baseValue = 0.23000000417232513
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).baseValue = 0.45
         this.getEntityAttribute(SharedMonsterAttributes.ARMOR).baseValue = 2.0
     }
 
+    override fun initEntityAI() {
+        this.tasks.addTask(6, EntityAIFollowOwner(this, 1.0, 4f, 2f))
+    }
+
+    fun setOwner(player: EntityPlayer) {
+        playerUUID = player.gameProfile.id
+    }
+
+    override fun getOwner() = if (this.playerUUID != null) world.getPlayerEntityByUUID(this.playerUUID!!) else null
+
+    override fun getOwnerId() = this.playerUUID
 }
 
 @SideOnly(Side.CLIENT)
@@ -59,6 +76,7 @@ class RenderPet(renderManager: RenderManager) : RenderLiving<EntityPet>(renderMa
     override fun bindEntityTexture(entity: EntityPet) = true
 }
 
+@SideOnly(Side.CLIENT)
 class ModelPet : ModelBase() {
     private val skinPointer = SkinDescriptor().apply {
         this.readFromCompound(tagCompound {
