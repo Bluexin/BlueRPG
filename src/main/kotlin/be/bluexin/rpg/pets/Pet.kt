@@ -18,12 +18,13 @@
 package be.bluexin.rpg.pets
 
 import com.teamwizardry.librarianlib.features.base.entity.LivingEntityMod
-import com.teamwizardry.librarianlib.features.kotlin.tagCompound
+import com.teamwizardry.librarianlib.features.kotlin.createCompoundKey
+import com.teamwizardry.librarianlib.features.kotlin.managedValue
 import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.utilities.profile
+import moe.plushie.armourers_workshop.client.config.ConfigHandlerClient
 import moe.plushie.armourers_workshop.client.render.SkinPartRenderer
 import moe.plushie.armourers_workshop.client.skin.cache.ClientSkinCache
-import moe.plushie.armourers_workshop.common.config.ConfigHandlerClient
 import moe.plushie.armourers_workshop.common.skin.data.SkinDescriptor
 import net.minecraft.client.Minecraft
 import net.minecraft.client.model.ModelBase
@@ -34,6 +35,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.IEntityOwnable
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.ResourceLocation
 import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.Side
@@ -42,11 +44,36 @@ import org.lwjgl.opengl.GL11
 import java.util.*
 
 class EntityPet(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
+    private companion object {
+        private val SKIN_DATA = EntityPet::class.createCompoundKey()
+    }
+
     @Save
     private var playerUUID: UUID? = null
 
+    private var skinData by managedValue(SKIN_DATA)
+
+    var skinPointer: SkinDescriptor? = null
+        set(value) {
+            field = value
+            val tag = NBTTagCompound()
+            value?.writeToCompound(tag)
+            skinData = tag
+        }
+        get() {
+            if (field == null && !skinData.isEmpty) {
+                field = SkinDescriptor().apply { this.readFromCompound(skinData) }
+            }
+            return field
+        }
+
     init {
         setSize(.8f, .8f)
+    }
+
+    override fun entityInit() {
+        super.entityInit()
+        this.getDataManager().register(SKIN_DATA, NBTTagCompound())
     }
 
     override fun applyEntityAttributes() {
@@ -57,7 +84,7 @@ class EntityPet(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
     }
 
     override fun initEntityAI() {
-        this.tasks.addTask(6, EntityAIFollowOwner(this, 1.0, 4f, 2f))
+        this.tasks.addTask(6, EntityAIFollowOwner(this, 1.0, 5f, 3f))
     }
 
     fun setOwner(player: EntityPlayer) {
@@ -78,42 +105,18 @@ class RenderPet(renderManager: RenderManager) : RenderLiving<EntityPet>(renderMa
 
 @SideOnly(Side.CLIENT)
 class ModelPet : ModelBase() {
-    private val skinPointer = SkinDescriptor().apply {
-        this.readFromCompound(tagCompound {
-            "armourersWorkshop" to tagCompound {
-                "identifier" to tagCompound {
-                    "skinType" to "armourers:block"
-                    "globalId" to 0
-                    "localId" to 276296895
-                }
-                "dyeData" to tagCompound { }
-                "lock" to false
-            }
-        })
-    }
 
     override fun render(entityIn: Entity, limbSwing: Float, limbSwingAmount: Float, ageInTicks: Float, netHeadYaw: Float, headPitch: Float, scale: Float) {
         this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale, entityIn)
 
-        skinPointer.readFromCompound(tagCompound {
-            "armourersWorkshop" to tagCompound {
-                "identifier" to tagCompound {
-                    "skinType" to "armourers:block"
-                    "globalId" to 0
-                    "localId" to 276296895//-554593869
-                }
-                "dyeData" to tagCompound { }
-                "lock" to false
-            }
-        })
         profile("Render BlueRPG AW Pet") {
+            val skinPointer = (entityIn as? EntityPet)?.skinPointer ?: return
             val distance = Minecraft.getMinecraft().player.getDistance(
                     entityIn.posX,
                     entityIn.posY,
-                    entityIn.posZ)
-            if (distance > ConfigHandlerClient.maxSkinRenderDistance) {
-                return
-            }
+                    entityIn.posZ
+            )
+            if (distance > ConfigHandlerClient.renderDistanceSkin) return
 
             val data = ClientSkinCache.INSTANCE.getSkin(skinPointer) ?: return
             val skinDye = skinPointer.skinDye
@@ -127,7 +130,7 @@ class ModelPet : ModelBase() {
                 GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
                 GL11.glEnable(GL11.GL_BLEND)
                 val offset = partData.partType.offset
-                GL11.glTranslated(offset.x.toDouble(), -offset.y.toDouble(), offset.z.toDouble())
+                GL11.glTranslated(offset.x.toDouble(), -offset.y.toDouble(), offset.z.toDouble()) // y + 1.45 for current head skins to be floor-aligned
                 SkinPartRenderer.INSTANCE.renderPart(partData, scale, skinDye, null, distance, true)
                 GlStateManager.resetColor()
                 GlStateManager.color(1f, 1f, 1f, 1f)

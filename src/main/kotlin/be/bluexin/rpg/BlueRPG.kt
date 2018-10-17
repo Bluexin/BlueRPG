@@ -19,12 +19,16 @@ package be.bluexin.rpg
 
 import be.bluexin.rpg.modplugins.CNPCEventHandler
 import be.bluexin.rpg.modplugins.SAOUIEventHandler
+import be.bluexin.rpg.pets.AWIntegration
+import com.saomc.saoui.SAOCore
+import moe.plushie.armourers_workshop.common.lib.LibModInfo
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.SidedProxy
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent
+import noppes.npcs.CustomNpcs
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
@@ -59,8 +63,9 @@ object BlueRPG {
     fun preInit(event: FMLPreInitializationEvent) {
         proxy.preInit(event)
 
-        if (Loader.isModLoaded("customnpcs")) CNPCEventHandler
-        if (Loader.isModLoaded("saoui")) SAOUIEventHandler
+        if (Loader.isModLoaded(CustomNpcs.MODID)) CNPCEventHandler
+        if (Loader.isModLoaded(SAOCore.MODID)) SAOUIEventHandler
+        if (Loader.isModLoaded(LibModInfo.ID)) AWIntegration
     }
 
     @Mod.EventHandler

@@ -18,6 +18,7 @@
 package be.bluexin.rpg.pets
 
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
+import moe.plushie.armourers_workshop.utils.SkinNBTHelper
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -40,6 +41,7 @@ object EggItem : ItemMod("egg") {
         } else {
             val blockpos = pos.offset(facing)
             val entity = EntityPet(worldIn)
+            entity.skinPointer = SkinNBTHelper.getSkinDescriptorFromStack(itemstack)
             entity.setPosition(blockpos.x + .5, blockpos.y + this.getYOffset(worldIn, blockpos), blockpos.z + .5)
             entity.setOwner(player)
             worldIn.spawnEntity(entity)
