@@ -35,10 +35,10 @@ repositories {
     jcenter()
     mavenCentral()
     maven {
-        url = 'http://maven.bluexin.be/repository/snapshots/'
+        url = 'https://maven.bluexin.be/repository/snapshots/'
     }
     maven {
-        url = 'http://maven.bluexin.be/repository/releases/'
+        url = 'https://maven.bluexin.be/repository/releases/'
     }
 }
 
