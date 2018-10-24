@@ -22,6 +22,7 @@ import net.minecraft.block.material.Material
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.ai.EntityAIBase
+import net.minecraft.init.MobEffects
 import net.minecraft.pathfinding.PathNavigate
 import net.minecraft.pathfinding.PathNavigateFlying
 import net.minecraft.pathfinding.PathNavigateGround
@@ -125,11 +126,77 @@ open class EntityAIFollowOwner(private val pet: EntityPet, private val followSpe
     }
 }
 
-class EntityAIFollowOwnerFlying(entityPet: EntityPet, followSpeedIn: Double, minDistIn: Float, maxDistIn: Float) : EntityAIFollowOwner(entityPet, followSpeedIn, minDistIn, maxDistIn) {
+open class EntityAIFollowOwnerFlying(entityPet: EntityPet, followSpeedIn: Double, minDistIn: Float, maxDistIn: Float) : EntityAIFollowOwner(entityPet, followSpeedIn, minDistIn, maxDistIn) {
 
     override fun isTeleportFriendlyBlock(x: Int, z: Int, y: Int, xOffset: Int, zOffset: Int): Boolean {
         val pos = BlockPos(x + xOffset, y - 1, z + zOffset)
         val iblockstate = this.world.getBlockState(pos)
         return (iblockstate.isSideSolid(this.world, pos, EnumFacing.UP) || iblockstate.material === Material.LEAVES) && this.world.isAirBlock(BlockPos(x + xOffset, y, z + zOffset)) && this.world.isAirBlock(BlockPos(x + xOffset, y + 1, z + zOffset))
+    }
+}
+
+internal class AISlimeFloat(private val pet: EntityPet) : EntityAIBase() {
+
+    init {
+        this.mutexBits = 5
+        (pet.navigator as PathNavigateGround).canSwim = true
+    }
+
+    /**
+     * Returns whether the EntityAIBase should begin execution.
+     */
+    override fun shouldExecute(): Boolean {
+        return this.pet.isInWater || this.pet.isInLava
+    }
+
+    /**
+     * Keep ticking a continuous task that has already been started
+     */
+    override fun updateTask() {
+        if (this.pet.rng.nextFloat() < 0.8f) {
+            this.pet.jumpHelper.setJumping()
+        }
+
+        (this.pet.moveHelper as BounceHandler.BounceMoveHelper).speed = 1.2
+    }
+}
+
+internal class AISlimeHop(private val pet: EntityPet) : EntityAIBase() {
+
+    init {
+        this.mutexBits = 5
+    }
+
+    /**
+     * Returns whether the EntityAIBase should begin execution.
+     */
+    override fun shouldExecute() = true
+
+    /**
+     * Keep ticking a continuous task that has already been started
+     */
+    override fun updateTask() {
+        (this.pet.moveHelper as BounceHandler.BounceMoveHelper).speed = 1.0
+    }
+}
+
+internal class AIPetFaceOwner(private val pet: EntityPet) : EntityAIBase() {
+    init {
+        this.mutexBits = 2
+    }
+
+    /**
+     * Returns whether the EntityAIBase should begin execution.
+     */
+    override fun shouldExecute(): Boolean {
+        return this.pet.attackTarget == null && (this.pet.onGround || this.pet.isInWater || this.pet.isInLava || this.pet.isPotionActive(MobEffects.LEVITATION))
+    }
+
+    /**
+     * Keep ticking a continuous task that has already been started
+     */
+    override fun updateTask() {
+        this.pet.faceEntity(this.pet.owner!!, 10.0f, 10.0f)
+        (this.pet.moveHelper as BounceHandler.BounceMoveHelper).setDirection(this.pet.rotationYaw, false)
     }
 }

@@ -28,8 +28,10 @@ import be.bluexin.rpg.items.DebugSkillItem
 import be.bluexin.rpg.items.DebugStatsItem
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.EntityPet
+import be.bluexin.rpg.pets.PetMovementType
 import be.bluexin.rpg.pets.RenderPet
 import be.bluexin.rpg.stats.*
+import be.bluexin.rpg.util.registerDataSerializer
 import be.bluexin.saomclib.capabilities.CapabilitiesHandler
 import com.teamwizardry.librarianlib.features.base.ModCreativeTab
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
@@ -114,6 +116,7 @@ open class CommonProxy {
     open fun init(event: FMLInitializationEvent) {
         trickLiblib()
         FormulaeConfiguration.init()
+        registerDataSerializer<PetMovementType>()
     }
 
     private fun trickLiblib() { // FIXME: remove once TeamWizardry/LibrarianLib#57 is fixed

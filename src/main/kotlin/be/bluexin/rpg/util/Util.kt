@@ -27,6 +27,8 @@ import net.minecraft.entity.EntityLivingBase
 import net.minecraft.util.IThreadListener
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.Event
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 
 fun fire(event: Event) = !MinecraftForge.EVENT_BUS.post(event)
 
@@ -90,3 +92,12 @@ fun <T> SendChannel<T>.offerOrSendAndClose(it: T) {
         close()
     }
 }
+
+class BoundPropertyDelegateReadOnly<in R, T>(val prop: () -> T) : ReadOnlyProperty<R, T> {
+    override fun getValue(thisRef: R, property: KProperty<*>): T {
+        return prop()
+    }
+}
+
+val <T> (() -> T).delegate: ReadOnlyProperty<Any, T>
+    get() = BoundPropertyDelegateReadOnly(this)
