@@ -132,23 +132,33 @@ class RenderPet(renderManager: RenderManager) : RenderLiving<EntityPet>(renderMa
 
     override fun bindEntityTexture(entity: EntityPet) = true
 
-    override fun handleRotationFloat(pet: EntityPet, partialTicks: Float) = pet.movementHandler.handleRotationFloat(partialTicks)
+    override fun handleRotationFloat(pet: EntityPet, partialTicks: Float) =
+        pet.movementHandler.handleRotationFloat(partialTicks)
 
-    override fun preRenderCallback(pet: EntityPet, partialTicks: Float) = pet.movementHandler.preRenderCallback(partialTicks)
+    override fun preRenderCallback(pet: EntityPet, partialTicks: Float) =
+        pet.movementHandler.preRenderCallback(partialTicks)
 }
 
 @SideOnly(Side.CLIENT)
 class ModelPet : ModelBase() {
 
-    override fun render(entityIn: Entity, limbSwing: Float, limbSwingAmount: Float, ageInTicks: Float, netHeadYaw: Float, headPitch: Float, scale: Float) {
+    override fun render(
+        entityIn: Entity,
+        limbSwing: Float,
+        limbSwingAmount: Float,
+        ageInTicks: Float,
+        netHeadYaw: Float,
+        headPitch: Float,
+        scale: Float
+    ) {
         this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale, entityIn)
 
         profile("Render BlueRPG AW Pet") {
             val skinPointer = (entityIn as? EntityPet)?.skinPointer ?: return
             val distance = Minecraft.getMinecraft().player.getDistance(
-                    entityIn.posX,
-                    entityIn.posY,
-                    entityIn.posZ
+                entityIn.posX,
+                entityIn.posY,
+                entityIn.posZ
             )
             if (distance > ConfigHandlerClient.renderDistanceSkin) return
 
@@ -164,7 +174,11 @@ class ModelPet : ModelBase() {
                 GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
                 GL11.glEnable(GL11.GL_BLEND)
                 val offset = partData.partType.offset
-                GL11.glTranslated(offset.x.toDouble(), -offset.y.toDouble() + 1.45, offset.z.toDouble()) // y + 1.45 for current head skins to be floor-aligned
+                GL11.glTranslated(
+                    offset.x.toDouble(),
+                    -offset.y.toDouble() + 1.45,
+                    offset.z.toDouble()
+                ) // y + 1.45 for current head skins to be floor-aligned
                 SkinPartRenderer.INSTANCE.renderPart(partData, scale, skinDye, null, distance, true)
                 GlStateManager.resetColor()
                 GlStateManager.color(1f, 1f, 1f, 1f)

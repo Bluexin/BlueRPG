@@ -47,7 +47,17 @@ import net.minecraftforge.items.ItemStackHandler
 object BlockEditor : BlockModContainer("editor", Material(MapColor.AIR)) {
     override fun createTileEntity(world: World, state: IBlockState) = TileEditor()
 
-    override fun onBlockActivated(worldIn: World, pos: BlockPos, state: IBlockState, playerIn: EntityPlayer, hand: EnumHand, facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
+    override fun onBlockActivated(
+        worldIn: World,
+        pos: BlockPos,
+        state: IBlockState,
+        playerIn: EntityPlayer,
+        hand: EnumHand,
+        facing: EnumFacing,
+        hitX: Float,
+        hitY: Float,
+        hitZ: Float
+    ): Boolean {
         worldIn onServer {
             GuiHandler.open(ContainerEditor.NAME, playerIn, pos)
         }
@@ -77,7 +87,7 @@ class TileEditor : TileModInventory(ModuleInventory(EditorInventory())) {
 
     fun saveStats() {
         val i = module.handler.getStackInSlot(0)
-        if (i.isNotEmpty)  {
+        if (i.isNotEmpty) {
             i.tokenStats?.loadFrom(tokenStats)
             i.stats?.loadFrom(gearStats)
         }
@@ -100,6 +110,6 @@ class TileEditor : TileModInventory(ModuleInventory(EditorInventory())) {
         }
 
         override fun insertItem(slot: Int, stack: ItemStack, simulate: Boolean) =
-                if (isItemValid(slot, stack)) super.insertItem(slot, stack, simulate) else stack
+            if (isItemValid(slot, stack)) super.insertItem(slot, stack, simulate) else stack
     }
 }

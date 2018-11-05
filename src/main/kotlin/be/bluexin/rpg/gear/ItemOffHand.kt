@@ -54,19 +54,23 @@ class ItemOffHand private constructor(override val type: OffHandType) : ItemMod(
         maxStackSize = 1
     }
 
-    override fun getAttributeModifiers(slot: EntityEquipmentSlot, stack: ItemStack): Multimap<String, AttributeModifier> {
-        return if (stack.tagCompound?.getByte("bluerpg:twohandflag") == 0.toByte()) super<IRPGGear>.getAttributeModifiers(slot, stack)
+    override fun getAttributeModifiers(
+        slot: EntityEquipmentSlot,
+        stack: ItemStack
+    ): Multimap<String, AttributeModifier> {
+        return if (stack.tagCompound?.getByte("bluerpg:twohandflag") == 0.toByte())
+            super<IRPGGear>.getAttributeModifiers(slot, stack)
         else HashMultimap.create<String, AttributeModifier>()
     }
 
     override fun initCapabilities(stack: ItemStack, nbt: NBTTagCompound?) =
-            super<IRPGGear>.initCapabilities(stack, nbt)
+        super<IRPGGear>.initCapabilities(stack, nbt)
 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) =
-            super<IRPGGear>.addInformation(stack, worldIn, tooltip, flagIn)
+        super<IRPGGear>.addInformation(stack, worldIn, tooltip, flagIn)
 
     override fun getNBTShareTag(stack: ItemStack): NBTTagCompound? =
-            super.addNBTShare(stack, super.getNBTShareTag(stack) ?: NBTTagCompound())
+        super.addNBTShare(stack, super.getNBTShareTag(stack) ?: NBTTagCompound())
 
     override fun readNBTShareTag(stack: ItemStack, nbt: NBTTagCompound?) {
         super.readNBTShareTag(stack, nbt)
@@ -103,11 +107,11 @@ class ItemOffHand private constructor(override val type: OffHandType) : ItemMod(
     override fun getItemStackDisplayName(stack: ItemStack) = super<IRPGGear>.getItemStackDisplayName(stack)
 
     override fun getUnlocalizedNameInefficientlyTrick(stack: ItemStack): String =
-            super.getUnlocalizedNameInefficiently(stack)
+        super.getUnlocalizedNameInefficiently(stack)
 
     override fun tooltipizeFixedStats(stats: GearStats) =
-            FixedStat.values().asSequence().filter { stats[it] != 0 }
-                    .map { "rpg.tooltip.fstat".localize(it.localize(stats[it]), it.longName()) }
+        FixedStat.values().asSequence().filter { stats[it] != 0 }
+            .map { "rpg.tooltip.fstat".localize(it.localize(stats[it]), it.longName()) }
 
     override val gearSlot: EntityEquipmentSlot
         get() = EntityEquipmentSlot.OFFHAND

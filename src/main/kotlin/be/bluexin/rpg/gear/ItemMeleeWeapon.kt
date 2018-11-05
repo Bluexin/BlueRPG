@@ -38,7 +38,8 @@ import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 
-class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) : ItemModSword(type.key, ToolMaterial.IRON), IRPGGear {
+class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) :
+    ItemModSword(type.key, ToolMaterial.IRON), IRPGGear {
     // Could use EntityPlayer.REACH_DISTANCE and SharedMonsterAttributes.ATTACK_SPEED attributes to implement mechanics
     companion object {
         private val pieces = Array(MeleeWeaponType.values().size) { typeIdx ->
@@ -49,7 +50,10 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) : 
         operator fun get(type: MeleeWeaponType) = pieces[type.ordinal]
     }
 
-    override fun getAttributeModifiers(slot: EntityEquipmentSlot, stack: ItemStack): Multimap<String, AttributeModifier> {
+    override fun getAttributeModifiers(
+        slot: EntityEquipmentSlot,
+        stack: ItemStack
+    ): Multimap<String, AttributeModifier> {
         val m = super<IRPGGear>.getAttributeModifiers(slot, stack)
 
         if (stack.stats?.generated == true) for ((stat, value) in type.attributes) {
@@ -60,13 +64,13 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) : 
     }
 
     override fun initCapabilities(stack: ItemStack, nbt: NBTTagCompound?) =
-            super<IRPGGear>.initCapabilities(stack, nbt)
+        super<IRPGGear>.initCapabilities(stack, nbt)
 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) =
-            super<IRPGGear>.addInformation(stack, worldIn, tooltip, flagIn)
+        super<IRPGGear>.addInformation(stack, worldIn, tooltip, flagIn)
 
     override fun getNBTShareTag(stack: ItemStack): NBTTagCompound? =
-            super.addNBTShare(stack, super.getNBTShareTag(stack) ?: NBTTagCompound())
+        super.addNBTShare(stack, super.getNBTShareTag(stack) ?: NBTTagCompound())
 
     override fun readNBTShareTag(stack: ItemStack, nbt: NBTTagCompound?) {
         super.readNBTShareTag(stack, nbt)
@@ -75,21 +79,27 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) : 
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
-        return if (r.type == EnumActionResult.PASS) super<ItemModSword>.onItemRightClick(worldIn, playerIn, handIn) else r
+        return if (r.type == EnumActionResult.PASS) super<ItemModSword>.onItemRightClick(
+            worldIn,
+            playerIn,
+            handIn
+        ) else r
     }
 
     override fun getItemStackDisplayName(stack: ItemStack) = super<IRPGGear>.getItemStackDisplayName(stack)
 
     override fun getUnlocalizedNameInefficientlyTrick(stack: ItemStack): String =
-            super.getUnlocalizedNameInefficiently(stack)
+        super.getUnlocalizedNameInefficiently(stack)
 
     override fun tooltipizeFixedStats(stats: GearStats) =
-            sequenceOf("rpg.tooltip.fstat".localize(
-                    FixedStat.values().asSequence().filter { stats[it] != 0 }.joinToString(separator = "-") {
-                        it.localize(stats[it])
-                    },
-                    FixedStat.BASE_DAMAGE.longName()
-            ))
+        sequenceOf("rpg.tooltip.fstat"
+            .localize(
+                FixedStat.values().asSequence().filter { stats[it] != 0 }.joinToString(separator = "-") {
+                    it.localize(stats[it])
+                },
+                FixedStat.BASE_DAMAGE.longName()
+            )
+        )
 
     override fun getShareTag(): Boolean {
         return true

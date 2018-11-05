@@ -55,10 +55,15 @@ object DebugStatsItem : ItemMod("debug_stats") {
 
         tooltip.add("rpg.display.stats".localize())
         tooltip.add("rpg.display.level".localize(stats.level.level_a))
-        tooltip.add("rpg.display.stat".localize("rpg.attributepoints.${if (shift) "long" else "short"}".localize(), stats.attributePoints))
         tooltip.add(
-                if (shift) "rpg.display.exp.long".localize(stats.level.exp_a, stats.level.toNext)
-                else "rpg.display.exp.short".localize(100f * stats.level.exp_a / stats.level.toNext)
+            "rpg.display.stat".localize(
+                "rpg.attributepoints.${if (shift) "long" else "short"}".localize(),
+                stats.attributePoints
+            )
+        )
+        tooltip.add(
+            if (shift) "rpg.display.exp.long".localize(stats.level.exp_a, stats.level.toNext)
+            else "rpg.display.exp.short".localize(100f * stats.level.exp_a / stats.level.toNext)
         )
         tooltip.addAll(stats.baseStats().map {
             "rpg.display.stat".localize(if (shift) it.key.longName() else it.key.shortName(), it.value)
@@ -126,63 +131,87 @@ object DebugSkillItem : ItemMod("debug_skill") {
                 0 -> {
                     val p = Processor()
                     p.addElement(
-                            Projectile<PlayerHolder, LivingHolder<*>>(condition = RequireStatus(Status.AGGRESSIVE)),
-                            null,
-                            Damage(3.0)
+                        Projectile<PlayerHolder, LivingHolder<*>>(condition = RequireStatus(Status.AGGRESSIVE)),
+                        null,
+                        Damage(3.0)
                     )
                     p.process(entityLiving)
                 }
                 1 -> {
                     val p = Processor()
                     p.addElement(
-                            AoE<PlayerHolder, LivingHolder<*>>(),
-                            RequireStatus(Status.AGGRESSIVE),
-                            Damage(3.0)
+                        AoE<PlayerHolder, LivingHolder<*>>(),
+                        RequireStatus(Status.AGGRESSIVE),
+                        Damage(3.0)
                     )
                     p.process(entityLiving)
                 }
                 2 -> {
                     val p = Processor()
                     p.addElement(
-                            AoE<PlayerHolder, LivingHolder<*>>(),
-                            RequireStatus(Status.AGGRESSIVE),
-                            Skill(Chain<LivingHolder<*>>(
-                                    maxTargets = 3,
-                                    condition = RequireStatus(Status.AGGRESSIVE)),
-                                    Damage(2.0)
-                            )
+                        AoE<PlayerHolder, LivingHolder<*>>(),
+                        RequireStatus(Status.AGGRESSIVE),
+                        Skill(
+                            Chain<LivingHolder<*>>(
+                                maxTargets = 3,
+                                condition = RequireStatus(Status.AGGRESSIVE)
+                            ),
+                            null,
+                            Damage(2.0)
+                        )
                     )
                     p.process(entityLiving)
                 }
                 3 -> {
                     val p = Processor()
                     p.addElement(
-                            Channelling<PlayerHolder, LivingHolder<*>>(
-                                    delayMillis = 1000,
-                                    procs = 10,
-                                    targeting = Self<PlayerHolder>().cast()
-                            ),
-                            null,
-                            Damage(-3.0)
+                        Channelling<PlayerHolder, LivingHolder<*>>(
+                            delayMillis = 1000,
+                            procs = 10,
+                            targeting = Self<PlayerHolder>().cast()
+                        ),
+                        null,
+                        Damage(-3.0)
                     )
                     p.process(entityLiving)
                 }
                 4 -> {
                     val p = Processor()
                     p.addElement(
-                            Channelling<PlayerHolder, LivingHolder<*>>(
-                                    delayMillis = 1000,
-                                    procs = 10,
-                                    targeting = Self<PlayerHolder>().cast()
-                            ),
-                            null,
-                            Damage(-3.0)
+                        Projectile<PlayerHolder, WorldPosHolder>(
+                            condition = RequireStatus(Status.AGGRESSIVE),
+                            precise = true
+                        ),
+                        null,
+                        Skill(
+                            AoE<WorldPosHolder, LivingHolder<*>>(),
+                            RequireStatus(Status.AGGRESSIVE),
+                            Damage(3000.0)
+                        )
+                    )
+                    p.process(entityLiving)
+                }
+                5 -> {
+                    val p = Processor()
+                    p.addElement(
+                        Channelling<PlayerHolder, LivingHolder<*>>(
+                            delayMillis = 1000,
+                            procs = 10,
+                            targeting = Self<PlayerHolder>().cast()
+                        ),
+                        null,
+                        Damage(-3.0)
                     )
                     try {
                         BlueRPG.LOGGER.warn("Serializing $p")
                         val nbt = AbstractSaveHandler.writeAutoNBT(p, false)
                         BlueRPG.LOGGER.warn("Result: $nbt")
-                        BlueRPG.LOGGER.warn("Loaded: ${AbstractSaveHandler.readAutoNBTByClass(Processor::class.java, nbt, false)}")
+                        BlueRPG.LOGGER.warn(
+                            "Loaded: ${AbstractSaveHandler.readAutoNBTByClass(
+                                Processor::class.java,
+                                nbt, false
+                            )}"
+                        )
                     } catch (e: Exception) {
                         BlueRPG.LOGGER.warn("Unable to save Processor :", e)
                     }

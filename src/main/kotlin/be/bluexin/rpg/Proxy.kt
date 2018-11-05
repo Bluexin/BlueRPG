@@ -60,7 +60,10 @@ open class CommonProxy {
         vanillaHax()
         registerEntities()
 
-        CapabilitiesHandler.registerEntityCapability(PlayerStats::class.java, PlayerStats.Storage) { it is EntityPlayer }
+        CapabilitiesHandler.registerEntityCapability(
+            PlayerStats::class.java,
+            PlayerStats.Storage
+        ) { it is EntityPlayer }
         // Not using SAOMCLib for this one because we don't want it autoregistered
         CapabilityManager.INSTANCE.register(GearStats::class.java, GearStats.Storage) { GearStats(ItemStack.EMPTY) }
         CapabilityManager.INSTANCE.register(TokenStats::class.java, TokenStats.Storage) { TokenStats(ItemStack.EMPTY) }
@@ -82,7 +85,7 @@ open class CommonProxy {
     }
 
     private fun classLoadItems() {
-        object: ModCreativeTab() {
+        object : ModCreativeTab() {
             override val iconStack: ItemStack
                 get() = ItemStack(ItemGearToken[TokenType.TOKEN])
 
@@ -107,10 +110,46 @@ open class CommonProxy {
 
     private fun registerEntities() {
         var id = 0
-        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_rpg_arrow"), EntityRpgArrow::class.java, "entity_rpg_arrow", ++id, BlueRPG, 128, 1, true)
-        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_wand_projectile"), EntityWandProjectile::class.java, "entity_wand_projectile", ++id, BlueRPG, 128, 1, true)
-        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_skill_projectile"), EntitySkillProjectile::class.java, "entity_skill_projectile", ++id, BlueRPG, 128, 1, true)
-        EntityRegistry.registerModEntity(ResourceLocation(BlueRPG.MODID, "entity_pet"), EntityPet::class.java, "entity_pet", ++id, BlueRPG, 128, 1, true)
+        EntityRegistry.registerModEntity(
+            ResourceLocation(BlueRPG.MODID, "entity_rpg_arrow"),
+            EntityRpgArrow::class.java,
+            "entity_rpg_arrow",
+            ++id,
+            BlueRPG,
+            128,
+            1,
+            true
+        )
+        EntityRegistry.registerModEntity(
+            ResourceLocation(BlueRPG.MODID, "entity_wand_projectile"),
+            EntityWandProjectile::class.java,
+            "entity_wand_projectile",
+            ++id,
+            BlueRPG,
+            128,
+            1,
+            true
+        )
+        EntityRegistry.registerModEntity(
+            ResourceLocation(BlueRPG.MODID, "entity_skill_projectile"),
+            EntitySkillProjectile::class.java,
+            "entity_skill_projectile",
+            ++id,
+            BlueRPG,
+            128,
+            1,
+            true
+        )
+        EntityRegistry.registerModEntity(
+            ResourceLocation(BlueRPG.MODID, "entity_pet"),
+            EntityPet::class.java,
+            "entity_pet",
+            ++id,
+            BlueRPG,
+            128,
+            1,
+            true
+        )
     }
 
     open fun init(event: FMLInitializationEvent) {
@@ -122,6 +161,7 @@ open class CommonProxy {
     private fun trickLiblib() { // FIXME: remove once TeamWizardry/LibrarianLib#57 is fixed
         @Savable
         class T(@Save val s: StatCapability)
+
         @Savable
         class T2(@Save val s: Stat)
 
@@ -138,7 +178,7 @@ open class CommonProxy {
 }
 
 @SideOnly(Side.CLIENT)
-class ClientProxy: CommonProxy() {
+class ClientProxy : CommonProxy() {
     override fun preInit(event: FMLPreInitializationEvent) {
         super.preInit(event)
 
@@ -156,7 +196,7 @@ class ClientProxy: CommonProxy() {
 }
 
 @SideOnly(Side.SERVER)
-class ServerProxy: CommonProxy() {
+class ServerProxy : CommonProxy() {
     override fun preInit(event: FMLPreInitializationEvent) {
         super.preInit(event)
 

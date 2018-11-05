@@ -34,16 +34,16 @@ enum class Status {
     PARTY;
 
     operator fun invoke(caster: TargetWithStatus, target: TargetWithStatus): Boolean =
-            when (this) {
-                SELF -> caster == target
-                FRIENDLY -> SELF(caster, target) || PARTY(caster, target)
-                AGGRESSIVE -> !FRIENDLY(caster, target) // TODO: this should be improved (check cnpc api)
-                PARTY -> {
-                    val p = (caster as? TargetWithParty)?.party
-                    if (p != null) p == (target as? TargetWithParty)?.party
-                    else false
-                }
+        when (this) {
+            SELF -> caster == target
+            FRIENDLY -> SELF(caster, target) || PARTY(caster, target)
+            AGGRESSIVE -> !FRIENDLY(caster, target) // TODO: this should be improved (check cnpc api)
+            PARTY -> {
+                val p = (caster as? TargetWithParty)?.party
+                if (p != null) p == (target as? TargetWithParty)?.party
+                else false
             }
+        }
 }
 
 interface Target {

@@ -32,7 +32,12 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.MathHelper
 import net.minecraft.world.World
 
-open class EntityAIFollowOwner(private val pet: EntityPet, private val followSpeed: Double, protected var minDist: Float, protected var maxDist: Float) : EntityAIBase() {
+open class EntityAIFollowOwner(
+    private val pet: EntityPet,
+    private val followSpeed: Double,
+    protected var minDist: Float,
+    protected var maxDist: Float
+) : EntityAIBase() {
     private var owner: EntityLivingBase? = null
     protected var world: World = pet.world
     private val petPathfinder: PathNavigate = pet.navigator
@@ -104,10 +109,18 @@ open class EntityAIFollowOwner(private val pet: EntityPet, private val followSpe
                         val j = MathHelper.floor(owner.posZ) - 2
                         val k = MathHelper.floor(owner.entityBoundingBox.minY)
 
-                        repeat(5) {l ->
+                        repeat(5) { l ->
                             repeat(5) { i1 ->
-                                if ((l < 1 || i1 < 1 || l > 3 || i1 > 3) && this.isTeleportFriendlyBlock(i, j, k, l, i1)) {
-                                    this.pet.setLocationAndAngles(((i + l).toFloat() + 0.5f).toDouble(), k.toDouble(), ((j + i1).toFloat() + 0.5f).toDouble(), this.pet.rotationYaw, this.pet.rotationPitch)
+                                if ((l < 1 || i1 < 1 || l > 3 || i1 > 3)
+                                    && this.isTeleportFriendlyBlock(i, j, k, l, i1)
+                                ) {
+                                    this.pet.setLocationAndAngles(
+                                        ((i + l).toFloat() + 0.5f).toDouble(),
+                                        k.toDouble(),
+                                        ((j + i1).toFloat() + 0.5f).toDouble(),
+                                        this.pet.rotationYaw,
+                                        this.pet.rotationPitch
+                                    )
                                     this.petPathfinder.clearPath()
                                     return
                                 }
@@ -122,16 +135,23 @@ open class EntityAIFollowOwner(private val pet: EntityPet, private val followSpe
     protected open fun isTeleportFriendlyBlock(x: Int, z: Int, y: Int, xOffset: Int, zOffset: Int): Boolean {
         val blockpos = BlockPos(x + xOffset, y - 1, z + zOffset)
         val iblockstate = this.world.getBlockState(blockpos)
-        return iblockstate.getBlockFaceShape(this.world, blockpos, EnumFacing.DOWN) == BlockFaceShape.SOLID && iblockstate.canEntitySpawn(this.pet) && this.world.isAirBlock(blockpos.up()) && this.world.isAirBlock(blockpos.up(2))
+        return iblockstate.getBlockFaceShape(this.world, blockpos, EnumFacing.DOWN) == BlockFaceShape.SOLID
+                && iblockstate.canEntitySpawn(this.pet)
+                && this.world.isAirBlock(blockpos.up())
+                && this.world.isAirBlock(blockpos.up(2))
     }
 }
 
-open class EntityAIFollowOwnerFlying(entityPet: EntityPet, followSpeedIn: Double, minDistIn: Float, maxDistIn: Float) : EntityAIFollowOwner(entityPet, followSpeedIn, minDistIn, maxDistIn) {
+open class EntityAIFollowOwnerFlying(entityPet: EntityPet, followSpeedIn: Double, minDistIn: Float, maxDistIn: Float) :
+    EntityAIFollowOwner(entityPet, followSpeedIn, minDistIn, maxDistIn) {
 
     override fun isTeleportFriendlyBlock(x: Int, z: Int, y: Int, xOffset: Int, zOffset: Int): Boolean {
         val pos = BlockPos(x + xOffset, y - 1, z + zOffset)
         val iblockstate = this.world.getBlockState(pos)
-        return (iblockstate.isSideSolid(this.world, pos, EnumFacing.UP) || iblockstate.material === Material.LEAVES) && this.world.isAirBlock(BlockPos(x + xOffset, y, z + zOffset)) && this.world.isAirBlock(BlockPos(x + xOffset, y + 1, z + zOffset))
+        return (iblockstate.isSideSolid(this.world, pos, EnumFacing.UP)
+                || iblockstate.material === Material.LEAVES)
+                && this.world.isAirBlock(BlockPos(x + xOffset, y, z + zOffset))
+                && this.world.isAirBlock(BlockPos(x + xOffset, y + 1, z + zOffset))
     }
 }
 
@@ -189,7 +209,12 @@ internal class AIPetFaceOwner(private val pet: EntityPet) : EntityAIBase() {
      * Returns whether the EntityAIBase should begin execution.
      */
     override fun shouldExecute(): Boolean {
-        return this.pet.attackTarget == null && (this.pet.onGround || this.pet.isInWater || this.pet.isInLava || this.pet.isPotionActive(MobEffects.LEVITATION))
+        return this.pet.attackTarget == null
+                && (this.pet.onGround
+                || this.pet.isInWater
+                || this.pet.isInLava
+                || this.pet.isPotionActive(MobEffects.LEVITATION)
+                )
     }
 
     /**

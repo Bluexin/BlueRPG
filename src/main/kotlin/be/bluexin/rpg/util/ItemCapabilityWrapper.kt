@@ -27,7 +27,7 @@ import net.minecraftforge.common.capabilities.ICapabilitySerializable
 class ItemCapabilityWrapper<A>(val instance: A, val capability: Capability<A>) : ICapabilitySerializable<NBTBase> {
 
     override fun <T : Any?> getCapability(capability: Capability<T>, facing: EnumFacing?): T? =
-            if (capability == this.capability) this.capability.cast(instance) else null
+        if (capability == this.capability) this.capability.cast(instance) else null
 
     override fun hasCapability(capability: Capability<*>, facing: EnumFacing?) = capability == GearStats.Capability
 
@@ -36,6 +36,6 @@ class ItemCapabilityWrapper<A>(val instance: A, val capability: Capability<A>) :
     }
 
     override fun serializeNBT(): NBTBase {
-        return capability.storage.writeNBT(capability, instance, null)?: NBTTagCompound()
+        return capability.storage.writeNBT(capability, instance, null) ?: NBTTagCompound()
     }
 }

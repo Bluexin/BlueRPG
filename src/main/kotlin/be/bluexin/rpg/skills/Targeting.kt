@@ -53,14 +53,20 @@ interface Targeting<FROM : Target, RESULT : Target> {
 @Savable
 @NamedDynamic("t:p")
 data class Projectile<FROM, RESULT>(
-        override val range: Double = 15.0, val velocity: Float = 1f, val inaccuracy: Float = 1f,
-        val condition: Condition<RESULT>? = null
+    override val range: Double = 15.0, val velocity: Float = 1f, val inaccuracy: Float = 1f,
+    val condition: Condition<RESULT>? = null, val precise: Boolean = false
 ) : Targeting<FROM, RESULT> where FROM : TargetWithLookVec, FROM : TargetWithPosition, FROM : TargetWithWorld,
                                   RESULT : TargetWithPosition, RESULT : TargetWithWorld {
     override operator fun invoke(caster: EntityLivingBase, from: FROM, result: SendChannel<RESULT>) {
         from.world.minecraftServer!!.runMainThread {
             from.world.spawnEntity(EntitySkillProjectile(
-                    from.world, if (caster is EntityPlayer) PlayerHolder(caster) else null, from, range, result, condition
+                from.world,
+                if (caster is EntityPlayer) PlayerHolder(caster) else null,
+                from,
+                range,
+                result,
+                condition,
+                precise
             ).apply {
                 realShoot(from, 0.0f, velocity, inaccuracy)
             })
@@ -84,7 +90,7 @@ data class Self<T : Target>(val unused: Boolean = false) : Targeting<T, T> {
 @Savable
 @NamedDynamic("t:r")
 data class Raycast<FROM, RESULT>(
-        override val range: Double = 3.0, val condition: Condition<RESULT>? = null
+    override val range: Double = 3.0, val condition: Condition<RESULT>? = null
 ) : Targeting<FROM, RESULT> where FROM : TargetWithLookVec, FROM : TargetWithPosition, FROM : TargetWithWorld,
                                   RESULT : TargetWithPosition, RESULT : TargetWithWorld {
     override operator fun invoke(caster: EntityLivingBase, from: FROM, result: SendChannel<RESULT>) {
@@ -99,7 +105,7 @@ data class Raycast<FROM, RESULT>(
 @Savable
 @NamedDynamic("t:c")
 data class Channelling<FROM : Target, RESULT : Target>(
-        val delayMillis: Long, val procs: Int, val targeting: Targeting<FROM, RESULT>
+    val delayMillis: Long, val procs: Int, val targeting: Targeting<FROM, RESULT>
 ) : Targeting<FROM, RESULT> by targeting {
     override operator fun invoke(caster: EntityLivingBase, from: FROM, result: SendChannel<RESULT>) {
         launch {
@@ -141,19 +147,25 @@ data class Channelling<FROM : Target, RESULT : Target>(
 @Savable
 @NamedDynamic("t:a")
 data class AoE<FROM, RESULT>(
-        override val range: Double = 3.0, val shape: Shape = Shape.CIRCLE
-) : Targeting<FROM, RESULT> where FROM : TargetWithLookVec, FROM : TargetWithPosition, FROM : TargetWithWorld,
+    override val range: Double = 3.0, val shape: Shape = Shape.CIRCLE
+) : Targeting<FROM, RESULT> where FROM : TargetWithPosition, FROM : TargetWithWorld,
                                   RESULT : TargetWithPosition, RESULT : TargetWithWorld {
     override operator fun invoke(caster: EntityLivingBase, from: FROM, result: SendChannel<RESULT>) {
+        PacketHandler.NETWORK.sendToAllAround(
+            PacketGlitter(PacketGlitter.Type.AOE, from.pos),
+            from.world,
+            from.pos,
+            64.0
+        )
         val dist = pow(range, 2.0)
         val entPos = from.pos
         val w = Vec3d(range, range, range)
         val minPos = entPos - w
         val maxPos = entPos + w
         val e = from.world.getEntitiesWithinAABB(EntityLivingBase::class.java, AxisAlignedBB(minPos, maxPos),
-                if (shape == Shape.SQUARE) null else Predicate<EntityLivingBase> {
-                    from.getDistanceSq(LivingHolder(it!!)) <= dist
-                }
+            if (shape == Shape.SQUARE) null else Predicate<EntityLivingBase> {
+                from.getDistanceSq(LivingHolder(it!!)) <= dist
+            }
         )
         launch {
             e.forEach { result.send(LivingHolder(it!!) as RESULT) }
@@ -170,8 +182,8 @@ data class AoE<FROM, RESULT>(
 @Savable
 @NamedDynamic("t:i")
 data class Chain<T>(
-        override val range: Double = 3.0, val maxTargets: Int = 5, val delayMillis: Long = 500, val repeat: Boolean = false,
-        val condition: Condition<T>? = null
+    override val range: Double = 3.0, val maxTargets: Int = 5, val delayMillis: Long = 500, val repeat: Boolean = false,
+    val condition: Condition<T>? = null
 ) : Targeting<T, T>
         where T : TargetWithPosition, T : TargetWithWorld {
     override operator fun invoke(caster: EntityLivingBase, from: T, result: SendChannel<T>) {
@@ -188,13 +200,14 @@ data class Chain<T>(
                 val es = try {
                     from.world.getEntitiesWithinAABB(EntityLivingBase::class.java, AxisAlignedBB(minPos, maxPos)) {
                         val h = LivingHolder(it!!) as T
+                        @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
                         h != previousTarget && previousTarget.getDistanceSq(h) <= dist &&
                                 (repeat || h !in targets) && (condition == null || condition!!(caster, h))
                     }
                 } catch (_: Exception) {
                     listOf<EntityLivingBase>()
                 }
-                val e = es.minBy { previousTarget.getDistanceSq(LivingHolder(it!!)) }
+                val e = es.minBy { previousTarget.getDistanceSq(LivingHolder(it)) }
                 if (e != null) {
                     val h = LivingHolder(e) as T
                     if (!repeat) targets += h

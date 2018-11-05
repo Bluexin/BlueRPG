@@ -41,8 +41,8 @@ import net.minecraft.world.World
 import java.util.*
 
 enum class Rarity(
-        private val color: TextFormatting,
-        private val primaryRolls: Int
+    private val color: TextFormatting,
+    private val primaryRolls: Int
 ) : Localizable {
     COMMON(WHITE, 1),
     UNCOMMON(GREEN, 1),
@@ -75,15 +75,18 @@ enum class Rarity(
 }
 
 enum class TokenType(
-        private val rarityWeights: Map<Rarity, Int>
+    private val rarityWeights: Map<Rarity, Int>
 ) : Localizable {
-    TOKEN(mapOf(
+    TOKEN(
+        mapOf(
             COMMON to 3300,
             UNCOMMON to 4100,
             RARE to 2450,
             EPIC to 150
-    )),
-    CRAFTED(mapOf(
+        )
+    ),
+    CRAFTED(
+        mapOf(
             COMMON to 1000,
             UNCOMMON to 5700,
             RARE to 3700,
@@ -91,22 +94,27 @@ enum class TokenType(
             LEGENDARY to 47,
             MYTHIC to 7,
             GODLIKE to 1
-    )),
-    PLUS(mapOf(
+        )
+    ),
+    PLUS(
+        mapOf(
             UNCOMMON to 4000,
             RARE to 4000,
             EPIC to 1920,
             LEGENDARY to 70,
             MYTHIC to 8,
             GODLIKE to 2
-    )),
-    PLUS2(mapOf(
+        )
+    ),
+    PLUS2(
+        mapOf(
             RARE to 5000,
             EPIC to 3920,
             LEGENDARY to 1067,
             MYTHIC to 10,
             GODLIKE to 3
-    ));
+        )
+    );
 
     private val totalWeight by lazy { rarityWeights.values.sum() }
 
@@ -145,7 +153,7 @@ interface GearType : Localizable {
 }
 
 enum class ArmorType(
-        val armorMaterial: ItemArmor.ArmorMaterial
+    val armorMaterial: ItemArmor.ArmorMaterial
 ) : GearType {
     CLOTH(ItemArmor.ArmorMaterial.LEATHER),
     LEATHER(ItemArmor.ArmorMaterial.LEATHER),
@@ -167,38 +175,55 @@ enum class ArmorType(
     }
 }
 
-interface WeaponType: GearType {
+interface WeaponType : GearType {
     val twoHander: Boolean
 }
 
-enum class MeleeWeaponType(override val twoHander: Boolean = false, override val allowBlock: Boolean = false, override val allowParry: Boolean = false, val attributes: Array<WAValue> = arrayOf()) : WeaponType {
-    MACE(attributes = arrayOf(
+enum class MeleeWeaponType(
+    override val twoHander: Boolean = false,
+    override val allowBlock: Boolean = false,
+    override val allowParry: Boolean = false,
+    val attributes: Array<WAValue> = arrayOf()
+) : WeaponType {
+    MACE(
+        attributes = arrayOf(
             WeaponAttribute.KNOCKBACK to 0.4,
             WeaponAttribute.ATTACK_SPEED to -2.4,
             WeaponAttribute.RANGE to 3.0
-    )),
-    SWORD(allowParry = true, attributes = arrayOf(
+        )
+    ),
+    SWORD(
+        allowParry = true, attributes = arrayOf(
             WeaponAttribute.ATTACK_SPEED to -2.4,
             WeaponAttribute.RANGE to 3.0
-    )),
-    AXE(attributes = arrayOf(
+        )
+    ),
+    AXE(
+        attributes = arrayOf(
             WeaponAttribute.ANGLE to 120.0,
             WeaponAttribute.ATTACK_SPEED to -3.2,
             WeaponAttribute.RANGE to 3.0
-    )),
-    SWORD_2H(twoHander = true, allowBlock = true, attributes = arrayOf(
+        )
+    ),
+    SWORD_2H(
+        twoHander = true, allowBlock = true, attributes = arrayOf(
             WeaponAttribute.ANGLE to 90.0,
             WeaponAttribute.ATTACK_SPEED to -3.2,
             WeaponAttribute.RANGE to 5.0
-    )),
-    SPEAR(twoHander = true, attributes = arrayOf(
+        )
+    ),
+    SPEAR(
+        twoHander = true, attributes = arrayOf(
             WeaponAttribute.ATTACK_SPEED to -2.4,
             WeaponAttribute.RANGE to 7.0
-    )),
-    BO(twoHander = true, allowParry = true, attributes = arrayOf(
+        )
+    ),
+    BO(
+        twoHander = true, allowParry = true, attributes = arrayOf(
             WeaponAttribute.ATTACK_SPEED to -1.6,
             WeaponAttribute.RANGE to 7.0
-    ));
+        )
+    );
 
     override fun invoke(i: Int) = ItemMeleeWeapon[this]
 
@@ -208,7 +233,11 @@ enum class MeleeWeaponType(override val twoHander: Boolean = false, override val
     }
 }
 
-enum class RangedWeaponType(val entity: (World, EntityLivingBase) -> RpgProjectile, override val twoHander: Boolean = false, val sound: SoundEvent? = null) : WeaponType {
+enum class RangedWeaponType(
+    val entity: (World, EntityLivingBase) -> RpgProjectile,
+    override val twoHander: Boolean = false,
+    val sound: SoundEvent? = null
+) : WeaponType {
     BOW(::EntityRpgArrow, twoHander = true),
     WAND(::EntityWandProjectile);
 
@@ -249,7 +278,13 @@ enum class WeaponAttribute(uuid: String, attribute: IAttribute? = null) : Stat {
 
     override val attribute: IAttribute by lazy {
         attribute
-                ?: RangedAttribute(null, "${BlueRPG.MODID}.${this.name.toLowerCase()}", baseValue, 0.0, Double.MAX_VALUE).setShouldWatch(true)
+            ?: RangedAttribute(
+                null,
+                "${BlueRPG.MODID}.${this.name.toLowerCase()}",
+                baseValue,
+                0.0,
+                Double.MAX_VALUE
+            ).setShouldWatch(true)
     }
 
     override fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot) = 0

@@ -189,7 +189,7 @@ object DamageHandler {
                 event.isCanceled = true
                 tags.setLong("bluerpg:reflectcd", time)
                 attacker?.attackEntityFrom(
-                        DamageSource.causeThornsDamage(target), event.amount
+                    DamageSource.causeThornsDamage(target), event.amount
                 )
                 return
             }
@@ -252,7 +252,8 @@ object DamageHandler {
         event.amount = damage.toFloat()
     }
 
-    class RpgDamageSource(private val original: EntityDamageSource) : EntityDamageSource(original.damageType, original.immediateSource) {
+    class RpgDamageSource(private val original: EntityDamageSource) :
+        EntityDamageSource(original.damageType, original.immediateSource) {
         override fun setDamageAllowedInCreativeMode(): DamageSource = original.setDamageAllowedInCreativeMode()
         override fun getIsThornsDamage() = original.isThornsDamage
         override fun getImmediateSource() = original.immediateSource
@@ -265,7 +266,9 @@ object DamageHandler {
         override fun isCreativePlayer() = original.isCreativePlayer
         override fun isProjectile() = original.isProjectile
         override fun isExplosion() = original.isExplosion
-        override fun getDeathMessage(entityLivingBaseIn: EntityLivingBase): ITextComponent = original.getDeathMessage(entityLivingBaseIn)
+        override fun getDeathMessage(entityLivingBaseIn: EntityLivingBase): ITextComponent =
+            original.getDeathMessage(entityLivingBaseIn)
+
         override fun setDamageIsAbsolute(): DamageSource = original.setDamageIsAbsolute()
         override fun canHarmInCreative() = original.canHarmInCreative()
         override fun isDamageAbsolute() = original.isDamageAbsolute

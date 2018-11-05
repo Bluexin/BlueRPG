@@ -33,17 +33,18 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
 @Mod(
-        modid = BlueRPG.MODID,
-        name = BlueRPG.NAME,
-        version = BlueRPG.VERSION,
-        dependencies = BlueRPG.DEPS,
-        acceptableSaveVersions = "*"
+    modid = BlueRPG.MODID,
+    name = BlueRPG.NAME,
+    version = BlueRPG.VERSION,
+    dependencies = BlueRPG.DEPS,
+    acceptableSaveVersions = "*"
 )
 object BlueRPG {
     const val MODID = "bluerpg"
     const val NAME = "Blue's RPG"
     const val VERSION = "1.0"
-    const val DEPS = "required-after:saomclib@[1.2.1,);required-after:librarianlib@[4.14,);required-after:forge@[14.23.4.2718,);" // No dep on saoui cuz it's client-only
+    const val DEPS = "required-after:saomclib@[1.2.1,);required-after:librarianlib@[4.14,)" +
+            ";required-after:forge@[14.23.4.2718,);" // No dep on saoui cuz it's client-only
 
     val LOGGER: Logger = LogManager.getLogger(MODID)
 

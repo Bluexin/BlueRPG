@@ -249,16 +249,20 @@ class EntityWandProjectile : ThrowableEntityMod, RpgProjectile {
             })
             b.setPositionOffset(b.positionOffset - motionVec / 6)
             b.setLifetime(rand.nextInt(20) + 20)
-            b.addMotion(Vec3d(
+            b.addMotion(
+                Vec3d(
                     rand.nextDouble() * 0.02 - 0.01,
                     rand.nextDouble() * 0.02 - 0.01,
                     rand.nextDouble() * 0.02 - 0.01
-            ))
-            b.addAcceleration(Vec3d(
+                )
+            )
+            b.addAcceleration(
+                Vec3d(
                     rand.nextDouble() * 0.001 - 0.0005,
                     rand.nextDouble() * 0.001 - 0.0005,
                     rand.nextDouble() * 0.001 - 0.0005
-            ))
+                )
+            )
         }
 
         val core = ParticleBuilder(10).apply {
@@ -334,7 +338,15 @@ class EntitySkillProjectile<RESULT> : ThrowableEntityMod, RpgProjectile
     @Suppress("unused")
     constructor(world: World) : super(world)
 
-    constructor(world: World, caster: PlayerHolder?, origin: TargetWithPosition, range: Double, result: SendChannel<RESULT>, filter: Condition<RESULT>? = null) : super(world, origin.x, origin.y, origin.z) {
+    constructor(
+        world: World,
+        caster: PlayerHolder?,
+        origin: TargetWithPosition,
+        range: Double,
+        result: SendChannel<RESULT>,
+        filter: Condition<RESULT>? = null,
+        precise: Boolean = false
+    ) : super(world, origin.x, origin.y, origin.z) {
         this.caster = caster
         this.result = result
         this.range = pow(range, 2.0).toFloat()
@@ -449,16 +461,20 @@ class EntitySkillProjectile<RESULT> : ThrowableEntityMod, RpgProjectile
             })
             b.setPositionOffset(b.positionOffset - motionVec / 6)
             b.setLifetime(rand.nextInt(20) + 20)
-            b.addMotion(Vec3d(
+            b.addMotion(
+                Vec3d(
                     rand.nextDouble() * 0.02 - 0.01,
                     rand.nextDouble() * 0.02 - 0.01,
                     rand.nextDouble() * 0.02 - 0.01
-            ))
-            b.addAcceleration(Vec3d(
+                )
+            )
+            b.addAcceleration(
+                Vec3d(
                     rand.nextDouble() * 0.001 - 0.0005,
                     rand.nextDouble() * 0.001 - 0.0005,
                     rand.nextDouble() * 0.001 - 0.0005
-            ))
+                )
+            )
         }
 
         val core = ParticleBuilder(10).apply {

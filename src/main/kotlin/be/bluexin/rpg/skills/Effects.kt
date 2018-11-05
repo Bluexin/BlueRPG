@@ -45,7 +45,10 @@ data class Damage<TARGET>(val value: Double) : Effect<TARGET>
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {
         launch {
             for (e in targets) e.world.minecraftServer?.runMainThread {
-                if (value >= 0) e.attack(DamageHandler.RpgDamageSource(EntityDamageSource("skill.test", caster)), value.toFloat())
+                if (value >= 0) e.attack(
+                    DamageHandler.RpgDamageSource(EntityDamageSource("skill.test", caster)),
+                    value.toFloat()
+                )
                 else e.heal(abs(value.toFloat()))
             }
         }
@@ -67,7 +70,11 @@ data class Buff<TARGET>(val effect: PotionEffect) : Effect<TARGET>
 
 @Savable
 @NamedDynamic("e:s")
-data class Skill<TARGET: Target, RESULT: Target>(val targeting: Targeting<TARGET, RESULT>, val effect: Effect<RESULT>) : Effect<TARGET> {
+data class Skill<TARGET : Target, RESULT : Target>(
+    val targeting: Targeting<TARGET, RESULT>,
+    val condition: Condition<RESULT>?,
+    val effect: Effect<RESULT>
+) : Effect<TARGET> {
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {
         launch {
             val p = produce(capacity = Channel.UNLIMITED) {
@@ -79,7 +86,11 @@ data class Skill<TARGET: Target, RESULT: Target>(val targeting: Targeting<TARGET
             }
 
             val result = Channel<RESULT>(capacity = Channel.UNLIMITED)
-            effect(caster, result)
+            effect(
+                caster,
+                if (condition == null) result else produce {
+                    for (it in result) if (condition.invoke(caster, it)) send(it)
+                })
             val chs = LinkedList<Channel<RESULT>>()
             val toAdd = LinkedList<Channel<RESULT>>()
             var flag = true
@@ -108,7 +119,7 @@ data class Skill<TARGET: Target, RESULT: Target>(val targeting: Targeting<TARGET
 
 @Savable
 @NamedDynamic("e:m")
-data class MultiEffect<TARGET: Target>(val effects: Array<Effect<TARGET>>) : Effect<TARGET> {
+data class MultiEffect<TARGET : Target>(val effects: Array<Effect<TARGET>>) : Effect<TARGET> {
 
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {
         launch {

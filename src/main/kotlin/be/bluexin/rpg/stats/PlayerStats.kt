@@ -103,13 +103,23 @@ class PlayerStats : AbstractEntityCapability(), StatCapability {
     }
 
     internal object Storage : Capability.IStorage<PlayerStats> {
-        override fun readNBT(capability: Capability<PlayerStats>, instance: PlayerStats, side: EnumFacing?, nbt: NBTBase) {
+        override fun readNBT(
+            capability: Capability<PlayerStats>,
+            instance: PlayerStats,
+            side: EnumFacing?,
+            nbt: NBTBase
+        ) {
             val nbtTagCompound = nbt as? NBTTagCompound ?: return
             AbstractSaveHandler.readAutoNBT(instance, nbtTagCompound.getTag(KEY.toString()), false)
         }
 
         override fun writeNBT(capability: Capability<PlayerStats>, instance: PlayerStats, side: EnumFacing?): NBTBase {
-            return NBTTagCompound().also { it.setTag(KEY.toString(), AbstractSaveHandler.writeAutoNBT(instance, false)) }
+            return NBTTagCompound().also {
+                it.setTag(
+                    KEY.toString(),
+                    AbstractSaveHandler.writeAutoNBT(instance, false)
+                )
+            }
         }
     }
 

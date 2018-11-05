@@ -52,16 +52,16 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
     }
 
     override fun getAttributeModifiers(slot: EntityEquipmentSlot, stack: ItemStack) =
-            super<IRPGGear>.getAttributeModifiers(slot, stack)
+        super<IRPGGear>.getAttributeModifiers(slot, stack)
 
     override fun initCapabilities(stack: ItemStack, nbt: NBTTagCompound?) =
-            super<IRPGGear>.initCapabilities(stack, nbt)
+        super<IRPGGear>.initCapabilities(stack, nbt)
 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) =
-            super<IRPGGear>.addInformation(stack, worldIn, tooltip, flagIn)
+        super<IRPGGear>.addInformation(stack, worldIn, tooltip, flagIn)
 
     override fun getNBTShareTag(stack: ItemStack): NBTTagCompound? =
-            super.addNBTShare(stack, super.getNBTShareTag(stack) ?: NBTTagCompound())
+        super.addNBTShare(stack, super.getNBTShareTag(stack) ?: NBTTagCompound())
 
     override fun readNBTShareTag(stack: ItemStack, nbt: NBTTagCompound?) {
         super.readNBTShareTag(stack, nbt)
@@ -80,17 +80,19 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
     }
 
     override fun tooltipizeFixedStats(stats: GearStats) =
-            sequenceOf("rpg.tooltip.fstat".localize(
-                    FixedStat.values().asSequence().filter { stats[it] != 0 }.joinToString(separator = "-") {
-                        it.localize(stats[it])
-                    },
-                    FixedStat.BASE_DAMAGE.longName()
-            ))
+        sequenceOf("rpg.tooltip.fstat"
+            .localize(
+                FixedStat.values().asSequence().filter { stats[it] != 0 }.joinToString(separator = "-") {
+                    it.localize(stats[it])
+                },
+                FixedStat.BASE_DAMAGE.longName()
+            )
+        )
 
     override fun getItemStackDisplayName(stack: ItemStack) = super<IRPGGear>.getItemStackDisplayName(stack)
 
     override fun getUnlocalizedNameInefficientlyTrick(stack: ItemStack): String =
-            super.getUnlocalizedNameInefficiently(stack)
+        super.getUnlocalizedNameInefficiently(stack)
 
     override fun getShareTag(): Boolean {
         return true
@@ -137,7 +139,16 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
                     worldIn.spawnEntity(entity as Entity)
                 }
 
-                if (type.sound != null) worldIn.playSound(null as EntityPlayer?, entityLiving.posX, entityLiving.posY, entityLiving.posZ, type.sound, SoundCategory.PLAYERS, 1.0f, 1.0f / (RNG.nextFloat() * 0.4f + 1.2f) + f * 0.5f)
+                if (type.sound != null) worldIn.playSound(
+                    null as EntityPlayer?,
+                    entityLiving.posX,
+                    entityLiving.posY,
+                    entityLiving.posZ,
+                    type.sound,
+                    SoundCategory.PLAYERS,
+                    1.0f,
+                    1.0f / (RNG.nextFloat() * 0.4f + 1.2f) + f * 0.5f
+                )
                 entityLiving.addStat(StatList.getObjectUseStats(this)!!)
             }
         }

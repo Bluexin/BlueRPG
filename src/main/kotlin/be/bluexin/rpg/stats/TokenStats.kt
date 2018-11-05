@@ -87,7 +87,12 @@ class TokenStats(val itemStackIn: ItemStack) : StatCapability {
     }
 
     internal object Storage : Capability.IStorage<TokenStats> {
-        override fun readNBT(capability: Capability<TokenStats>, instance: TokenStats, side: EnumFacing?, nbt: NBTBase) {
+        override fun readNBT(
+            capability: Capability<TokenStats>,
+            instance: TokenStats,
+            side: EnumFacing?,
+            nbt: NBTBase
+        ) {
             val nbtTagCompound = nbt as? NBTTagCompound ?: return
             try {
                 AbstractSaveHandler.readAutoNBT(instance, nbtTagCompound.getTag(KEY.toString()), false)
@@ -98,7 +103,12 @@ class TokenStats(val itemStackIn: ItemStack) : StatCapability {
         }
 
         override fun writeNBT(capability: Capability<TokenStats>, instance: TokenStats, side: EnumFacing?): NBTBase {
-            return NBTTagCompound().also { it.setTag(KEY.toString(), AbstractSaveHandler.writeAutoNBT(instance, false)) }
+            return NBTTagCompound().also {
+                it.setTag(
+                    KEY.toString(),
+                    AbstractSaveHandler.writeAutoNBT(instance, false)
+                )
+            }
         }
     }
 

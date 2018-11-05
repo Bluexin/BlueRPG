@@ -28,7 +28,7 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import java.util.*
 
-open class DefaultHolder<T: Any>(override val it: T) : TargetWithStatus {
+open class DefaultHolder<T : Any>(override val it: T) : TargetWithStatus {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is DefaultHolder<*>) return false
@@ -44,8 +44,8 @@ open class DefaultHolder<T: Any>(override val it: T) : TargetWithStatus {
 }
 
 open class LivingHolder<T : EntityLivingBase>(living: T) :
-        DefaultHolder<T>(living), TargetWithEffects, TargetWithLookVec, TargetWithPosition, TargetWithWorld,
-        TargetWithMovement, TargetWithCollision, TargetWithHealth, TargetWithUuid {
+    DefaultHolder<T>(living), TargetWithEffects, TargetWithLookVec, TargetWithPosition, TargetWithWorld,
+    TargetWithMovement, TargetWithCollision, TargetWithHealth, TargetWithUuid {
     override fun getPotionEffect(effect: Potion) = it.getActivePotionEffect(effect)
     override fun addPotionEffect(effect: PotionEffect) = it.addPotionEffect(effect)
     override val pos: Vec3d get() = it.positionVector
@@ -86,7 +86,7 @@ open class PosHolder(pos: Vec3d) : DefaultHolder<Vec3d>(pos), TargetWithPosition
 open class BlockPosHolder(pos: BlockPos) : PosHolder(Vec3d(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5))
 
 open class WorldPosHolder(world: World, pos: Vec3d) : DefaultHolder<Pair<World, Vec3d>>(world to pos),
-        TargetWithPosition, TargetWithWorld {
+    TargetWithPosition, TargetWithWorld {
     constructor(world: World, pos: BlockPos) : this(world, Vec3d(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5))
 
     override val world: World get() = it.first

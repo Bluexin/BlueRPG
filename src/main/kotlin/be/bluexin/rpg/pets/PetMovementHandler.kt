@@ -146,7 +146,9 @@ open class HopHandler(pet: EntityPet) : PetMovementHandler(pet) {
     private fun disableJumpControl() = (this.jumpHelper as HopJumpHelper).setCanJump(false)
 
     private fun calculateRotationYaw(x: Double, z: Double) {
-        this.pet.rotationYaw = (MathHelper.atan2(z - this.pet.posZ, x - this.pet.posX) * (180.0 / Math.PI)).toFloat() - 90.0f
+        this.pet.rotationYaw =
+                (MathHelper.atan2(z - this.pet.posZ, x - this.pet.posX)
+                        * (180.0 / Math.PI)).toFloat() - 90.0f
     }
 
     override fun getJumpUpwardsMotion(): Float {
@@ -175,7 +177,8 @@ open class HopHandler(pet: EntityPet) : PetMovementHandler(pet) {
         }
 
         override fun onUpdateMoveHelper() {
-            if (this.pet.onGround && !this.pet.isJumping && !(this.pet.jumpHelper as HopJumpHelper).isJumping) this.setMovementSpeed(0.0)
+            if (this.pet.onGround && !this.pet.isJumping && !(this.pet.jumpHelper as HopJumpHelper).isJumping)
+                this.setMovementSpeed(0.0)
             else if (this.isUpdating) this.setMovementSpeed(this.nextJumpSpeed)
 
             super.onUpdateMoveHelper()
@@ -304,7 +307,9 @@ open class BounceHandler(pet: EntityPet) : PetMovementHandler(pet) {
                 this.action = EntityMoveHelper.Action.WAIT
 
                 if (this.entity.onGround) {
-                    this.entity.aiMoveSpeed = (this.speed * this.entity.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).attributeValue).toFloat()
+                    this.entity.aiMoveSpeed =
+                            (this.speed * this.entity.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).attributeValue)
+                                .toFloat()
 
                     if (this.jumpDelay-- <= 0) {
                         this.jumpDelay = RNG.nextInt(5) + 2
@@ -324,7 +329,9 @@ open class BounceHandler(pet: EntityPet) : PetMovementHandler(pet) {
                         this.entity.aiMoveSpeed = 0.0f
                     }
                 } else {
-                    this.entity.aiMoveSpeed = (this.speed * this.entity.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).attributeValue).toFloat()
+                    this.entity.aiMoveSpeed =
+                            (this.speed * this.entity.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).attributeValue)
+                                .toFloat()
                 }
             }
         }

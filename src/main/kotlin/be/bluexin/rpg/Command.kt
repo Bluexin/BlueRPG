@@ -31,7 +31,8 @@ object Command : CommandBase() {
             sender.sendMessage(net.minecraft.util.text.TextComponentTranslation("bluerpg.command.reload.success"))
         });
 
-        operator fun invoke(server: MinecraftServer, sender: ICommandSender, args: List<String>) = handle(server, sender, args)
+        operator fun invoke(server: MinecraftServer, sender: ICommandSender, args: List<String>) =
+            handle(server, sender, args)
     }
 
     override fun getName() = "bluerpg"
@@ -47,7 +48,12 @@ object Command : CommandBase() {
 
     override fun getUsage(sender: ICommandSender) = "bluerpg.command.usage"
 
-    override fun getTabCompletions(server: MinecraftServer, sender: ICommandSender, args: Array<out String>, pos: BlockPos?): MutableList<String> {
+    override fun getTabCompletions(
+        server: MinecraftServer,
+        sender: ICommandSender,
+        args: Array<out String>,
+        pos: BlockPos?
+    ): MutableList<String> {
         if (sender !is EntityPlayer) return mutableListOf()
         if (args.size != 1) return super.getTabCompletions(server, sender, args, pos)
         val l = Commands.values().map { it.name.toLowerCase() }

@@ -35,7 +35,6 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.ActionResult
 import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
-import net.minecraft.util.text.translation.I18n
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 
@@ -51,29 +50,29 @@ interface IRPGGear { // TODO: use ISpecialArmor
         else {
             val spacer = "rpg.tooltip.spacer".localize()
             tooltip += "rpg.tooltip.desc".localize(
-                    stats.ilvl, stats.rarity?.localized ?: "Error", "rpg.$key.name".localize()
+                stats.ilvl, stats.rarity?.localized ?: "Error", "rpg.$key.name".localize()
             )
             tooltip += spacer
             tooltipizeFixedStats(stats).forEach { tooltip += it }
             tooltip += spacer
             val p = Minecraft.getMinecraft().player
             tooltip += "rpg.tooltip.levelreq".localize(
-                    "rpg.tooltip.${if (stats.levelReqMet(p)) "metreq" else "unmetreq"}".localize(stats.levelReq)
+                "rpg.tooltip.${if (stats.levelReqMet(p)) "metreq" else "unmetreq"}".localize(stats.levelReq)
             )
             if (stats.requiredValue > 0) tooltip += "rpg.tooltip.statreq".localize(
-                    stats.requiredStat!!.longName(),
-                    "rpg.tooltip.${if (stack.statsReqMet(p)) "metreq" else "unmetreq"}".localize(stats.requiredValue)
+                stats.requiredStat!!.longName(),
+                "rpg.tooltip.${if (stack.statsReqMet(p)) "metreq" else "unmetreq"}".localize(stats.requiredValue)
             )
             tooltip += spacer
             PrimaryStat.values().forEach {
                 if (stats[it] != 0) tooltip += "rpg.tooltip.pstat".localize(
-                        it.localize(stats[it]), it.longName()
+                    it.localize(stats[it]), it.longName()
                 ) // TODO: color for damage element
             }
             tooltip += spacer
             SecondaryStat.values().forEach {
                 if (stats[it] != 0) tooltip += "rpg.tooltip.sstat".localize(
-                        it.localize(stats[it]), it.longName()
+                    it.localize(stats[it]), it.longName()
                 )
             }
             tooltip += spacer
@@ -98,7 +97,12 @@ interface IRPGGear { // TODO: use ISpecialArmor
         if (!stats.generated) return m
 
         stats.stats().forEach { (stat, value) ->
-            m[stat.attribute.name] = AttributeModifier(stat.uuid(this.gearSlot), stat.attribute.name, if (stat.operation != 0) stat(value) / 100.0 else stat(value), stat.operation)
+            m[stat.attribute.name] = AttributeModifier(
+                stat.uuid(this.gearSlot),
+                stat.attribute.name,
+                if (stat.operation != 0) stat(value) / 100.0 else stat(value),
+                stat.operation
+            )
         }
 
         return m
@@ -124,7 +128,7 @@ interface IRPGGear { // TODO: use ISpecialArmor
     fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         val stack = playerIn.getHeldItem(handIn)
         val stats = stack.stats
-                ?: throw IllegalStateException("Missing capability!")
+            ?: throw IllegalStateException("Missing capability!")
         return if (!stats.generated) {
             worldIn onServer { stats.generate(playerIn) }
             ActionResult.newResult(EnumActionResult.SUCCESS, stack)
@@ -133,7 +137,8 @@ interface IRPGGear { // TODO: use ISpecialArmor
 
     fun getItemStackDisplayName(stack: ItemStack): String {
         val stats = stack.stats
-        return if (stats == null || !stats.generated || stats.name == null) I18n.translateToLocal(this.getUnlocalizedNameInefficientlyTrick(stack) + ".name").trim { it <= ' ' }
+        return if (stats == null || !stats.generated || stats.name == null)
+            "${this.getUnlocalizedNameInefficientlyTrick(stack)}.name".localize().trim()
         else stats.name!!
     }
 

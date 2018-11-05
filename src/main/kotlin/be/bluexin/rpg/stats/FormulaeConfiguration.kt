@@ -37,8 +37,9 @@ import java.lang.reflect.Type
 object FormulaeConfiguration {
 
     operator fun invoke(stat: Stat, ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot): Roll {
-        val (minE, maxE) = statFormulae[if (gearType is ArmorType) Key(gearType, slot) else Key(gearType)]?.get(stat)
-                ?: return Roll(-2, -1)
+        val (minE, maxE) = statFormulae[
+                if (gearType is ArmorType) Key(gearType, slot) else Key(gearType)
+        ]?.get(stat) ?: return Roll(-2, -1)
         val generatorOptions = GeneratorOptions(ilvl, rarity)
         val min = minE(generatorOptions)
         val max = maxE(generatorOptions)
@@ -78,22 +79,23 @@ object FormulaeConfiguration {
     fun reload() = try {
 
         val gson = GsonBuilder()
-                .setPrettyPrinting()
-                .registerTypeAdapter(Stat::class.java, StatDeserializer)
-                .registerTypeAdapter(GearType::class.java, GearTypeDeserializer)
-                .registerTypeAdapter(ExpressionWrapper::class.java, ExpressionDeserializer)
-                .create()
+            .setPrettyPrinting()
+            .registerTypeAdapter(Stat::class.java, StatDeserializer)
+            .registerTypeAdapter(GearType::class.java, GearTypeDeserializer)
+            .registerTypeAdapter(ExpressionWrapper::class.java, ExpressionDeserializer)
+            .create()
 
         if (!f.exists()) {
             var s = MeleeWeaponType.values().asSequence().map { Key(it) } +
                     RangedWeaponType.values().asSequence().map { Key(it) } +
                     OffHandType.values().asSequence().map { Key(it) }
             ArmorType.values().forEach { t ->
-                s += EntityEquipmentSlot.values().asSequence().filter { it.index == it.slotIndex - 1 }.map { Key(t, it) }
+                s += EntityEquipmentSlot.values().asSequence().filter { it.index == it.slotIndex - 1 }
+                    .map { Key(t, it) }
             }
             val r = FalseRoll(
-                    "(4 + pow(ilvl, 1.5) / 6) * pow(rarity.ordinal() / 11.0 + 1, 1.8)",
-                    "(8 + pow(ilvl, 1.5) / 4) * pow(rarity.ordinal() / 9.0 + 1, 1.8)"
+                "(4 + pow(ilvl, 1.5) / 6) * pow(rarity.ordinal() / 11.0 + 1, 1.8)",
+                "(8 + pow(ilvl, 1.5) / 4) * pow(rarity.ordinal() / 9.0 + 1, 1.8)"
             )
             val m = (PrimaryStat.values().asSequence<Stat>() +
                     SecondaryStat.values().asSequence() +
@@ -102,7 +104,12 @@ object FormulaeConfiguration {
             val a = s.map { TrickingDumbGsonWrite(it, m) }
             FileWriter(f).use { gson.toJson(a.toList(), it) }
         }
-        val read = FileReader(f).use { gson.fromJson<List<TrickingDumbGsonRead>>(it, object : TypeToken<List<TrickingDumbGsonRead>>() {}.type) }
+        val read = FileReader(f).use {
+            gson.fromJson<List<TrickingDumbGsonRead>>(
+                it,
+                object : TypeToken<List<TrickingDumbGsonRead>>() {}.type
+            )
+        }
         read.forEach { (key, map) ->
             val o = statFormulae[key]
             if (o != null) o += map
@@ -160,7 +167,7 @@ object FormulaeConfiguration {
 
     private object ExpressionDeserializer : JsonDeserializer<ExpressionWrapper> {
         override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext) =
-                ExpressionWrapper("(int) (${json.asString})")
+            ExpressionWrapper("(int) (${json.asString})")
     }
 
     @Suppress("unused")
@@ -172,10 +179,10 @@ object FormulaeConfiguration {
             Evaluator.compile(expression, LIB, Integer.TYPE)!!
         } catch (e: CompilationException) {
             val sb = StringBuilder("An error occurred during theme loading. See more info below.\n")
-                    .append("–––COMPILATION ERROR :\n")
-                    .append(e.message).append('\n')
-                    .append("                       ")
-                    .append(expression).append('\n')
+                .append("–––COMPILATION ERROR :\n")
+                .append(e.message).append('\n')
+                .append("                       ")
+                .append(expression).append('\n')
             val column = e.column
             for (i in 0 until column + 23 - 1) sb.append(' ')
             sb.append('^')
@@ -197,10 +204,10 @@ object FormulaeConfiguration {
             Evaluator.compile(expression, LIB, java.lang.Long.TYPE)!!
         } catch (e: CompilationException) {
             val sb = StringBuilder("An error occurred during theme loading. See more info below.\n")
-                    .append("–––COMPILATION ERROR :\n")
-                    .append(e.message).append('\n')
-                    .append("                       ")
-                    .append(expression).append('\n')
+                .append("–––COMPILATION ERROR :\n")
+                .append(e.message).append('\n')
+                .append("                       ")
+                .append(expression).append('\n')
             val column = e.column
             for (i in 0 until column + 23 - 1) sb.append(' ')
             sb.append('^')

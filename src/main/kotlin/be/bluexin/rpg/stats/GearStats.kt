@@ -100,27 +100,69 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
                     this.stats[FixedStat.HEALTH] += FixedStat.HEALTH.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
                     this.stats[FixedStat.PSYCHE] += FixedStat.PSYCHE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
                     when (gear.type) {
-                        OffHandType.SHIELD -> this.stats[FixedStat.F_BLOCK] += FixedStat.F_BLOCK.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
-                        OffHandType.PARRY_DAGGER -> this.stats[FixedStat.F_PARRY] += FixedStat.F_PARRY.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
-                        OffHandType.FOCUS -> this.stats[FixedStat.F_CRIT_CHANCE] += FixedStat.F_CRIT_CHANCE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
+                        OffHandType.SHIELD -> this.stats[FixedStat.F_BLOCK] += FixedStat.F_BLOCK.getRoll(
+                            ilvl,
+                            rarity!!,
+                            gear.type,
+                            gear.gearSlot
+                        )
+                        OffHandType.PARRY_DAGGER -> this.stats[FixedStat.F_PARRY] += FixedStat.F_PARRY.getRoll(
+                            ilvl,
+                            rarity!!,
+                            gear.type,
+                            gear.gearSlot
+                        )
+                        OffHandType.FOCUS -> this.stats[FixedStat.F_CRIT_CHANCE] += FixedStat.F_CRIT_CHANCE.getRoll(
+                            ilvl,
+                            rarity!!,
+                            gear.type,
+                            gear.gearSlot
+                        )
                     }
                 }
                 else -> {
-                    this.stats[FixedStat.BASE_DAMAGE] += FixedStat.BASE_DAMAGE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
-                    this.stats[FixedStat.MAX_DAMAGE] += FixedStat.MAX_DAMAGE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
+                    this.stats[FixedStat.BASE_DAMAGE] += FixedStat.BASE_DAMAGE.getRoll(
+                        ilvl,
+                        rarity!!,
+                        gear.type,
+                        gear.gearSlot
+                    )
+                    this.stats[FixedStat.MAX_DAMAGE] += FixedStat.MAX_DAMAGE.getRoll(
+                        ilvl,
+                        rarity!!,
+                        gear.type,
+                        gear.gearSlot
+                    )
                 }
             }
             durability = TrickStat.DURABILITY.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
-            if (requiredValue != -1 && RNG.nextInt(100) < TrickStat.REQUIREMENT_CHANCE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)) {
+            if (requiredValue != -1 && RNG.nextInt(100) < TrickStat.REQUIREMENT_CHANCE.getRoll(
+                    ilvl,
+                    rarity!!,
+                    gear.type,
+                    gear.gearSlot
+                )
+            ) {
                 val primaries = stats.mapNotNull { it as? PrimaryStat }
                 requiredStat = primaries.random()
-                requiredValue = (this[requiredStat!!] * TrickStat.REQUIREMENT_MULTIPLIER.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot) / 100.0).toInt()
+                requiredValue = (this[requiredStat!!] * TrickStat.REQUIREMENT_MULTIPLIER.getRoll(
+                    ilvl,
+                    rarity!!,
+                    gear.type,
+                    gear.gearSlot
+                ) / 100.0).toInt()
             } else requiredValue = -1
             generated = true
             if (name == null) name = NameGenerator(itemStackIn, playerIn)
             itemStackIn.setTagInfo("HideFlags", NBTTagInt(2))
             if (rarity!!.shouldNotify) playerIn.world.minecraftServer?.playerList?.players?.forEach {
-                it.sendMessage(TextComponentTranslation("rpg.broadcast.item", playerIn.displayName, itemStackIn.textComponent))
+                it.sendMessage(
+                    TextComponentTranslation(
+                        "rpg.broadcast.item",
+                        playerIn.displayName,
+                        itemStackIn.textComponent
+                    )
+                )
             }
         }
     }
@@ -156,7 +198,12 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
         }
 
         override fun writeNBT(capability: Capability<GearStats>, instance: GearStats, side: EnumFacing?): NBTBase {
-            return NBTTagCompound().also { it.setTag(KEY.toString(), AbstractSaveHandler.writeAutoNBT(instance, false)) }
+            return NBTTagCompound().also {
+                it.setTag(
+                    KEY.toString(),
+                    AbstractSaveHandler.writeAutoNBT(instance, false)
+                )
+            }
         }
     }
 
@@ -173,7 +220,7 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
 val ItemStack.stats get() = this.getCapability(GearStats.Capability, null)
 
 fun ItemStack.requirementMet(player: EntityPlayer): Boolean {
-    val s = stats?: return false
+    val s = stats ?: return false
     return if (!s.levelReqMet(player)) false
     else statsReqMet(player)
 }
@@ -181,8 +228,8 @@ fun ItemStack.requirementMet(player: EntityPlayer): Boolean {
 fun GearStats.levelReqMet(player: EntityPlayer) = levelReq <= player.stats.level.level_a
 
 fun ItemStack.statsReqMet(player: EntityPlayer): Boolean {
-    val s = stats?: return false
-    val r = s.requiredStat?: return true
+    val s = stats ?: return false
+    val r = s.requiredStat ?: return true
     val f = player.equipmentAndArmor.contains(this)
     return player[r] - (if (f) s[r] else 0) >= s.requiredValue
 }

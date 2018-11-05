@@ -111,8 +111,10 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                 add(ComponentVoid(0, 0).apply {
                     add(ComponentText(0, 0).apply {
                         text {
-                            "rpg.display.rarity".localize(tokenStats.rarity?.localized
-                                    ?: "rpg.random.name".localize())
+                            "rpg.display.rarity".localize(
+                                tokenStats.rarity?.localized
+                                    ?: "rpg.random.name".localize()
+                            )
                         }
                     })
                     add(ComponentRect(0, -1, 120, 10).apply {
@@ -226,7 +228,10 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                         render.tooltip(listOf("rpg.display.cyclename".localize()))
                         BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
                             val stats = gearStats
-                            stats.name = if (it.button == EnumMouseButton.RIGHT) null else NameGenerator(iss, Minecraft.getMinecraft().player)
+                            stats.name = if (it.button == EnumMouseButton.RIGHT) null else NameGenerator(
+                                iss,
+                                Minecraft.getMinecraft().player
+                            )
                             PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
                         }
                     })
@@ -255,8 +260,10 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                 _add(ComponentVoid(0, 0).apply {
                     add(ComponentText(0, 0).apply {
                         text {
-                            "rpg.display.rarity".localize(gearStats.rarity?.localized
-                                    ?: "rpg.random.name".localize())
+                            "rpg.display.rarity".localize(
+                                gearStats.rarity?.localized
+                                    ?: "rpg.random.name".localize()
+                            )
                         }
                     })
                     add(ComponentRect(0, -1, 129, 10).apply {
@@ -281,7 +288,9 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                         render.tooltip(listOf("rpg.display.cyclegenerator".localize()))
                         BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
                             val stats = gearStats
-                            stats.generator = TokenType.values()[(stats.generator.ordinal + 1) % TokenType.values().size]
+                            stats.generator = TokenType.values()[
+                                    (stats.generator.ordinal + 1) % TokenType.values().size
+                            ]
                             PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
                         }
                     })
@@ -387,10 +396,17 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                             color(Color(0, 0, 0, 0))
                             render.tooltip {
                                 listOf(stat.longName(),
-                                        with(FormulaeConfiguration.invoke(stat, gearStats.ilvl, gearStats.rarity
-                                                ?: Rarity.COMMON, (iss.item as IRPGGear).type, (iss.item as IRPGGear).gearSlot)) {
-                                            "rpg.display.defaultrange".localize(this.min, this.max)
-                                        })
+                                    with(
+                                        FormulaeConfiguration.invoke(
+                                            stat,
+                                            gearStats.ilvl,
+                                            gearStats.rarity ?: Rarity.COMMON,
+                                            (iss.item as IRPGGear).type,
+                                            (iss.item as IRPGGear).gearSlot
+                                        )
+                                    ) {
+                                        "rpg.display.defaultrange".localize(this.min, this.max)
+                                    })
                             }
                         })
                         add(ComponentVoid(75, 0).apply {

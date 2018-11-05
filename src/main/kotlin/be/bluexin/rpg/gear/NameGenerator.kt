@@ -47,30 +47,263 @@ object NameGenerator {
     }
 
     private val fix = mutableMapOf(
-            NamePart.PREFIX to arrayOf("Mangled", "Heartburning", "Ichibod's", "Apostle's", "Bloodied", "Tainted", "Purified", "Frostbitten", "Scorched", "Electrostatic", "Solar", "Tidal", "Mutilated", "Grotesque", "Cultured", "Windswept", "Roaring", "Phrozen's", "Super's", "Reaping", "Earthbound", "Buried", "Gypsy's", "Searing", "Flowing", "Stoneskin", "Steelskin", "Glorious", "Rusty", "Traditional", "Ancient", "Shimmering", "Ancestral", "Sacrificial", "Wanadi's", "Lionheart", "Dragonheart", "Swampy", "Obliterating", "War-Torn", "Shiny", "Battle-Hard", "Faded", "Cracked", "Reinforced", "Diligent", "Deadwind", "Cat's", "Yin's", "Yang's", "Venomous", "Sparking", "Glimmering", "Angered", "Weightless", "Featherlight", "Vanishing", "Silent", "Deafening", "Icarus's", "Mighty", "Vorporal", "Enchanting", "Corse", "Platinum", "Savage", "Brutal", "Cruel", "Astral", "Foul", "Toxic", "Blessed", "Faithful", "Dirty", "Evil", "Holy", "Screaming", "Howling", "Aged", "Nimble", "Keen", "Flat's", "Fine", "King's", "Master", "Grandmaster", "Deadly", "Merciless", "Celestial", "Sacred", "Divine", "Arcing", "Sturdy", "Faithful", "Bluexin's", "Sky's", "Lilly's", "Tireless", "Trickster's", "Sensei's", "Feral", "Hexing", "Fungal", "Branded"),
-            NamePart.SUFFIX to arrayOf("Corrosion", "the Moon", "the Massacred", "the Inkborn", "the Sun", "the Immortal", "the Dead", "the Exiled", "Decay", "the Bear", "the Lion", "the Crow", "the Eagle", "the Wolf", "the Viper", "the Cobra", "the Strider", "the Dragon", "the Hydra", "the Chimera", "the Champion", "the Cyclops", "the Muse", "the Titan", "the Muse", "the Siren", "the Gryphon", "Ruin", "Annihilation", "the Afterlife", "Vitality", "the Moral", "Preservation", "Decimation", "Souls", "Quiet Mind", "the Lucky", "Conquest", "Assassins", "the Bane-Born", "Creation", "Restoration", "Shattering", "Extinction", "the Drake", "the Leviathan", "the Landwurm", "Betrayal", "the Trusted", "the Fool", "the Wise", "the Minotaur", "the Yeti", "the Black Widow", "the Headless", "the Golem", "the Banshee", "Treachery", "Spite", "Promise", "Solemn Vows", "Bad Habits", "Deception", "The Elements", "Shadowtones", "Legends", "Legacy", "Vile Wispers", "Spectacles", "Insanity", "Storms", "Destiny", "Focus", "Deflection", "Gestures", "Worship", "Prayer", "White Lights", "Judgement", "Blood Art", "Ultimate Pain", "Pain Rage", "the Kraken", "Worth", "Gore", "Butchery", "Carnage", "Winter", "Summer", "Thunder", "Blight", "Thorns", "Spikes"),
-            NamePart.PREFIX_LEGENDARY to arrayOf("Wolf", "Wraggle", "Candy", "Uruk", "Fury", "Myth", "Hunger", "Cold", "Fate", "Vein", "Venom", "Smirk", "Vile", "Ember", "Stale", "Fool"),
-            NamePart.SUFFIX_LEGENDARY to arrayOf("sbane", " Toes", "core", "tome", "spine", "totem", "wurm", "skin", "crutch", "touch", "gaurd", "branch", "glow", "'s Caress", "shadow", "tongue")
+        NamePart.PREFIX to arrayOf(
+            "Mangled",
+            "Heartburning",
+            "Ichibod's",
+            "Apostle's",
+            "Bloodied",
+            "Tainted",
+            "Purified",
+            "Frostbitten",
+            "Scorched",
+            "Electrostatic",
+            "Solar",
+            "Tidal",
+            "Mutilated",
+            "Grotesque",
+            "Cultured",
+            "Windswept",
+            "Roaring",
+            "Phrozen's",
+            "Super's",
+            "Reaping",
+            "Earthbound",
+            "Buried",
+            "Gypsy's",
+            "Searing",
+            "Flowing",
+            "Stoneskin",
+            "Steelskin",
+            "Glorious",
+            "Rusty",
+            "Traditional",
+            "Ancient",
+            "Shimmering",
+            "Ancestral",
+            "Sacrificial",
+            "Wanadi's",
+            "Lionheart",
+            "Dragonheart",
+            "Swampy",
+            "Obliterating",
+            "War-Torn",
+            "Shiny",
+            "Battle-Hard",
+            "Faded",
+            "Cracked",
+            "Reinforced",
+            "Diligent",
+            "Deadwind",
+            "Cat's",
+            "Yin's",
+            "Yang's",
+            "Venomous",
+            "Sparking",
+            "Glimmering",
+            "Angered",
+            "Weightless",
+            "Featherlight",
+            "Vanishing",
+            "Silent",
+            "Deafening",
+            "Icarus's",
+            "Mighty",
+            "Vorporal",
+            "Enchanting",
+            "Corse",
+            "Platinum",
+            "Savage",
+            "Brutal",
+            "Cruel",
+            "Astral",
+            "Foul",
+            "Toxic",
+            "Blessed",
+            "Faithful",
+            "Dirty",
+            "Evil",
+            "Holy",
+            "Screaming",
+            "Howling",
+            "Aged",
+            "Nimble",
+            "Keen",
+            "Flat's",
+            "Fine",
+            "King's",
+            "Master",
+            "Grandmaster",
+            "Deadly",
+            "Merciless",
+            "Celestial",
+            "Sacred",
+            "Divine",
+            "Arcing",
+            "Sturdy",
+            "Faithful",
+            "Bluexin's",
+            "Sky's",
+            "Lilly's",
+            "Tireless",
+            "Trickster's",
+            "Sensei's",
+            "Feral",
+            "Hexing",
+            "Fungal",
+            "Branded"
+        ),
+        NamePart.SUFFIX to arrayOf(
+            "Corrosion",
+            "the Moon",
+            "the Massacred",
+            "the Inkborn",
+            "the Sun",
+            "the Immortal",
+            "the Dead",
+            "the Exiled",
+            "Decay",
+            "the Bear",
+            "the Lion",
+            "the Crow",
+            "the Eagle",
+            "the Wolf",
+            "the Viper",
+            "the Cobra",
+            "the Strider",
+            "the Dragon",
+            "the Hydra",
+            "the Chimera",
+            "the Champion",
+            "the Cyclops",
+            "the Muse",
+            "the Titan",
+            "the Muse",
+            "the Siren",
+            "the Gryphon",
+            "Ruin",
+            "Annihilation",
+            "the Afterlife",
+            "Vitality",
+            "the Moral",
+            "Preservation",
+            "Decimation",
+            "Souls",
+            "Quiet Mind",
+            "the Lucky",
+            "Conquest",
+            "Assassins",
+            "the Bane-Born",
+            "Creation",
+            "Restoration",
+            "Shattering",
+            "Extinction",
+            "the Drake",
+            "the Leviathan",
+            "the Landwurm",
+            "Betrayal",
+            "the Trusted",
+            "the Fool",
+            "the Wise",
+            "the Minotaur",
+            "the Yeti",
+            "the Black Widow",
+            "the Headless",
+            "the Golem",
+            "the Banshee",
+            "Treachery",
+            "Spite",
+            "Promise",
+            "Solemn Vows",
+            "Bad Habits",
+            "Deception",
+            "The Elements",
+            "Shadowtones",
+            "Legends",
+            "Legacy",
+            "Vile Wispers",
+            "Spectacles",
+            "Insanity",
+            "Storms",
+            "Destiny",
+            "Focus",
+            "Deflection",
+            "Gestures",
+            "Worship",
+            "Prayer",
+            "White Lights",
+            "Judgement",
+            "Blood Art",
+            "Ultimate Pain",
+            "Pain Rage",
+            "the Kraken",
+            "Worth",
+            "Gore",
+            "Butchery",
+            "Carnage",
+            "Winter",
+            "Summer",
+            "Thunder",
+            "Blight",
+            "Thorns",
+            "Spikes"
+        ),
+        NamePart.PREFIX_LEGENDARY to arrayOf(
+            "Wolf",
+            "Wraggle",
+            "Candy",
+            "Uruk",
+            "Fury",
+            "Myth",
+            "Hunger",
+            "Cold",
+            "Fate",
+            "Vein",
+            "Venom",
+            "Smirk",
+            "Vile",
+            "Ember",
+            "Stale",
+            "Fool"
+        ),
+        NamePart.SUFFIX_LEGENDARY to arrayOf(
+            "sbane",
+            " Toes",
+            "core",
+            "tome",
+            "spine",
+            "totem",
+            "wurm",
+            "skin",
+            "crutch",
+            "touch",
+            "gaurd",
+            "branch",
+            "glow",
+            "'s Caress",
+            "shadow",
+            "tongue"
+        )
     )
 
     private val armorCores = mutableMapOf(
-            EntityEquipmentSlot.HEAD to arrayOf("Studs", "Loops", "Plugs", "Earings", "Jewels", "Hoops"),
-            EntityEquipmentSlot.CHEST to arrayOf("Garb", "Wrap", "Tunic", "Chest", "Guard", "Grasp"),
-            EntityEquipmentSlot.LEGS to arrayOf("Pants", "Legs", "Leggings", "Pleats", "Tasset", "Waistguard"),
-            EntityEquipmentSlot.FEET to arrayOf("Boots", "Shoes", "Walks", "Greaves", "Tabi", "Footguards")
+        EntityEquipmentSlot.HEAD to arrayOf("Studs", "Loops", "Plugs", "Earings", "Jewels", "Hoops"),
+        EntityEquipmentSlot.CHEST to arrayOf("Garb", "Wrap", "Tunic", "Chest", "Guard", "Grasp"),
+        EntityEquipmentSlot.LEGS to arrayOf("Pants", "Legs", "Leggings", "Pleats", "Tasset", "Waistguard"),
+        EntityEquipmentSlot.FEET to arrayOf("Boots", "Shoes", "Walks", "Greaves", "Tabi", "Footguards")
     )
 
     private val weaponCores: MutableMap<GearType, Array<String>> = mutableMapOf(
-            MeleeWeaponType.MACE to arrayOf("Mace", "Club", "Cudgel", "Mallot", "Truncheon", "Flail"),
-            MeleeWeaponType.SWORD to arrayOf("Sword", "Blade", "Edge", "Brand", "Saber", "Razor"),
-            MeleeWeaponType.AXE to arrayOf("Axe", "Hatchet", "Cleaver", "Chopper", "Francesca", "Carver"),
-            MeleeWeaponType.SWORD_2H to arrayOf("Greatsword", "Claymore", "Greatedge", "Longsword", "Zweihänder", "Buster"),
-            MeleeWeaponType.SPEAR to arrayOf("Spear", "Pike", "Halbard", "Lance", "Trident", "Spetum"),
-            MeleeWeaponType.BO to arrayOf("Staff", "Cane", "Pole", "Rod", "Stave", "Wand"),
-            RangedWeaponType.BOW to arrayOf("Bow", "Recurve", "Composite", "Long Bow", "Reflex", "Repeater"),
-            OffHandType.SHIELD to arrayOf("Shield", "Kite", "Buckler", "Tower Shield", "Aegis", "Heater"),
-            OffHandType.PARRY_DAGGER to arrayOf("Dagger", "Spike", "Knife", "Shiv", "Shank", "Dirk"),
-            OffHandType.FOCUS to arrayOf("Focus", "Orb", "Globe", "Sphere", "Marble", "Jewel")
+        MeleeWeaponType.MACE to arrayOf("Mace", "Club", "Cudgel", "Mallot", "Truncheon", "Flail"),
+        MeleeWeaponType.SWORD to arrayOf("Sword", "Blade", "Edge", "Brand", "Saber", "Razor"),
+        MeleeWeaponType.AXE to arrayOf("Axe", "Hatchet", "Cleaver", "Chopper", "Francesca", "Carver"),
+        MeleeWeaponType.SWORD_2H to arrayOf("Greatsword", "Claymore", "Greatedge", "Longsword", "Zweihänder", "Buster"),
+        MeleeWeaponType.SPEAR to arrayOf("Spear", "Pike", "Halbard", "Lance", "Trident", "Spetum"),
+        MeleeWeaponType.BO to arrayOf("Staff", "Cane", "Pole", "Rod", "Stave", "Wand"),
+        RangedWeaponType.BOW to arrayOf("Bow", "Recurve", "Composite", "Long Bow", "Reflex", "Repeater"),
+        OffHandType.SHIELD to arrayOf("Shield", "Kite", "Buckler", "Tower Shield", "Aegis", "Heater"),
+        OffHandType.PARRY_DAGGER to arrayOf("Dagger", "Spike", "Knife", "Shiv", "Shank", "Dirk"),
+        OffHandType.FOCUS to arrayOf("Focus", "Orb", "Globe", "Sphere", "Marble", "Jewel")
     )
 
     internal fun preInit(event: FMLPreInitializationEvent) {
@@ -80,27 +313,42 @@ object NameGenerator {
             if (!dir.isDirectory) throw IllegalStateException("$dir exists and is not a directory")
 
             val gson = GsonBuilder()
-                    .setPrettyPrinting()
-                    .registerTypeAdapter(GearType::class.java, GearTypeDeserializer)
-                    .create()
+                .setPrettyPrinting()
+                .registerTypeAdapter(GearType::class.java, GearTypeDeserializer)
+                .create()
 
             var f = File(dir, "name_fixes.json")
             if (f.exists()) {
-                val read = FileReader(f).use { gson.fromJson<Map<NamePart, List<String>>>(it, object : TypeToken<Map<NamePart, List<String>>>() {}.type) }
+                val read = FileReader(f).use {
+                    gson.fromJson<Map<NamePart, List<String>>>(
+                        it,
+                        object : TypeToken<Map<NamePart, List<String>>>() {}.type
+                    )
+                }
                 read.forEach { k, it -> fix[k] = it.toTypedArray() }
             }
             FileWriter(f).use { gson.toJson(fix, it) }
 
             f = File(dir, "name_armors.json")
             if (f.exists()) {
-                val read = FileReader(f).use { gson.fromJson<Map<EntityEquipmentSlot, List<String>>>(it, object : TypeToken<Map<EntityEquipmentSlot, List<String>>>() {}.type) }
+                val read = FileReader(f).use {
+                    gson.fromJson<Map<EntityEquipmentSlot, List<String>>>(
+                        it,
+                        object : TypeToken<Map<EntityEquipmentSlot, List<String>>>() {}.type
+                    )
+                }
                 read.forEach { k, it -> armorCores[k] = it.toTypedArray() }
             }
             FileWriter(f).use { gson.toJson(armorCores, it) }
 
             f = File(dir, "name_weapons.json")
             if (f.exists()) {
-                val read = FileReader(f).use { gson.fromJson<Map<GearType, List<String>>>(it, object : TypeToken<Map<GearType, List<String>>>() {}.type) }
+                val read = FileReader(f).use {
+                    gson.fromJson<Map<GearType, List<String>>>(
+                        it,
+                        object : TypeToken<Map<GearType, List<String>>>() {}.type
+                    )
+                }
                 read.forEach { k, it -> weaponCores[k] = it.toTypedArray() }
             }
             for (it in MeleeWeaponType.values()) weaponCores.putIfAbsent(it, arrayOf("Unknown"))
@@ -116,8 +364,8 @@ object NameGenerator {
         val stats = iss.stats ?: return "Error: Missing Stats"
         if (stats.rarity?.ordinal ?: 0 >= Rarity.LEGENDARY.ordinal) return generateLegendary(player).wrapped(stats.rarity!!)
         val item = iss.item
-        if (item is ItemArmor) return generateArmor(item).wrapped(stats.rarity?: Rarity.COMMON)
-        if (item is IRPGGear) return generateWeapon(item.type).wrapped(stats.rarity?: Rarity.COMMON)
+        if (item is ItemArmor) return generateArmor(item).wrapped(stats.rarity ?: Rarity.COMMON)
+        if (item is IRPGGear) return generateWeapon(item.type).wrapped(stats.rarity ?: Rarity.COMMON)
 
         return "Error: Unknown Item ${iss.item}"
     }

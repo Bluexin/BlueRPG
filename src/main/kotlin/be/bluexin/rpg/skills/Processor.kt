@@ -35,9 +35,19 @@ class Processor {
         }
     }
 
-    fun <FROM: Target, TARGET: Target> addElement(targeting: Targeting<FROM, TARGET>, condition: Condition<TARGET>?, effect: Effect<TARGET>) {
+    fun <FROM : Target, TARGET : Target> addElement(
+        targeting: Targeting<FROM, TARGET>,
+        condition: Condition<TARGET>?,
+        effect: Effect<TARGET>
+    ) {
         @Suppress("UNCHECKED_CAST")
-        chain.add(Triple(targeting as Targeting<Target, Target>, condition as Condition<Target>?, effect as Effect<Target>))
+        chain.add(
+            Triple(
+                targeting as Targeting<Target, Target>,
+                condition as Condition<Target>?,
+                effect as Effect<Target>
+            )
+        )
     }
 
     override fun toString(): String {

@@ -33,8 +33,8 @@ import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 
-class ItemArmor private constructor(override val type: ArmorType, material: ArmorMaterial, slot: EntityEquipmentSlot)
-    : ItemModArmor("${slot.getName()}_${type.key}", material, slot), IRPGGear {
+class ItemArmor private constructor(override val type: ArmorType, material: ArmorMaterial, slot: EntityEquipmentSlot) :
+    ItemModArmor("${slot.getName()}_${type.key}", material, slot), IRPGGear {
 
     companion object {
         private val pieces = Array(ArmorType.values().size) { typeIdx ->
@@ -45,9 +45,9 @@ class ItemArmor private constructor(override val type: ArmorType, material: Armo
             Array(armorSlots.size) { slotIdx ->
                 val armorSlot = armorSlots[slotIdx]
                 ItemArmor(
-                        type,
-                        type.armorMaterial,
-                        armorSlot
+                    type,
+                    type.armorMaterial,
+                    armorSlot
                 )
             }
         }
@@ -57,16 +57,16 @@ class ItemArmor private constructor(override val type: ArmorType, material: Armo
     }
 
     override fun getAttributeModifiers(slot: EntityEquipmentSlot, stack: ItemStack) =
-            super<IRPGGear>.getAttributeModifiers(slot, stack)
+        super<IRPGGear>.getAttributeModifiers(slot, stack)
 
     override fun initCapabilities(stack: ItemStack, nbt: NBTTagCompound?) =
-            super<IRPGGear>.initCapabilities(stack, nbt)
+        super<IRPGGear>.initCapabilities(stack, nbt)
 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) =
-            super<IRPGGear>.addInformation(stack, worldIn, tooltip, flagIn)
+        super<IRPGGear>.addInformation(stack, worldIn, tooltip, flagIn)
 
     override fun getNBTShareTag(stack: ItemStack): NBTTagCompound? =
-            super.addNBTShare(stack, super.getNBTShareTag(stack) ?: NBTTagCompound())
+        super.addNBTShare(stack, super.getNBTShareTag(stack) ?: NBTTagCompound())
 
     override fun readNBTShareTag(stack: ItemStack, nbt: NBTTagCompound?) {
         super.readNBTShareTag(stack, nbt)
@@ -85,17 +85,21 @@ class ItemArmor private constructor(override val type: ArmorType, material: Armo
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
-        return if (r.type == EnumActionResult.PASS) super<ItemModArmor>.onItemRightClick(worldIn, playerIn, handIn) else r
+        return if (r.type == EnumActionResult.PASS) super<ItemModArmor>.onItemRightClick(
+            worldIn,
+            playerIn,
+            handIn
+        ) else r
     }
 
     override fun getItemStackDisplayName(stack: ItemStack) = super<IRPGGear>.getItemStackDisplayName(stack)
 
     override fun tooltipizeFixedStats(stats: GearStats) =
-            FixedStat.values().asSequence().filter { stats[it] != 0 }
-                    .map { "rpg.tooltip.fstat".localize(it.localize(stats[it]), it.longName()) }
+        FixedStat.values().asSequence().filter { stats[it] != 0 }
+            .map { "rpg.tooltip.fstat".localize(it.localize(stats[it]), it.longName()) }
 
     override fun getUnlocalizedNameInefficientlyTrick(stack: ItemStack): String =
-            super.getUnlocalizedNameInefficiently(stack)
+        super.getUnlocalizedNameInefficiently(stack)
 
     override val key = "${slot.getName()}_${type.key}"
 

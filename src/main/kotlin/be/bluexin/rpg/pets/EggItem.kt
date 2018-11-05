@@ -31,7 +31,16 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
 object EggItem : ItemMod("egg") {
-    override fun onItemUse(player: EntityPlayer, worldIn: World, pos: BlockPos, hand: EnumHand, facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): EnumActionResult {
+    override fun onItemUse(
+        player: EntityPlayer,
+        worldIn: World,
+        pos: BlockPos,
+        hand: EnumHand,
+        facing: EnumFacing,
+        hitX: Float,
+        hitY: Float,
+        hitZ: Float
+    ): EnumActionResult {
         val itemstack = player.getHeldItem(hand)
 
         if (worldIn.isRemote) {
@@ -56,7 +65,12 @@ object EggItem : ItemMod("egg") {
         }
     }
 
-    private fun applyItemEntityDataToEntity(entityWorld: World, player: EntityPlayer?, stack: ItemStack, targetEntity: Entity?) {
+    private fun applyItemEntityDataToEntity(
+        entityWorld: World,
+        player: EntityPlayer?,
+        stack: ItemStack,
+        targetEntity: Entity?
+    ) {
         // TODO: custom stuff
         val minecraftserver = entityWorld.minecraftServer
 
@@ -64,9 +78,10 @@ object EggItem : ItemMod("egg") {
             val nbttagcompound = stack.tagCompound
 
             if (nbttagcompound != null && nbttagcompound.hasKey("EntityTag", 10)) {
-                if (!entityWorld.isRemote && targetEntity.ignoreItemEntityData() && (player == null || !minecraftserver.playerList.canSendCommands(player.gameProfile))) {
-                    return
-                }
+                if (!entityWorld.isRemote
+                    && targetEntity.ignoreItemEntityData()
+                    && (player == null || !minecraftserver.playerList.canSendCommands(player.gameProfile))
+                ) return
 
                 val nbttagcompound1 = targetEntity.writeToNBT(NBTTagCompound())
                 val uuid = targetEntity.uniqueID

@@ -35,7 +35,7 @@ class RenderRpgArrow(renderManagerIn: RenderManager) : RenderArrow<EntityRpgArro
 }
 
 @SideOnly(Side.CLIENT)
-abstract class RenderRpgProjectile<T: Entity>(renderManager: RenderManager) : Render<T>(renderManager) {
+abstract class RenderRpgProjectile<T : Entity>(renderManager: RenderManager) : Render<T>(renderManager) {
     override fun doRender(entity: T, x: Double, y: Double, z: Double, entityYaw: Float, partialTicks: Float) = Unit
 
     override fun getEntityTexture(entity: T): ResourceLocation? = null

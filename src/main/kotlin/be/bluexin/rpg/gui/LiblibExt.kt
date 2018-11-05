@@ -91,5 +91,8 @@ class ComponentScrollList(posX: Int, posY: Int, var rowHeight: Int, var limit: I
         }
     }
 
-    data class ScrollChangeEvent(@JvmField val component: ComponentScrollList, val oldValue: Int, var newValue: Int) : EventCancelable()
+    data class ScrollChangeEvent(
+        @JvmField val component: ComponentScrollList,
+        val oldValue: Int, var newValue: Int
+    ) : EventCancelable()
 }

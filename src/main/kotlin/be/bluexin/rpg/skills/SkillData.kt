@@ -28,11 +28,11 @@ import net.minecraftforge.registries.RegistryBuilder
 
 object SkillRegistry {
     private val registry: IForgeRegistry<SkillData> = RegistryBuilder<SkillData>()
-            .setName(ResourceLocation(BlueRPG.MODID, "skills"))
-            .setType(SkillData::class.java)
-            .disableSaving()
-            .allowModification()
-            .create()
+        .setName(ResourceLocation(BlueRPG.MODID, "skills"))
+        .setType(SkillData::class.java)
+        .disableSaving()
+        .allowModification()
+        .create()
 
     init {
         MinecraftForge.EVENT_BUS.register(this)
@@ -47,14 +47,14 @@ object SkillRegistry {
 }
 
 data class SkillData(
-        val key: ResourceLocation,
-        val name: String,
-        val icon: ResourceLocation,
-        val description: String,
-        val mana: Int,
-        val cooldown: Int,
-        val levelTransformer: Placeholder,
-        val processor: Processor
+    val key: ResourceLocation,
+    val name: String,
+    val icon: ResourceLocation,
+    val description: String,
+    val mana: Int,
+    val cooldown: Int,
+    val levelTransformer: Placeholder,
+    val processor: Processor
 ) : IForgeRegistryEntry.Impl<SkillData>()
 
 data class Placeholder(val t: Int)

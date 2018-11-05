@@ -26,7 +26,8 @@ import net.minecraft.network.datasync.DataSerializers
 import kotlin.reflect.KClass
 
 @Suppress("UNCHECKED_CAST")
-inline fun <reified T : Enum<T>> KClass<out Entity>.createEnumKey(): DataParameter<T> = createKey(enumSerializers[T::class.java] as DataSerializer<T>)
+inline fun <reified T : Enum<T>> KClass<out Entity>.createEnumKey(): DataParameter<T> =
+    createKey(enumSerializers[T::class.java] as DataSerializer<T>)
 
 open class EnumDataSerializer<T : Enum<T>>(private val clazz: Class<T>) : DataSerializer<T> {
     override fun createKey(id: Int) = DataParameter(id, this)
