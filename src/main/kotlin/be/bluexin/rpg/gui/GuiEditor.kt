@@ -281,7 +281,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                         render.tooltip(listOf("rpg.display.cyclegenerator".localize()))
                         BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
                             val stats = gearStats
-                            stats.generator = TokenType.values()[stats.generator.ordinal + 1 % TokenType.values().size]
+                            stats.generator = TokenType.values()[(stats.generator.ordinal + 1) % TokenType.values().size]
                             PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
                         }
                     })
