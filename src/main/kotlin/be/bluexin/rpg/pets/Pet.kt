@@ -18,11 +18,12 @@
 package be.bluexin.rpg.pets
 
 import be.bluexin.rpg.util.createEnumKey
+import be.bluexin.saomclib.profile
 import com.teamwizardry.librarianlib.features.base.entity.LivingEntityMod
+import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.kotlin.createCompoundKey
 import com.teamwizardry.librarianlib.features.kotlin.managedValue
 import com.teamwizardry.librarianlib.features.saving.Save
-import com.teamwizardry.librarianlib.features.utilities.profile
 import moe.plushie.armourers_workshop.client.config.ConfigHandlerClient
 import moe.plushie.armourers_workshop.client.render.SkinPartRenderer
 import moe.plushie.armourers_workshop.client.skin.cache.ClientSkinCache
@@ -159,7 +160,7 @@ class ModelPet : ModelBase() {
     ) {
         this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale, entityIn)
 
-        profile("Render BlueRPG AW Pet") {
+        Minecraft().profile("Render BlueRPG AW Pet") {
             val skinPointer = (entityIn as? EntityPet)?.skinPointer ?: return
             val distance = Minecraft.getMinecraft().player.getDistance(
                 entityIn.posX,
