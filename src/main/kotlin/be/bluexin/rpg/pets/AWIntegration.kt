@@ -47,7 +47,7 @@ object RecipeSkinPetEgg : RecipeItemSkinning(null) {
                 if (stack.item === ModItems.skin && SkinNBTHelper.stackHasSkinData(stack)) {
                     if (skinStack.isNotEmpty) return ItemStack.EMPTY
                     skinStack = stack
-                } else if (!SkinNBTHelper.isSkinLockedOnStack(stack)) {
+                } else if (!SkinNBTHelper.stackHasSkinData(stack)) {
                     if (itemStack.isNotEmpty) return ItemStack.EMPTY
                     itemStack = stack
                 } else return ItemStack.EMPTY
@@ -58,7 +58,7 @@ object RecipeSkinPetEgg : RecipeItemSkinning(null) {
             val returnStack = itemStack.copy()
 
             val skinData = SkinNBTHelper.getSkinDescriptorFromStack(skinStack)
-            SkinNBTHelper.addSkinDataToStack(returnStack, skinData.identifier, skinData.getSkinDye(), true)
+            SkinNBTHelper.addSkinDataToStack(returnStack, skinData.identifier, skinData.getSkinDye())
 
             returnStack
         } else ItemStack.EMPTY
