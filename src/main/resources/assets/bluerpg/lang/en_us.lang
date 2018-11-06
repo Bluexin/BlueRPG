@@ -24,12 +24,17 @@ rpg.display.generated=Generated: %s
 rpg.display.name=Name: %s
 rpg.display.namefield=Specify a name manually
 rpg.display.defaultrange=Default Range: [%1$d-%2$d]
+rpg.display.movementtype=Movement Type: %s
+rpg.display.hatchtime=Hatch (s): %d
+rpg.display.secondslived=Age (s): %d
 
 rpg.display.cyclerarity=Click to cycle trough the possible rarity values
 rpg.display.cyclebind=Click to cycle trough the possible binding values
 rpg.display.cyclegenerator=Click to cycle trough the possible generator values
 rpg.display.cyclegenerated=Click to toggle generated status
 rpg.display.cyclename=Left click to generate a new random name, right click to unset (will be generated upon identifying)
+rpg.display.cyclepetname=Right click to clear name
+rpg.display.cyclemovementtype=Click to cycle trough the possible movmeent types
 
 rpg.display.debug_exp=Use to gain 20 XP
 rpg.display.debug_exp.shift=Use while shifting to gain 100 XP
@@ -222,3 +227,11 @@ rpg.focus.name=Focus
 # Blocks
 
 tile.bluerpg:editor.name=Loot Editor
+
+# Pets
+
+rpg.walk.name=Walk
+rpg.hop.name=Hop
+rpg.bounce.name=Bounce
+rpg.float.name=Float
+rpg.flap.name=Flap

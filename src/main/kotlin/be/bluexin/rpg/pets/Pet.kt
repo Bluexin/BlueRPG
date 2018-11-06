@@ -55,7 +55,9 @@ class EntityPet(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
     @Save
     private var playerUUID: UUID? = null
 
+    @Save
     private var skinData by managedValue(SKIN_DATA)
+    @Save
     private var movementType by managedValue(MOVEMENT_TYPE_DATA)
 
     val isJumping get() = super.isJumping
@@ -78,6 +80,10 @@ class EntityPet(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
 
     init {
         setSize(.8f, .8f)
+    }
+
+    override fun onAddedToWorld() {
+        super.onAddedToWorld()
         moveHelper = movementHandler.createMoveHelper()
         jumpHelper = movementHandler.createJumpHelper()
         this.movementHandler.registerAI() // Don't use #initEntityAI because our fields aren't initialized yet u_u
@@ -86,7 +92,7 @@ class EntityPet(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
     override fun entityInit() {
         super.entityInit()
         this.getDataManager().register(SKIN_DATA, NBTTagCompound())
-        this.getDataManager().register(MOVEMENT_TYPE_DATA, PetMovementType.HOP)
+        this.getDataManager().register(MOVEMENT_TYPE_DATA, PetMovementType.BOUNCE)
     }
 
     override fun applyEntityAttributes() {

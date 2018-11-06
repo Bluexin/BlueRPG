@@ -21,6 +21,9 @@ import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.ItemGearToken
+import be.bluexin.rpg.pets.EggData
+import be.bluexin.rpg.pets.EggItem
+import be.bluexin.rpg.pets.eggData
 import be.bluexin.rpg.stats.GearStats
 import be.bluexin.rpg.stats.TokenStats
 import be.bluexin.rpg.stats.stats
@@ -85,11 +88,20 @@ class TileEditor : TileModInventory(ModuleInventory(EditorInventory())) {
             world?.onServer(this@TileEditor::markDirty)
         }
 
+    @Save
+    var eggStats: EggData = EggData()
+        get() = field.copy()
+        set(value) {
+            field = value.copy()
+            world?.onServer(this@TileEditor::markDirty)
+        }
+
     fun saveStats() {
         val i = module.handler.getStackInSlot(0)
         if (i.isNotEmpty) {
             i.tokenStats?.loadFrom(tokenStats)
             i.stats?.loadFrom(gearStats)
+            i.eggData?.loadFrom(i, eggStats)
         }
     }
 
@@ -100,13 +112,17 @@ class TileEditor : TileModInventory(ModuleInventory(EditorInventory())) {
         else {
             val gstats = i.stats
             if (gstats != null) this.gearStats = gstats
+            else {
+                val estats = i.eggData
+                if (estats != null) this.eggStats = estats
+            }
         }
     }
 
     private class EditorInventory : ItemStackHandler(1) {
         override fun isItemValid(slot: Int, stack: ItemStack): Boolean {
             val item = stack.item
-            return item is IRPGGear || item is ItemGearToken
+            return item is IRPGGear || item is ItemGearToken || item is EggItem
         }
 
         override fun insertItem(slot: Int, stack: ItemStack, simulate: Boolean) =

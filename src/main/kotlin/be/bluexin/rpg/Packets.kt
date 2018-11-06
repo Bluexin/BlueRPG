@@ -67,8 +67,11 @@ class PacketSetEditorStats(pos: BlockPos, stats: StatCapability?) : PacketBase()
         val player = ctx.serverHandler.player
         val te = if (player.world.isBlockLoaded(pos)) player.world.getTileEntity(pos) else return
         if (te != null && ((player.openContainer as? ContainerImpl)?.container as? ContainerEditor)?.te == te) {
-            if (stats is TokenStats) te.tokenStats = stats as TokenStats
-            else if (stats is GearStats) te.gearStats = stats as GearStats
+            when (stats) {
+                is TokenStats -> te.tokenStats = stats as TokenStats
+                is GearStats -> te.gearStats = stats as GearStats
+                is EggData -> te.eggStats = stats as EggData
+            }
         }
     }
 }

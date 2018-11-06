@@ -24,6 +24,9 @@ import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.gui.Textures.BG
 import be.bluexin.rpg.gui.Textures.PROGRESS_FG
 import be.bluexin.rpg.gui.Textures.SLOT
+import be.bluexin.rpg.pets.EggData
+import be.bluexin.rpg.pets.EggItem
+import be.bluexin.rpg.pets.PetMovementType
 import be.bluexin.rpg.stats.*
 import com.teamwizardry.librarianlib.features.gui.EnumMouseButton
 import com.teamwizardry.librarianlib.features.gui.component.GuiComponent
@@ -44,6 +47,7 @@ import net.minecraft.item.ItemStack
 import java.awt.Color
 import kotlin.math.PI
 
+// TODO: The code here can be improved a LOT
 class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166) {
 
     init {
@@ -102,11 +106,12 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
 
         bg.add(editToken())
         bg.add(editGear())
+        bg.add(editEgg())
     }
 
     private fun editToken(): GuiComponent {
-        val pos = ct.te.pos
         fun GuiComponent.fillToken() {
+            val pos = ct.te.pos
             add(ComponentList(0, 0, 10).apply {
                 add(ComponentVoid(0, 0).apply {
                     add(ComponentText(0, 0).apply {
@@ -216,8 +221,8 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
     }
 
     private fun editGear(): GuiComponent {
-        val pos = ct.te.pos
         fun GuiComponent.fillGear() {
+            val pos = ct.te.pos
             val scrollList = ComponentScrollList(0, 0, 10, 6).apply {
                 _add(ComponentVoid(0, 0).apply {
                     add(ComponentText(0, 0).apply {
@@ -251,7 +256,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                         BUS.hook(ComponentTextField.TextSentEvent::class.java) {
                             val stats = gearStats
                             val t = it.content.trim()
-                            stats.name = if (t.isEmpty()) null else t
+                            stats.name = t.takeUnless { t.isEmpty() }
                             PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
                         }
                     })
@@ -470,6 +475,157 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
         }
     }
 
+    private fun editEgg(): GuiComponent {
+        fun GuiComponent.fillEgg() {
+            val pos = ct.te.pos
+            val scrollList = ComponentScrollList(0, 0, 10, 6).apply {
+                _add(ComponentVoid(0, 0).apply {
+                    add(ComponentText(0, 0).apply {
+                        text { "rpg.display.name".localize(eggStats.name) }
+                    })
+                    add(ComponentRect(0, -1, 129, 10).apply {
+                        color(Color(0, 0, 0, 0))
+                        render.tooltip(listOf("rpg.display.cyclepetname".localize()))
+                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                            val stats = eggStats
+                            stats.name = if (it.button == EnumMouseButton.RIGHT) "Unnamed" else return@hook
+                            PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
+                        }
+                    })
+                })
+
+                _add(ComponentVoid(0, 0).apply {
+                    add(ComponentRect(0, -1, 129, 9).apply {
+                        color(Color.LIGHT_GRAY)
+                    })
+                    add(ComponentTextField(3, 0, 126, 8).apply {
+                        text = eggStats.name
+                        enabledColor(Color.BLACK)
+                        cursorColor(Color.BLACK)
+                        useShadow(false)
+                        useVanillaFilter(false)
+                        render.tooltip(listOf("rpg.display.namefield".localize(), "rpg.display.apply".localize()))
+                        BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                            val stats = eggStats
+                            val t = it.content.trim()
+                            stats.name = if (t.isEmpty()) "Unnamed" else t
+                            PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
+                        }
+                    })
+                })
+
+                _add(ComponentVoid(0, 0).apply {
+                    add(ComponentText(0, 0).apply {
+                        text {
+                            "rpg.display.movementtype".localize(
+                                eggStats.movementType.localized
+                            )
+                        }
+                    })
+                    add(ComponentRect(0, -1, 129, 10).apply {
+                        color(Color(0, 0, 0, 0))
+                        render.tooltip(listOf("rpg.display.cyclemovementtype".localize()))
+                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                            val stats = eggStats
+                            stats.movementType =
+                                    PetMovementType.values()[(stats.movementType.ordinal + 1) % PetMovementType.values().size]
+                            PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
+                        }
+                    })
+                })
+
+                _add(ComponentVoid(0, 0).apply {
+                    add(ComponentText(0, 0).apply {
+                        text { "rpg.display.hatchtime".localize(eggStats.hatchTimeSeconds) }
+                    })
+
+                    add(ComponentVoid(90, 0).apply {
+                        add(ComponentRect(-3, -1, 42, 9).apply {
+                            color(Color.LIGHT_GRAY)
+                        })
+                        add(ComponentTextField(0, 0, 39, 8).apply {
+                            text = eggStats.hatchTimeSeconds.toString()
+                            enabledColor(Color.BLACK)
+                            cursorColor(Color.BLACK)
+                            useShadow(false)
+                            filter = f@{
+                                if (it.isEmpty()) return@f "0"
+                                val i = it.toIntOrNull() ?: return@f null
+                                if (i < 0) return@f "0"
+                                return@f it
+                            }
+                            render.tooltip(listOf("rpg.display.apply".localize()))
+                            BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                                val stats = eggStats
+                                stats.hatchTimeSeconds = it.content.toInt()
+                                PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
+                            }
+                        })
+                    })
+                })
+
+                _add(ComponentVoid(0, 0).apply {
+                    add(ComponentText(0, 0).apply {
+                        text { "rpg.display.secondslived".localize(eggStats.secondsLived) }
+                    })
+
+                    add(ComponentVoid(90, 0).apply {
+                        add(ComponentRect(-3, -1, 42, 9).apply {
+                            color(Color.LIGHT_GRAY)
+                        })
+                        add(ComponentTextField(0, 0, 39, 8).apply {
+                            text = eggStats.secondsLived.toString()
+                            enabledColor(Color.BLACK)
+                            cursorColor(Color.BLACK)
+                            useShadow(false)
+                            filter = f@{
+                                if (it.isEmpty()) return@f "0"
+                                val i = it.toIntOrNull() ?: return@f null
+                                if (i < 0) return@f "0"
+                                return@f it
+                            }
+                            render.tooltip(listOf("rpg.display.apply".localize()))
+                            BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                                val stats = eggStats
+                                stats.secondsLived = it.content.toInt()
+                                PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
+                            }
+                        })
+                    })
+                })
+
+                // TODO: sounds, colors
+            }
+            add(scrollList)
+
+            add(ComponentRect(131, 0, 8, 60).apply {
+                color(Color.GRAY)
+                clipping.clipToBounds = true
+                add(ComponentRect(1, 0, 6, 3).apply {
+                    color(Color.BLUE)
+                    clipping.clipToBounds = true
+                    fun maxY() = this.parent!!.height.toDouble() - this.height
+                    scrollList.BUS.hook(ComponentScrollList.ScrollChangeEvent::class.java) { (it, _, new) ->
+                        this.pos = vec(this.pos.x, maxY() * (new / it.maxScroll.toDouble()))
+                    }
+                    /*BUS.hook(GuiComponentEvents.MouseDragEvent::class.java) {
+                        val p = (this.pos.y + it.mousePos.y).clamp(0.0, maxY())
+                        val v = p / maxY()
+                        val step = 1.0 / scrollList.maxScroll
+                        scrollList.scroll = ((v + step / 2.0) * scrollList.maxScroll).toInt()
+                    }*/
+                })
+            })
+        }
+
+        return ComponentCondition(30, 20) { iss.item is EggItem }.apply {
+            visibilityChanged = {
+                if (it) fillEgg()
+                else clear()
+            }
+        }
+    }
+
     private val iss: ItemStack
         get() = ct.invBlock.slotArray.first().stack
 
@@ -478,4 +634,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
 
     private val gearStats: GearStats
         get() = ct.te.gearStats
+
+    private val eggStats: EggData
+        get() = ct.te.eggStats
 }

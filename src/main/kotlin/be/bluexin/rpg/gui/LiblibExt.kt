@@ -24,6 +24,7 @@ import com.teamwizardry.librarianlib.features.helpers.vec
 import com.teamwizardry.librarianlib.features.kotlin.clamp
 import com.teamwizardry.librarianlib.features.math.Vec2d
 import java.util.*
+import kotlin.math.max
 
 class ComponentCondition(posX: Int, posY: Int, private val condition: () -> Boolean) : GuiComponent(posX, posY) {
     override var isVisible: Boolean = super.isVisible
@@ -61,7 +62,7 @@ class ComponentScrollList(posX: Int, posY: Int, var rowHeight: Int, var limit: I
             }
         }
 
-    val maxScroll get() = _children.asSequence().filter(GuiComponent::isVisible).count() - limit
+    val maxScroll get() = max(0, _children.asSequence().filter(GuiComponent::isVisible).count() - limit)
 
     private val _children = LinkedList<GuiComponent>()
 

@@ -26,10 +26,7 @@ import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.items.DebugExpItem
 import be.bluexin.rpg.items.DebugSkillItem
 import be.bluexin.rpg.items.DebugStatsItem
-import be.bluexin.rpg.pets.EggItem
-import be.bluexin.rpg.pets.EntityPet
-import be.bluexin.rpg.pets.PetMovementType
-import be.bluexin.rpg.pets.RenderPet
+import be.bluexin.rpg.pets.*
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.registerDataSerializer
 import be.bluexin.saomclib.capabilities.CapabilitiesHandler
@@ -167,6 +164,7 @@ open class CommonProxy {
 
         AbstractSaveHandler.writeAutoNBT(T(GearStats(ItemStack.EMPTY)), false)
         AbstractSaveHandler.writeAutoNBT(T(TokenStats(ItemStack.EMPTY)), false)
+        AbstractSaveHandler.writeAutoNBT(T(EggData()), false)
         AbstractSaveHandler.writeAutoNBT(T(PlayerStats().apply {
             baseStats = StatsCollection(WeakReference(Unit))
             level = Level(WeakReference<EntityPlayer>(null))
