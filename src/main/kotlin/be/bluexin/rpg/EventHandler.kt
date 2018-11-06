@@ -20,17 +20,21 @@ package be.bluexin.rpg
 import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.gear.WeaponType
+import be.bluexin.rpg.pets.EggItem
+import be.bluexin.rpg.pets.eggData
 import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.Minecraft
+import net.minecraft.client.renderer.color.IItemColor
 import net.minecraft.entity.ai.attributes.IAttributeInstance
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.text.TextComponentTranslation
+import net.minecraftforge.client.event.ColorHandlerEvent
 import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.event.RegistryEvent
@@ -166,10 +170,19 @@ object ClientEventHandler {
     @SubscribeEvent
     fun hitEmpty(event: PlayerInteractEvent.LeftClickEmpty) = DamageHandler.handleRange(event.entityPlayer)
 
-    @SideOnly(Side.CLIENT)
     @SubscribeEvent
     fun onTextureStitchEvent(event: TextureStitchEvent) {
         event.map.registerSprite(Resources.PARTICLE)
+    }
+
+    @SubscribeEvent
+    fun registerItemHandlers(event: ColorHandlerEvent.Item) {
+        event.itemColors.registerItemColorHandler(
+            IItemColor { stack, tintIndex ->
+                val eggData = stack.eggData ?: return@IItemColor -1
+                if (tintIndex == 0) eggData.primaryColor else eggData.secondaryColor
+            }, EggItem
+        )
     }
 }
 

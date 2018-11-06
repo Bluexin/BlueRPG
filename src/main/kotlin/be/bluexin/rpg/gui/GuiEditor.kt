@@ -594,7 +594,93 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     })
                 })
 
-                // TODO: sounds, colors
+                // TODO: color picker
+
+                _add(ComponentVoid(0, 0).apply {
+                    add(ComponentText(0, 0).apply {
+                        text { "rpg.display.primarycolor".localize(eggStats.primaryColor) }
+                    })
+                    add(ComponentRect(0, -1, 129, 10).apply {
+                        color(Color(0, 0, 0, 0))
+                        render.tooltip(listOf("rpg.display.cyclepetcolor".localize()))
+                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                            val stats = eggStats
+                            stats.primaryColor = if (it.button == EnumMouseButton.RIGHT) 0 else return@hook
+                            PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
+                        }
+                    })
+                })
+
+                _add(ComponentVoid(0, 0).apply {
+                    add(ComponentRect(0, -1, 129, 9).apply {
+                        color(Color.LIGHT_GRAY)
+                    })
+                    add(ComponentTextField(3, 0, 126, 8).apply {
+                        text = eggStats.primaryColor.toString()
+                        enabledColor(Color.BLACK)
+                        cursorColor(Color.BLACK)
+                        useShadow(false)
+                        filter = f@{
+                            if (it.isEmpty()) return@f "0"
+                            (if (it.startsWith("0x")) it.substring(2).toIntOrNull(16) else it.toIntOrNull())
+                                ?: return@f null
+                            return@f it
+                        }
+                        render.tooltip(listOf("rpg.display.apply".localize(), "rpg.display.petcolortooltip".localize()))
+                        BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                            val stats = eggStats
+                            stats.primaryColor =
+                                    if (it.content.startsWith("0x"))
+                                        it.content.substring(2).toInt(16)
+                                    else it.content.toInt()
+                            PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
+                        }
+                    })
+                })
+
+                _add(ComponentVoid(0, 0).apply {
+                    add(ComponentText(0, 0).apply {
+                        text { "rpg.display.secondarycolor".localize(eggStats.secondaryColor) }
+                    })
+                    add(ComponentRect(0, -1, 129, 10).apply {
+                        color(Color(0, 0, 0, 0))
+                        render.tooltip(listOf("rpg.display.cyclepetcolor".localize()))
+                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                            val stats = eggStats
+                            stats.secondaryColor = if (it.button == EnumMouseButton.RIGHT) 0 else return@hook
+                            PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
+                        }
+                    })
+                })
+
+                _add(ComponentVoid(0, 0).apply {
+                    add(ComponentRect(0, -1, 129, 9).apply {
+                        color(Color.LIGHT_GRAY)
+                    })
+                    add(ComponentTextField(3, 0, 126, 8).apply {
+                        text = eggStats.secondaryColor.toString()
+                        enabledColor(Color.BLACK)
+                        cursorColor(Color.BLACK)
+                        useShadow(false)
+                        filter = f@{
+                            if (it.isEmpty()) return@f "0"
+                            (if (it.startsWith("0x")) it.substring(2).toIntOrNull(16) else it.toIntOrNull())
+                                ?: return@f null
+                            return@f it
+                        }
+                        render.tooltip(listOf("rpg.display.apply".localize(), "rpg.display.petcolortooltip".localize()))
+                        BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                            val stats = eggStats
+                            stats.secondaryColor =
+                                    if (it.content.startsWith("0x"))
+                                        it.content.substring(2).toInt(16)
+                                    else it.content.toInt()
+                            PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
+                        }
+                    })
+                })
+
+                // TODO: sounds
             }
             add(scrollList)
 
@@ -624,6 +710,10 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                 else clear()
             }
         }
+    }
+
+    override fun keyTyped(typedChar: Char, keyCode: Int) {
+        if (!this.mc.gameSettings.keyBindInventory.isActiveAndMatches(keyCode)) super.keyTyped(typedChar, keyCode)
     }
 
     private val iss: ItemStack

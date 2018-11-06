@@ -142,6 +142,8 @@ data class EggData(
     @Save var movementType: PetMovementType = PetMovementType.BOUNCE,
     @Save var hatchTimeSeconds: Int = 300,
     @Save var secondsLived: Int = 0,
+    @Save var primaryColor: Int = 0,
+    @Save var secondaryColor: Int = 0,
     @Save var stepSound: String = "TODO",
     @Save var idleSound: String = "TODO",
     @Save var interactSound: String = "TODO",
@@ -156,8 +158,8 @@ data class EggData(
                 "auto" to AbstractSaveHandler.writeAutoNBT(other, false)
             }
         }
-        if (tag != null) newTag.merge(tag)
-        stack.tagCompound = newTag
+        tag?.merge(newTag)
+        stack.tagCompound = tag ?: newTag
     }
 
     override fun copy() = this.copy(name = name)
