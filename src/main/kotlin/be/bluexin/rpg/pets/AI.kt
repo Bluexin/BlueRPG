@@ -22,6 +22,7 @@ import net.minecraft.block.material.Material
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.ai.EntityAIBase
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.MobEffects
 import net.minecraft.pathfinding.PathNavigate
 import net.minecraft.pathfinding.PathNavigateFlying
@@ -35,8 +36,8 @@ import net.minecraft.world.World
 open class EntityAIFollowOwner(
     private val pet: EntityPet,
     private val followSpeed: Double,
-    protected var minDist: Float,
-    protected var maxDist: Float
+    private var minDist: Float,
+    private var maxDist: Float
 ) : EntityAIBase() {
     private var owner: EntityLivingBase? = null
     protected var world: World = pet.world
@@ -72,9 +73,8 @@ open class EntityAIFollowOwner(
     /**
      * Returns whether an in-progress EntityAIBase should continue executing
      */
-    override fun shouldContinueExecuting(): Boolean {
-        return !this.petPathfinder.noPath() && this.owner!!.getDistanceSq(this.pet) > this.maxDist * this.maxDist
-    }
+    override fun shouldContinueExecuting() =
+        !this.petPathfinder.noPath() && this.owner!!.getDistanceSq(this.pet) > this.maxDist * this.maxDist
 
     /**
      * Execute a one shot task or start executing a continuous task
@@ -165,9 +165,7 @@ internal class AISlimeFloat(private val pet: EntityPet) : EntityAIBase() {
     /**
      * Returns whether the EntityAIBase should begin execution.
      */
-    override fun shouldExecute(): Boolean {
-        return this.pet.isInWater || this.pet.isInLava
-    }
+    override fun shouldExecute() = this.pet.isInWater || this.pet.isInLava
 
     /**
      * Keep ticking a continuous task that has already been started
@@ -181,7 +179,16 @@ internal class AISlimeFloat(private val pet: EntityPet) : EntityAIBase() {
     }
 }
 
-internal class AISlimeHop(private val pet: EntityPet) : EntityAIBase() {
+internal class AISlimeBounce(
+    private val pet: EntityPet,
+    private var minDist: Float,
+    private var maxDist: Float
+) : EntityAIBase() {
+
+    private var owner: EntityPlayer? = null
+    protected var world: World = pet.world
+    private val petPathfinder: PathNavigate = pet.navigator
+    private var timeToRecalcPath: Int = 0
 
     init {
         this.mutexBits = 5
@@ -190,13 +197,87 @@ internal class AISlimeHop(private val pet: EntityPet) : EntityAIBase() {
     /**
      * Returns whether the EntityAIBase should begin execution.
      */
-    override fun shouldExecute() = true
+    override fun shouldExecute(): Boolean {
+        val owner = this.pet.owner
+
+        return when {
+            owner == null -> false
+            owner.isSpectator -> false
+            this.pet.getDistanceSq(owner) < (this.minDist * this.minDist).toDouble() -> false
+            else -> {
+                this.owner = owner
+                true
+            }
+        }
+    }
+
+    /**
+     * Returns whether an in-progress EntityAIBase should continue executing
+     */
+    override fun shouldContinueExecuting() =
+        !this.petPathfinder.noPath() && this.owner!!.getDistanceSq(this.pet) > this.maxDist * this.maxDist
+
+
+    /**
+     * Execute a one shot task or start executing a continuous task
+     */
+    override fun startExecuting() {
+        this.timeToRecalcPath = 0
+    }
+
+    /**
+     * Reset the task's internal state. Called when this task is interrupted by another one
+     */
+    override fun resetTask() {
+        this.owner = null
+        this.petPathfinder.clearPath()
+    }
 
     /**
      * Keep ticking a continuous task that has already been started
      */
     override fun updateTask() {
-        (this.pet.moveHelper as BounceHandler.BounceMoveHelper).speed = 1.0
+        val owner = this.owner
+        if (owner != null && --this.timeToRecalcPath <= 0) {
+            this.timeToRecalcPath = 10
+
+            if (!this.petPathfinder.tryMoveToEntityLiving(owner, 1.0)) {
+                if (!this.pet.leashed && !this.pet.isRiding) {
+                    if (this.pet.getDistanceSq(owner) >= 144.0) {
+                        val i = MathHelper.floor(owner.posX) - 2
+                        val j = MathHelper.floor(owner.posZ) - 2
+                        val k = MathHelper.floor(owner.entityBoundingBox.minY)
+
+                        repeat(5) { l ->
+                            repeat(5) { i1 ->
+                                if ((l < 1 || i1 < 1 || l > 3 || i1 > 3)
+                                    && this.isTeleportFriendlyBlock(i, j, k, l, i1)
+                                ) {
+                                    this.pet.setLocationAndAngles(
+                                        ((i + l).toFloat() + 0.5f).toDouble(),
+                                        k.toDouble(),
+                                        ((j + i1).toFloat() + 0.5f).toDouble(),
+                                        this.pet.rotationYaw,
+                                        this.pet.rotationPitch
+                                    )
+                                    this.petPathfinder.clearPath()
+                                    return
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun isTeleportFriendlyBlock(x: Int, z: Int, y: Int, xOffset: Int, zOffset: Int): Boolean {
+        val blockpos = BlockPos(x + xOffset, y - 1, z + zOffset)
+        val iblockstate = this.world.getBlockState(blockpos)
+        return iblockstate.getBlockFaceShape(this.world, blockpos, EnumFacing.DOWN) == BlockFaceShape.SOLID
+                && iblockstate.canEntitySpawn(this.pet)
+                && this.world.isAirBlock(blockpos.up())
+                && this.world.isAirBlock(blockpos.up(2))
     }
 }
 
@@ -221,7 +302,8 @@ internal class AIPetFaceOwner(private val pet: EntityPet) : EntityAIBase() {
      * Keep ticking a continuous task that has already been started
      */
     override fun updateTask() {
-        this.pet.faceEntity(this.pet.owner!!, 10.0f, 10.0f)
+        val owner = this.pet.owner ?: return
+        this.pet.faceEntity(owner, 10.0f, 10.0f)
         (this.pet.moveHelper as BounceHandler.BounceMoveHelper).setDirection(this.pet.rotationYaw, false)
     }
 }

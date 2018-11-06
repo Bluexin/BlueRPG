@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg.pets
 
+import be.bluexin.rpg.util.Localizable
 import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.delegate
 import net.minecraft.client.renderer.GlStateManager
@@ -28,8 +29,7 @@ import net.minecraft.pathfinding.PathNavigate
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 
-
-enum class PetMovementType(private val handler: (EntityPet) -> PetMovementHandler) {
+enum class PetMovementType(private val handler: (EntityPet) -> PetMovementHandler) : Localizable {
     WALK(::WalkHandler),
     HOP(::HopHandler),
     BOUNCE(::BounceHandler),
@@ -274,7 +274,7 @@ open class BounceHandler(pet: EntityPet) : PetMovementHandler(pet) {
     override fun registerAI() {
         this.pet.tasks.addTask(1, AISlimeFloat(this.pet))
         this.pet.tasks.addTask(3, AIPetFaceOwner(this.pet))
-        this.pet.tasks.addTask(5, AISlimeHop(this.pet))
+        this.pet.tasks.addTask(5, AISlimeBounce(this.pet, 5f, 3f))
     }
 
     class BounceMoveHelper(private val pet: EntityPet) : EntityMoveHelper(pet) {
@@ -340,7 +340,7 @@ open class BounceHandler(pet: EntityPet) : PetMovementHandler(pet) {
 
 open class FloatHandler(pet: EntityPet) : PetMovementHandler(pet) {
     override fun onLivingUpdate() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        // TODO : implement
     }
 }
 
