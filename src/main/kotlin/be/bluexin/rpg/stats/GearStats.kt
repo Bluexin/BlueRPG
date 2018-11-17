@@ -230,6 +230,6 @@ fun GearStats.levelReqMet(player: EntityPlayer) = levelReq <= player.stats.level
 fun ItemStack.statsReqMet(player: EntityPlayer): Boolean {
     val s = stats ?: return false
     val r = s.requiredStat ?: return true
-    val f = player.equipmentAndArmor.contains(this)
+    val f = tagCompound?.getByte("bluerpg:disabled") == 0.toByte() && player.equipmentAndArmor.contains(this)
     return player[r] - (if (f) s[r] else 0) >= s.requiredValue
 }
