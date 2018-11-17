@@ -50,11 +50,7 @@ object EggItem : ItemMod("egg") {
     ): EnumActionResult {
         val itemstack = player.getHeldItem(hand)
 
-        if (worldIn.isRemote) {
-            return EnumActionResult.SUCCESS
-        } else if (!player.canPlayerEdit(pos.offset(facing), facing, itemstack)) {
-            return EnumActionResult.FAIL
-        } else {
+        return if (worldIn.isRemote) EnumActionResult.SUCCESS else {
             val blockpos = pos.offset(facing)
             val entity = EntityPet(worldIn)
             entity.skinPointer = SkinNBTHelper.getSkinDescriptorFromStack(itemstack)
@@ -65,7 +61,7 @@ object EggItem : ItemMod("egg") {
 
             if (!player.capabilities.isCreativeMode) itemstack.shrink(1)
 
-            return EnumActionResult.SUCCESS
+            EnumActionResult.SUCCESS
         }
     }
 
