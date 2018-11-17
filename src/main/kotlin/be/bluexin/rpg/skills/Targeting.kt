@@ -28,12 +28,13 @@ import com.teamwizardry.librarianlib.features.kotlin.plus
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.utilities.RaycastUtils
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.channels.SendChannel
-import kotlinx.coroutines.experimental.channels.produce
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.selects.select
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.math.AxisAlignedBB
@@ -94,7 +95,7 @@ data class Raycast<FROM, RESULT>(
 ) : Targeting<FROM, RESULT> where FROM : TargetWithLookVec, FROM : TargetWithPosition, FROM : TargetWithWorld,
                                   RESULT : TargetWithPosition, RESULT : TargetWithWorld {
     override operator fun invoke(caster: EntityLivingBase, from: FROM, result: SendChannel<RESULT>) {
-        launch {
+        GlobalScope.launch {
             val e = RaycastUtils.getEntityLookedAt((from as LivingHolder<*>).it, range)
             if (e is EntityLivingBase) result.send(e.holder as RESULT)
             result.close()
@@ -108,7 +109,7 @@ data class Channelling<FROM : Target, RESULT : Target>(
     val delayMillis: Long, val procs: Int, val targeting: Targeting<FROM, RESULT>
 ) : Targeting<FROM, RESULT> by targeting {
     override operator fun invoke(caster: EntityLivingBase, from: FROM, result: SendChannel<RESULT>) {
-        launch {
+        GlobalScope.launch {
             val p = produce(capacity = Channel.UNLIMITED) {
                 repeat(procs) {
                     if (it != 0) delay(delayMillis)
@@ -167,7 +168,7 @@ data class AoE<FROM, RESULT>(
                 from.getDistanceSq(LivingHolder(it!!)) <= dist
             }
         )
-        launch {
+        GlobalScope.launch {
             e.forEach { result.send(LivingHolder(it!!) as RESULT) }
             result.close()
         }
@@ -189,7 +190,7 @@ data class Chain<T>(
     override operator fun invoke(caster: EntityLivingBase, from: T, result: SendChannel<T>) {
         val w = Vec3d(range, range, range)
         val dist = pow(range, 2.0)
-        launch {
+        GlobalScope.launch {
             val targets = LinkedHashSet<T>()
             var previousTarget = from
             repeat(maxTargets) { c ->

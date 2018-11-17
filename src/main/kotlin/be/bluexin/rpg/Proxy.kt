@@ -64,6 +64,10 @@ open class CommonProxy {
         // Not using SAOMCLib for this one because we don't want it autoregistered
         CapabilityManager.INSTANCE.register(GearStats::class.java, GearStats.Storage) { GearStats(ItemStack.EMPTY) }
         CapabilityManager.INSTANCE.register(TokenStats::class.java, TokenStats.Storage) { TokenStats(ItemStack.EMPTY) }
+        CapabilitiesHandler.registerEntityCapability(
+            PetStorage::class.java,
+            PetStorage.Storage
+        ) { it is EntityPlayer }
 
         MinecraftForge.EVENT_BUS.register(CommonEventHandler)
 

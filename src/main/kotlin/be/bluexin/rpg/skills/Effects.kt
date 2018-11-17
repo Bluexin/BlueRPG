@@ -21,11 +21,12 @@ import be.bluexin.rpg.DamageHandler
 import be.bluexin.rpg.util.runMainThread
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.channels.produce
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.selects.select
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.potion.PotionEffect
 import net.minecraft.util.EntityDamageSource
@@ -43,7 +44,7 @@ interface Effect<TARGET : Target> {
 data class Damage<TARGET>(val value: Double) : Effect<TARGET>
         where TARGET : TargetWithHealth, TARGET : TargetWithWorld { // TODO: take caster stats into account
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {
-        launch {
+        GlobalScope.launch {
             for (e in targets) e.world.minecraftServer?.runMainThread {
                 if (value >= 0) e.attack(
                     DamageHandler.RpgDamageSource(EntityDamageSource("skill.test", caster)),
@@ -60,7 +61,7 @@ data class Damage<TARGET>(val value: Double) : Effect<TARGET>
 data class Buff<TARGET>(val effect: PotionEffect) : Effect<TARGET>
         where TARGET : TargetWithEffects, TARGET : TargetWithWorld {
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {
-        launch {
+        GlobalScope.launch {
             for (e in targets) e.world.minecraftServer?.runMainThread {
                 e.addPotionEffect(effect)
             }
@@ -76,7 +77,7 @@ data class Skill<TARGET : Target, RESULT : Target>(
     val effect: Effect<RESULT>
 ) : Effect<TARGET> {
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {
-        launch {
+        GlobalScope.launch {
             val p = produce(capacity = Channel.UNLIMITED) {
                 for (e in targets) {
                     val c = Channel<RESULT>(capacity = Channel.UNLIMITED)
@@ -122,7 +123,7 @@ data class Skill<TARGET : Target, RESULT : Target>(
 data class MultiEffect<TARGET : Target>(val effects: Array<Effect<TARGET>>) : Effect<TARGET> {
 
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {
-        launch {
+        GlobalScope.launch {
             val channels = Array<Channel<TARGET>>(effects.size) {
                 Channel(capacity = Channel.UNLIMITED)
             }

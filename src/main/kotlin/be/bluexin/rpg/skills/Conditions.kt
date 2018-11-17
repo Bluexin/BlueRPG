@@ -20,8 +20,10 @@ package be.bluexin.rpg.skills
 import be.bluexin.rpg.util.XoRoRNG
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable
-import kotlinx.coroutines.experimental.channels.produce
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.runBlocking
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.Item
@@ -75,7 +77,7 @@ data class Inverted<TARGET : Target>(val c1: Condition<TARGET>) : Condition<TARG
 @Savable
 @NamedDynamic("t:r")
 data class Random<TARGET : Target>(val chance: Double) : Condition<TARGET> {
-    private val rng = produce(capacity = 5) {
+    private val rng = GlobalScope.produce(capacity = 5) {
         val rng = XoRoRNG()
         while (isActive) send(rng.nextDouble())
     }

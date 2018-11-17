@@ -21,8 +21,9 @@ import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.WeaponType
 import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.kotlin.localize
-import kotlinx.coroutines.experimental.channels.SendChannel
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.launch
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.util.IThreadListener
 import net.minecraftforge.common.MinecraftForge
@@ -80,14 +81,14 @@ inline fun IThreadListener.runMainThread(crossinline block: () -> Unit) {
 }
 
 fun <T> SendChannel<T>.offerOrSend(it: T) {
-    if (!offer(it)) launch {
+    if (!offer(it)) GlobalScope.launch {
         send(it)
     }
 }
 
 fun <T> SendChannel<T>.offerOrSendAndClose(it: T) {
     if (offer(it)) close()
-    else launch {
+    else GlobalScope.launch {
         send(it)
         close()
     }

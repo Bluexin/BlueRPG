@@ -36,8 +36,8 @@ import com.teamwizardry.librarianlib.features.particle.functions.TickFunction
 import com.teamwizardry.librarianlib.features.particle.spawn
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
-import kotlinx.coroutines.experimental.channels.SendChannel
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.runBlocking
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.IProjectile
 import net.minecraft.entity.projectile.EntityArrow

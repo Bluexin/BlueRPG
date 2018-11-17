@@ -18,8 +18,9 @@
 package be.bluexin.rpg.skills
 
 import com.teamwizardry.librarianlib.features.saving.Savable
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.channels.produce
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.produce
 import net.minecraft.entity.EntityLivingBase
 import java.util.*
 
@@ -31,7 +32,9 @@ class Processor {
         chain.forEach { (t, c, e) ->
             val channel = Channel<Target>(capacity = Channel.UNLIMITED)
             t(caster, caster.holder, channel)
-            e(caster, if (c == null) channel else produce { for (it in channel) if (c(caster, it)) send(it) })
+            e(
+                caster,
+                if (c == null) channel else GlobalScope.produce { for (it in channel) if (c(caster, it)) send(it) })
         }
     }
 
