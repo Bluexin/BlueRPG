@@ -58,7 +58,7 @@ object RecipeSkinPetEgg : RecipeItemSkinning(null) {
             val returnStack = itemStack.copy()
 
             val skinData = SkinNBTHelper.getSkinDescriptorFromStack(skinStack)
-            SkinNBTHelper.addSkinDataToStack(returnStack, skinData.identifier, skinData.getSkinDye())
+            SkinNBTHelper.addSkinDataToStack(returnStack, skinData)
 
             returnStack
         } else ItemStack.EMPTY
