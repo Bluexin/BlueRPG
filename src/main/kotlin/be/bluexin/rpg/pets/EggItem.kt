@@ -46,11 +46,17 @@ object EggItem : ItemMod("egg") {
         }
     }
 
+    override fun getItemStackDisplayName(stack: ItemStack): String = with(stack.eggData) {
+        if (this?.isHatched == true) this.name
+        else super.getItemStackDisplayName(stack)
+    }
+
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
 //        super.addInformation(stack, worldIn, tooltip, flagIn)
 
         val data = stack.eggData ?: return
         if (data.isHatched) tooltip.add("rpg.pet.hatched".localize())
+        else tooltip.add("rpg.pet.nothatched".localize())
     }
 
     private fun applyItemEntityDataToEntity(

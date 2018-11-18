@@ -242,3 +242,4 @@ rpg.bounce.name=Bounce
 rpg.float.name=Float
 rpg.flap.name=Flap
 rpg.pet.hatched=Hatched
+rpg.pet.nothatched=This Pet is still an egg. Walking around with it equipped will cause it to eventually hatch.
