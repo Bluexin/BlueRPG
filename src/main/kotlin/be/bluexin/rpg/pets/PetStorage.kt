@@ -18,7 +18,6 @@
 package be.bluexin.rpg.pets
 
 import be.bluexin.rpg.BlueRPG
-import be.bluexin.saomclib.capabilities.AbstractCapability
 import be.bluexin.saomclib.capabilities.AbstractEntityCapability
 import be.bluexin.saomclib.capabilities.Key
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
@@ -33,6 +32,8 @@ import net.minecraft.util.ResourceLocation
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
+import net.minecraftforge.common.util.FakePlayer
+import net.minecraftforge.event.entity.EntityJoinWorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.PlayerEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
@@ -50,32 +51,6 @@ class PetStorage : AbstractEntityCapability(), IItemHandlerModifiable {
 
     @Save
     internal var petID: Int = -1
-
-    override fun setup(param: Any): AbstractCapability {
-        param as EntityPlayer
-
-        MinecraftForge.EVENT_BUS.register(object {
-            private var c = 0
-
-            @SubscribeEvent
-            fun onTick(event: TickEvent.PlayerTickEvent) {
-                if (event.player == param && (param.world.isRemote || ++c >= 3)) {
-                    if (!param.world.isRemote) {
-                        param.inventoryContainer.addSlotToContainer(object :
-                            SlotItemHandler(this@PetStorage, 0, 77, 44) {
-                            @SideOnly(Side.CLIENT)
-                            override fun getSlotTexture(): String? {
-                                return "minecraft:items/spawn_egg"
-                            }
-                        })
-                        MinecraftForge.EVENT_BUS.unregister(this)
-                    }
-                }
-            }
-        })
-
-        return super.setup(param)
-    }
 
     private var petEntityRef: WeakReference<EntityPet>? = null
         get() {
@@ -175,6 +150,23 @@ class PetStorage : AbstractEntityCapability(), IItemHandlerModifiable {
 
                 @SubscribeEvent
                 fun onPlayerLogout(event: PlayerEvent.PlayerLoggedOutEvent) = event.player.petStorage.killPet()
+
+                @SubscribeEvent
+                fun onPlayerAddedToWorld(event: EntityJoinWorldEvent) {
+                    with(event.entity) {
+                        if (this is EntityPlayer && this !is FakePlayer) {
+                            inventoryContainer.addSlotToContainer(object :
+                                SlotItemHandler(petStorage, 0, 77, 44) {
+                                @SideOnly(Side.CLIENT)
+                                override fun getSlotTexture(): String? {
+                                    return "minecraft:items/spawn_egg"
+                                }
+                            })
+                            MinecraftForge.EVENT_BUS.unregister(this)
+                        }
+                    }
+
+                }
             })
         }
     }
