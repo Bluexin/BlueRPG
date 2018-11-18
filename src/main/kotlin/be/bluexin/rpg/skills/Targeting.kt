@@ -23,6 +23,7 @@ import be.bluexin.rpg.entities.EntitySkillProjectile
 import be.bluexin.rpg.util.offerOrSendAndClose
 import be.bluexin.rpg.util.runMainThread
 import com.google.common.base.Predicate
+import com.teamwizardry.librarianlib.features.helpers.aabb
 import com.teamwizardry.librarianlib.features.kotlin.minus
 import com.teamwizardry.librarianlib.features.kotlin.plus
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
@@ -37,7 +38,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.Vec3d
 import java.lang.StrictMath.pow
 import java.util.*
@@ -163,7 +163,8 @@ data class AoE<FROM, RESULT>(
         val w = Vec3d(range, range, range)
         val minPos = entPos - w
         val maxPos = entPos + w
-        val e = from.world.getEntitiesWithinAABB(EntityLivingBase::class.java, AxisAlignedBB(minPos, maxPos),
+        val e = from.world.getEntitiesWithinAABB(
+            EntityLivingBase::class.java, aabb(minPos, maxPos),
             if (shape == Shape.SQUARE) null else Predicate<EntityLivingBase> {
                 from.getDistanceSq(LivingHolder(it!!)) <= dist
             }
@@ -199,7 +200,7 @@ data class Chain<T>(
                 val minPos = entPos - w
                 val maxPos = entPos + w
                 val es = try {
-                    from.world.getEntitiesWithinAABB(EntityLivingBase::class.java, AxisAlignedBB(minPos, maxPos)) {
+                    from.world.getEntitiesWithinAABB(EntityLivingBase::class.java, aabb(minPos, maxPos)) {
                         val h = LivingHolder(it!!) as T
                         @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
                         h != previousTarget && previousTarget.getDistanceSq(h) <= dist &&
