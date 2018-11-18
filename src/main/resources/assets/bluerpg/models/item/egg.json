@@ -3,5 +3,13 @@
 	"textures": {
 		"layer0": "items/spawn_egg",
 		"layer1": "items/spawn_egg_overlay"
-	}
+    },
+  "overrides": [
+    {
+      "predicate": {
+        "hatched": 1
+      },
+      "model": "builtin/entity"
+    }
+  ]
 }

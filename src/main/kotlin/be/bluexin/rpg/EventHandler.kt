@@ -27,14 +27,18 @@ import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.kotlin.localize
+import moe.plushie.armourers_workshop.client.render.item.RenderItemEquipmentSkin
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.color.IItemColor
+import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer
 import net.minecraft.entity.ai.attributes.IAttributeInstance
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
+import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.text.TextComponentTranslation
 import net.minecraftforge.client.event.ColorHandlerEvent
+import net.minecraftforge.client.event.ModelRegistryEvent
 import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.event.RegistryEvent
@@ -183,6 +187,19 @@ object ClientEventHandler {
                 if (tintIndex == 0) eggData.primaryColor else eggData.secondaryColor
             }, EggItem
         )
+    }
+
+    @SubscribeEvent
+    fun registerModels(event: ModelRegistryEvent) {
+        EggItem.tileEntityItemStackRenderer = object : TileEntityItemStackRenderer() {
+            private val skinRenderer = RenderItemEquipmentSkin()
+
+            override fun renderByItem(itemStackIn: ItemStack) =
+                if (itemStackIn.eggData?.isHatched != true) TileEntityItemStackRenderer.instance.renderByItem(
+                    itemStackIn
+                )
+                else skinRenderer.renderByItem(itemStackIn)
+        }
     }
 
     /*@SubscribeEvent

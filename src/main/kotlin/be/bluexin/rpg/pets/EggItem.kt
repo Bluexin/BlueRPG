@@ -31,11 +31,21 @@ import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
 object EggItem : ItemMod("egg") {
+
+    init {
+        this.addPropertyOverride(
+            ResourceLocation("hatched")
+        ) { stack, _, _ ->
+            if (stack.eggData?.isHatched == true) 1f else 0f
+        }
+    }
+
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
 //        super.addInformation(stack, worldIn, tooltip, flagIn)
 
