@@ -17,52 +17,30 @@
 
 package be.bluexin.rpg.pets
 
-import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.stats.StatCapability
+import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
+import com.teamwizardry.librarianlib.features.kotlin.localize
 import com.teamwizardry.librarianlib.features.kotlin.tagCompound
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
 import moe.plushie.armourers_workshop.utils.SkinNBTHelper
-import net.minecraft.entity.Entity
+import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
 import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
 object EggItem : ItemMod("egg") {
-    override fun onItemUse(
-        player: EntityPlayer,
-        worldIn: World,
-        pos: BlockPos,
-        hand: EnumHand,
-        facing: EnumFacing,
-        hitX: Float,
-        hitY: Float,
-        hitZ: Float
-    ): EnumActionResult {
-        val itemstack = player.getHeldItem(hand)
+    override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
+//        super.addInformation(stack, worldIn, tooltip, flagIn)
 
-        return if (worldIn.isRemote) EnumActionResult.SUCCESS else {
-            val blockpos = pos.offset(facing)
-            val entity = EntityPet(worldIn)
-            entity.skinPointer = SkinNBTHelper.getSkinDescriptorFromStack(itemstack)
-            entity.setPosition(blockpos.x + .5, blockpos.y + this.getYOffset(worldIn, blockpos), blockpos.z + .5)
-            entity.setOwner(player)
-            applyItemEntityDataToEntity(worldIn, player, itemstack, entity)
-            worldIn.spawnEntity(entity)
-
-            if (!player.capabilities.isCreativeMode) itemstack.shrink(1)
-
-            EnumActionResult.SUCCESS
-        }
+        val data = stack.eggData ?: return
+        if (data.isHatched) tooltip.add("rpg.pet.hatched".localize())
     }
 
     private fun applyItemEntityDataToEntity(
@@ -104,10 +82,13 @@ object EggItem : ItemMod("egg") {
         }
     }
 
-    override fun onUpdate(stack: ItemStack, worldIn: World, entityIn: Entity, itemSlot: Int, isSelected: Boolean) {
-        super.onUpdate(stack, worldIn, entityIn, itemSlot, isSelected)
-
-        if (worldIn.totalWorldTime % 20 == 0L) {
+    fun onUpdateInPetSlot(
+        player: EntityPlayer,
+        stack: ItemStack,
+        world: World,
+        petStorage: PetStorage
+    ) {
+        if (world.totalWorldTime % 20 == 0L) {
             val data = EggData()
             val tag = stack.tagCompound
             if (tag != null) AbstractSaveHandler.readAutoNBT(
@@ -115,10 +96,29 @@ object EggItem : ItemMod("egg") {
                 tag.getCompoundTag("EntityTag").getCompoundTag("auto"),
                 false
             )
-            if (data.shouldHatch) return
+            if (data.isHatched) {
+                world onServer {
+                    val p = petStorage.petEntity
+                    if (p?.isDead != false) {
+                        val blockpos = player.position
+                        val entity = EntityPet(world)
+                        entity.skinPointer = SkinNBTHelper.getSkinDescriptorFromStack(stack)
+                        entity.setPosition(
+                            blockpos.x + .5,
+                            blockpos.y + this.getYOffset(world, blockpos),
+                            blockpos.z + .5
+                        )
+                        entity.setOwner(player)
+                        applyItemEntityDataToEntity(world, player, stack, entity)
+                        world.spawnEntity(entity)
+                        petStorage.petEntity = entity
+                    }
+                }
+                return
+            }
             ++data.secondsLived
-            if (data.shouldHatch) BlueRPG.LOGGER.warn("Hatching!") // TODO
-            /*else {*/
+            if (data.shouldHatch) data.hatch()
+
             val newTag = tagCompound {
                 "EntityTag" to tagCompound {
                     "auto" to AbstractSaveHandler.writeAutoNBT(data, false)
@@ -126,7 +126,6 @@ object EggItem : ItemMod("egg") {
             }
             tag?.merge(newTag)
             stack.tagCompound = tag ?: newTag
-            /*}*/
         }
     }
 }
@@ -143,7 +142,8 @@ data class EggData(
     @Save var stepSound: String = "TODO",
     @Save var idleSound: String = "TODO",
     @Save var interactSound: String = "TODO",
-    @Save var loopingParticle: String = "TODO"
+    @Save var loopingParticle: String = "TODO",
+    @Save var isHatched: Boolean = false
 ) : StatCapability {
     val shouldHatch get() = secondsLived >= hatchTimeSeconds
 
@@ -156,6 +156,10 @@ data class EggData(
         }
         tag?.merge(newTag)
         stack.tagCompound = tag ?: newTag
+    }
+
+    fun hatch() {
+        isHatched = true
     }
 
     override fun copy() = this.copy(name = name)

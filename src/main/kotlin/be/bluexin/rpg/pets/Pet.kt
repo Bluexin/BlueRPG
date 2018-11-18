@@ -57,9 +57,9 @@ class EntityPet(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
     private var playerUUID: UUID? = null
 
     @Save
-    private var skinData by managedValue(SKIN_DATA)
+    internal var skinData by managedValue(SKIN_DATA)
     @Save
-    private var movementType by managedValue(MOVEMENT_TYPE_DATA)
+    internal var movementType by managedValue(MOVEMENT_TYPE_DATA)
 
     val isJumping get() = super.isJumping
 

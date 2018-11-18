@@ -42,6 +42,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.capabilities.CapabilityManager
+import net.minecraftforge.common.util.FakePlayer
 import net.minecraftforge.fml.client.registry.RenderingRegistry
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
@@ -60,14 +61,14 @@ open class CommonProxy {
         CapabilitiesHandler.registerEntityCapability(
             PlayerStats::class.java,
             PlayerStats.Storage
-        ) { it is EntityPlayer }
+        ) { it is EntityPlayer && it !is FakePlayer }
         // Not using SAOMCLib for this one because we don't want it autoregistered
         CapabilityManager.INSTANCE.register(GearStats::class.java, GearStats.Storage) { GearStats(ItemStack.EMPTY) }
         CapabilityManager.INSTANCE.register(TokenStats::class.java, TokenStats.Storage) { TokenStats(ItemStack.EMPTY) }
         CapabilitiesHandler.registerEntityCapability(
             PetStorage::class.java,
             PetStorage.Storage
-        ) { it is EntityPlayer }
+        ) { it is EntityPlayer && it !is FakePlayer }
 
         MinecraftForge.EVENT_BUS.register(CommonEventHandler)
 

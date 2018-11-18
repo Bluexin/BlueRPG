@@ -43,11 +43,12 @@ class ContainerEditor(player: EntityPlayer, val te: TileEditor) : ContainerBase(
         val NAME = ResourceLocation(BlueRPG.MODID, "container_editor")
 
         init {
-            GuiHandler.registerBasicContainer(NAME, { player, _, tile ->
-                ContainerEditor(player, tile as TileEditor)
-            }, { _, container ->
-                GuiEditor(container)
-            }
+            GuiHandler.registerBasicContainer(
+                NAME, { player, _, tile ->
+                    ContainerEditor(player, tile as TileEditor)
+                }, { _, container ->
+                    GuiEditor(container)
+                }
             )
         }
     }

@@ -18,13 +18,16 @@
 package be.bluexin.rpg.gui
 
 import be.bluexin.rpg.BlueRPG
+import com.teamwizardry.librarianlib.features.sprite.Sprite
 import com.teamwizardry.librarianlib.features.sprite.Texture
+import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.util.ResourceLocation
 
 object Textures {
 
     private val BASE = Texture(ResourceLocation(BlueRPG.MODID, "textures/gui/gui_base.png"))
     val BG = BASE.getSprite("bg", 176, 166)
+    val VANILLA_BG = Sprite(GuiContainer.INVENTORY_BACKGROUND, 176, 166)
     val SLOT = BASE.getSprite("slot", 18, 18)
     val PROGRESS_BG = BASE.getSprite("progression_bg", 14, 10)
     val PROGRESS_FG = BASE.getSprite("progression_fg", 12, 8)

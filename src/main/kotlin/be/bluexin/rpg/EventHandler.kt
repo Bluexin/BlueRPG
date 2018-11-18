@@ -184,6 +184,19 @@ object ClientEventHandler {
             }, EggItem
         )
     }
+
+    /*@SubscribeEvent
+    fun openGui(event: GuiOpenEvent) {
+        if (event.gui is GuiInventory) {
+            event.gui = GuiRpgInventory(ContainerRpgPlayer(Minecraft().player))
+        }
+    }*/
+
+    /*@SubscribeEvent
+    fun drawInventory(event: GuiContainerEvent.DrawForeground) {
+        val ct = event.guiContainer as? GuiInventory ?: return
+
+    }*/
 }
 
 @SideOnly(Side.SERVER)
