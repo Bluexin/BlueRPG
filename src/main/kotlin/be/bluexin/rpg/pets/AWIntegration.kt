@@ -24,6 +24,7 @@ import moe.plushie.armourers_workshop.common.items.ModItems
 import moe.plushie.armourers_workshop.utils.SkinNBTHelper
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
+import net.minecraft.nbt.NBTTagCompound
 
 object AWIntegration {
     init {
@@ -47,10 +48,10 @@ object RecipeSkinPetEgg : RecipeItemSkinning(null) {
                 if (stack.item === ModItems.skin && SkinNBTHelper.stackHasSkinData(stack)) {
                     if (skinStack.isNotEmpty) return ItemStack.EMPTY
                     skinStack = stack
-                } else if (!SkinNBTHelper.stackHasSkinData(stack)) {
+                } else {
                     if (itemStack.isNotEmpty) return ItemStack.EMPTY
                     itemStack = stack
-                } else return ItemStack.EMPTY
+                }
             }
         }
 
@@ -58,7 +59,8 @@ object RecipeSkinPetEgg : RecipeItemSkinning(null) {
             val returnStack = itemStack.copy()
 
             val skinData = SkinNBTHelper.getSkinDescriptorFromStack(skinStack)
-            SkinNBTHelper.addSkinDataToStack(returnStack, skinData)
+            if (!returnStack.hasTagCompound()) returnStack.tagCompound = NBTTagCompound()
+            skinData.writeToCompound(returnStack.tagCompound, "skin")
 
             returnStack
         } else ItemStack.EMPTY

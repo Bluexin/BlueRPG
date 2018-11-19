@@ -26,7 +26,15 @@ import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
-import moe.plushie.armourers_workshop.utils.SkinNBTHelper
+import moe.plushie.armourers_workshop.api.common.skin.data.ISkinDescriptor
+import moe.plushie.armourers_workshop.client.render.ModRenderHelper
+import moe.plushie.armourers_workshop.client.render.SkinItemRenderHelper
+import moe.plushie.armourers_workshop.client.render.item.RenderItemEquipmentSkin
+import moe.plushie.armourers_workshop.client.skin.cache.ClientSkinCache
+import moe.plushie.armourers_workshop.common.skin.data.SkinDescriptor
+import net.minecraft.client.Minecraft
+import net.minecraft.client.renderer.GlStateManager
+import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -35,6 +43,7 @@ import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import org.lwjgl.opengl.GL11
 
 object EggItem : ItemMod("egg") {
 
@@ -118,7 +127,7 @@ object EggItem : ItemMod("egg") {
                     if (p?.isDead != false) {
                         val blockpos = player.position
                         val entity = EntityPet(world)
-                        entity.skinPointer = SkinNBTHelper.getSkinDescriptorFromStack(stack)
+                        entity.skinPointer = SkinDescriptor().apply { readFromCompound(tag, "skin") }
                         entity.setPosition(
                             blockpos.x + .5,
                             blockpos.y + this.getYOffset(world, blockpos),
@@ -195,3 +204,42 @@ val ItemStack.eggData
             )
         }
     } else null
+
+
+class RenderEggItem : TileEntityItemStackRenderer() {
+    override fun renderByItem(itemStackIn: ItemStack) {
+        val descriptor = SkinDescriptor().apply { readFromCompound(itemStackIn.tagCompound, "skin") }
+        if (canRenderModel(descriptor)) {
+            val mc = Minecraft.getMinecraft()
+            GL11.glPushMatrix()
+            GL11.glScalef(-1f, -1f, 1f)
+            GL11.glRotatef(180f, 0f, 1f, 0f)
+            mc.profiler.startSection("armourersItemSkin")
+            GL11.glPushAttrib(GL11.GL_ENABLE_BIT)
+            ModRenderHelper.enableAlphaBlend()
+            GL11.glEnable(GL11.GL_CULL_FACE)
+            GlStateManager.translate(8 * 0.0625f, -8 * 0.0625f, 0f)
+            GlStateManager.scale(0.8f, 0.8f, 0.8f)
+            GlStateManager.rotate(30f, 1f, 0f, 0f)
+            GlStateManager.rotate(45f, 0f, 1f, 0f)
+            SkinItemRenderHelper.renderSkinAsItem(descriptor, true, false, 16, 16)
+            GL11.glPopAttrib()
+            mc.profiler.endSection()
+            GL11.glPopMatrix()
+        } else {
+            GL11.glPushMatrix()
+            GlStateManager.translate(8 * 0.0625f, 8 * 0.0625f, 0f)
+            RenderItemEquipmentSkin.renderLoadingIcon(descriptor)
+            GL11.glPopMatrix()
+        }
+    }
+
+    private fun canRenderModel(descriptor: ISkinDescriptor?) = if (descriptor != null) {
+        if (ClientSkinCache.INSTANCE.isSkinInCache(descriptor)) {
+            true
+        } else {
+            ClientSkinCache.INSTANCE.requestSkinFromServer(descriptor)
+            false
+        }
+    } else false
+}

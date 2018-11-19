@@ -21,13 +21,13 @@ import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.gear.WeaponType
 import be.bluexin.rpg.pets.EggItem
+import be.bluexin.rpg.pets.RenderEggItem
 import be.bluexin.rpg.pets.eggData
 import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.kotlin.localize
-import moe.plushie.armourers_workshop.client.render.item.RenderItemEquipmentSkin
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.color.IItemColor
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer
@@ -192,7 +192,7 @@ object ClientEventHandler {
     @SubscribeEvent
     fun registerModels(event: ModelRegistryEvent) {
         EggItem.tileEntityItemStackRenderer = object : TileEntityItemStackRenderer() {
-            private val skinRenderer = RenderItemEquipmentSkin()
+            private val skinRenderer = RenderEggItem()
 
             override fun renderByItem(itemStackIn: ItemStack) =
                 if (itemStackIn.eggData?.isHatched != true) TileEntityItemStackRenderer.instance.renderByItem(
