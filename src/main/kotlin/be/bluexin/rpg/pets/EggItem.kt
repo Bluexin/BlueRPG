@@ -65,7 +65,10 @@ object EggItem : ItemMod("egg") {
 
         val data = stack.eggData ?: return
         if (data.isHatched) tooltip.add("rpg.pet.hatched".localize())
-        else tooltip.add("rpg.pet.nothatched".localize())
+        else {
+            tooltip.add("rpg.pet.nothatched".localize())
+            if (flagIn.isAdvanced) tooltip.add("rpg.pet.hatching".localize(data.secondsLived, data.hatchTimeSeconds))
+        }
     }
 
     private fun applyItemEntityDataToEntity(
