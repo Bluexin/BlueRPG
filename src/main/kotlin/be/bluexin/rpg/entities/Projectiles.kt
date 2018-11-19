@@ -43,7 +43,6 @@ import net.minecraft.entity.IProjectile
 import net.minecraft.entity.projectile.EntityArrow
 import net.minecraft.item.ItemStack
 import net.minecraft.util.DamageSource
-import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
@@ -335,6 +334,8 @@ class EntitySkillProjectile<RESULT> : ThrowableEntityMod, RpgProjectile
 
     private var filter: Condition<RESULT>? = null
 
+    private var precise = false
+
     @Suppress("unused")
     constructor(world: World) : super(world)
 
@@ -352,6 +353,7 @@ class EntitySkillProjectile<RESULT> : ThrowableEntityMod, RpgProjectile
         this.range = pow(range, 2.0).toFloat()
         this.thrower = caster?.it
         this.filter = filter
+        this.precise = precise
     }
 
     override fun entityInit() { // Warning: this runs before CTOR
@@ -400,16 +402,17 @@ class EntitySkillProjectile<RESULT> : ThrowableEntityMod, RpgProjectile
                 val e = result.entityHit
                 if (e is EntityLivingBase) {
                     @Suppress("UNCHECKED_CAST")
-                    val h = LivingHolder(e) as RESULT
+                    val h = (if (precise) WorldPosHolder(world, positionVector) else LivingHolder(e)) as RESULT
                     val f = filter
                     val c = caster
                     if (f == null || c == null || f(c.it, h)) {
                         runBlocking { r.send(h) }
                         setDead() // TODO: allow to hit multiple
                     }
-                } else if (e is BlockPos) {
+                } else {
+                    val v = result.hitVec
                     @Suppress("UNCHECKED_CAST")
-                    val h = WorldPosHolder(world, e) as RESULT
+                    val h = WorldPosHolder(world, v) as RESULT
                     val f = filter
                     val c = caster
                     if (f == null || c == null || f(c.it, h)) {
@@ -423,8 +426,10 @@ class EntitySkillProjectile<RESULT> : ThrowableEntityMod, RpgProjectile
 
     @SideOnly(Side.CLIENT)
     private fun renderParticles() {
-        val from = Color(0x0055BB)
-        val to = Color(0x00BB55)
+//        val from = Color(0x0055BB)
+//        val to = Color(0x00BB55)
+        val from = Color(0xFF0000)
+        val to = Color(0xFFB10B)
         val center = positionVector + vec(0, height / 2, 0)
 
         val trail = ParticleBuilder(10).apply {

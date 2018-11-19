@@ -48,7 +48,7 @@ open class LivingHolder<T : EntityLivingBase>(living: T) :
     TargetWithMovement, TargetWithCollision, TargetWithHealth, TargetWithUuid {
     override fun getPotionEffect(effect: Potion) = it.getActivePotionEffect(effect)
     override fun addPotionEffect(effect: PotionEffect) = it.addPotionEffect(effect)
-    override val pos: Vec3d get() = it.positionVector
+    override val pos: Vec3d get() = it.getPositionEyes(1f)
     override val lookVec: Vec3d get() = it.lookVec
     override val world: World get() = it.world
     override val movement: Vec3d get() = Vec3d(it.motionX, it.motionY, it.motionZ)

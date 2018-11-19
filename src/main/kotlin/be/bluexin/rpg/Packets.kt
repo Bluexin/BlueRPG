@@ -19,12 +19,16 @@ package be.bluexin.rpg
 
 import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.gear.WeaponAttribute
+import be.bluexin.rpg.pets.EggData
+import be.bluexin.rpg.skills.glitter.GlitterAoE
 import be.bluexin.rpg.stats.*
 import com.teamwizardry.librarianlib.features.autoregister.PacketRegister
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
+import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.network.PacketBase
 import com.teamwizardry.librarianlib.features.saving.Save
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Vec3d
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
 import net.minecraftforge.fml.relauncher.Side
 
@@ -115,5 +119,29 @@ class PacketAttack(entityID: Int) : PacketBase() {
         val reach = player[WeaponAttribute.RANGE]
         if (player.positionVector.squareDistanceTo(target.positionVector) > reach * reach) return
         player.attackTargetEntityWithCurrentItem(target)
+    }
+}
+
+@PacketRegister(Side.CLIENT)
+class PacketGlitter(type: Type, pos: Vec3d) : PacketBase() {
+    @Save
+    var type = type
+        internal set
+
+    @Save
+    var pos = pos
+        internal set
+
+    @Suppress("unused")
+    internal constructor() : this(Type.AOE, Vec3d.ZERO)
+
+    enum class Type {
+        AOE
+    }
+
+    override fun handle(ctx: MessageContext) {
+        when (type) {
+            Type.AOE -> GlitterAoE.test2(Minecraft().world, pos)
+        }
     }
 }

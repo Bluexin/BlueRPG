@@ -115,7 +115,7 @@ object DebugSkillItem : ItemMod("debug_skill") {
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         val stack = playerIn.getHeldItem(handIn)
-        if (playerIn.isSneaking) stack.itemDamage = (stack.itemDamage + 1) % 5
+        if (playerIn.isSneaking) stack.itemDamage = (stack.itemDamage + 1) % 6
         else playerIn.activeHand = handIn
 
         return ActionResult.newResult(EnumActionResult.SUCCESS, stack)
