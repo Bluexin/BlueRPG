@@ -79,7 +79,7 @@ class PetStorage : AbstractEntityCapability(), IItemHandlerModifiable {
     }
 
     override fun insertItem(slot: Int, stack: ItemStack, simulate: Boolean): ItemStack =
-        if (this.stack.isEmpty && stack.item is EggItem) {
+        if (this.stack.isEmpty && stack.item === EggItem) {
             if (!simulate) this.stack = stack.copy().apply { count = 1 }
             stack.copy().apply { this.shrink(1) }
         } else stack
@@ -139,7 +139,7 @@ class PetStorage : AbstractEntityCapability(), IItemHandlerModifiable {
                     if (event.phase == TickEvent.Phase.END) {
                         val petStorage = event.player.petStorage
                         val i = petStorage.stack.item
-                        if (i is EggItem) i.onUpdateInPetSlot(
+                        if (i === EggItem) i.onUpdateInPetSlot(
                             event.player,
                             petStorage.stack,
                             event.player.world,

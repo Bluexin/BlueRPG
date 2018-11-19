@@ -122,7 +122,7 @@ class TileEditor : TileModInventory(ModuleInventory(EditorInventory())) {
     private class EditorInventory : ItemStackHandler(1) {
         override fun isItemValid(slot: Int, stack: ItemStack): Boolean {
             val item = stack.item
-            return item is IRPGGear || item is ItemGearToken || item is EggItem
+            return item is IRPGGear || item is ItemGearToken || item === EggItem
         }
 
         override fun insertItem(slot: Int, stack: ItemStack, simulate: Boolean) =

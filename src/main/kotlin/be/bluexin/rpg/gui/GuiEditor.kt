@@ -704,7 +704,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
             })
         }
 
-        return ComponentCondition(30, 20) { iss.item is EggItem }.apply {
+        return ComponentCondition(30, 20) { iss.item === EggItem }.apply {
             visibilityChanged = {
                 if (it) fillEgg()
                 else clear()

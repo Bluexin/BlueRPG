@@ -191,7 +191,7 @@ data class EggData(
 }
 
 val ItemStack.eggData
-    get() = if (item is EggItem) {
+    get() = if (item === EggItem) {
         EggData().also {
             if (tagCompound != null && tagCompound!!.getCompoundTag("EntityTag").hasKey(
                     "auto",
@@ -204,7 +204,6 @@ val ItemStack.eggData
             )
         }
     } else null
-
 
 class RenderEggItem : TileEntityItemStackRenderer() {
     override fun renderByItem(itemStackIn: ItemStack) {

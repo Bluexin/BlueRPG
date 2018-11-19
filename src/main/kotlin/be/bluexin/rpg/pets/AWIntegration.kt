@@ -49,7 +49,7 @@ object RecipeSkinPetEgg : RecipeItemSkinning(null) {
                     if (skinStack.isNotEmpty) return ItemStack.EMPTY
                     skinStack = stack
                 } else {
-                    if (itemStack.isNotEmpty) return ItemStack.EMPTY
+                    if (itemStack.isNotEmpty || stack.item !== EggItem) return ItemStack.EMPTY
                     itemStack = stack
                 }
             }
