@@ -17,60 +17,65 @@
 
 package be.bluexin.rpg.gui
 
-import be.bluexin.rpg.BlueRPG
-import be.bluexin.rpg.pets.petStorage
-import com.teamwizardry.librarianlib.features.container.ContainerBase
-import com.teamwizardry.librarianlib.features.container.GuiHandler
-import com.teamwizardry.librarianlib.features.container.builtin.BaseWrappers
+import be.bluexin.rpg.inventory.RPGContainer
 import com.teamwizardry.librarianlib.features.gui.components.ComponentSprite
+import com.teamwizardry.librarianlib.features.gui.components.ComponentVoid
+import com.teamwizardry.librarianlib.features.guicontainer.ComponentSlot
 import com.teamwizardry.librarianlib.features.guicontainer.GuiContainerBase
 import com.teamwizardry.librarianlib.features.guicontainer.builtin.BaseLayouts
 import com.teamwizardry.librarianlib.features.helpers.vec
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
 
-class GuiRpgInventory(private val ct: ContainerRpgPlayer) : GuiContainerBase(ct, 176, 166) {
+class GuiRpgInventory(private val ct: RPGContainer) : GuiContainerBase(ct, 258, 250) {
     init {
-        val bg = ComponentSprite(Textures.VANILLA_BG, 0, 0)
+        val bg = ComponentSprite(Textures.INVENTORY_BG, 0, 0)
         mainComponents.add(bg)
 
-        bg.add(BaseLayouts.player(ct.invPlayer).apply {
-            main.pos = vec(8, 84)
-            armor.pos = vec(8, 8)
-            offhand.pos = vec(77, 62)
+        bg.add(PlayerLayout(ct.invPlayer).apply {
+            main.pos = vec(13, 137)
+            armor.pos = vec(13, 7)
             armor.isVisible = true
-            offhand.isVisible = true
         }.root)
-
-//        bg.add(ComponentSprite(Textures.SLOT, 7, 7))
-//        bg.add(ComponentSlot(ct.invBlock.slotArray.first(), 8, 8))
-
-    }
-}
-
-class ContainerRpgPlayer(player: EntityPlayer) : ContainerBase(player) {
-    val invPlayer = BaseWrappers.player(player)
-    val invPet = BaseWrappers.stacks(player.petStorage)
-
-    init {
-        addSlots(invPlayer)
-        addSlots(invPet)
-
-        transferRule().from(invPlayer.main).from(invPlayer.hotbar).deposit(invPet.slotArray).deposit(invPlayer.armor)
-        transferRule().from(invPet.slotArray).from(invPlayer.armor).deposit(invPlayer.hotbar).deposit(invPlayer.main)
     }
 
-    companion object {
-        val NAME = ResourceLocation(BlueRPG.MODID, "container_rpg_player")
+    class PlayerLayout(player: RPGContainer.InventoryWrapperPlayer) {
+        val root: ComponentVoid
+        val armor: ComponentVoid
+        val main: ComponentVoid
+        val mainLayout: BaseLayouts.GridLayout
+        val hotbar: ComponentVoid
+        val bags: ComponentVoid
 
         init {
-            GuiHandler.registerBasicContainer(
-                NAME, { player, _, _ ->
-                    ContainerRpgPlayer(player)
-                }, { _, container ->
-                    GuiRpgInventory(container)
-                }
+            armor = ComponentVoid(0, 0)
+            armor.isVisible = false
+            armor.add(
+                ComponentSlot(player.head, 0, 0),
+                ComponentSlot(player.chest, 0, 18),
+                ComponentSlot(player.legs, 0, 2 * 18),
+                ComponentSlot(player.feet, 0, 3 * 18),
+                ComponentSlot(player.offhand, 0, 4 * 18),
+                ComponentSlot(player.egg, 0, 5 * 18)
             )
+
+            main = ComponentVoid(0, 0)
+
+            mainLayout = BaseLayouts.grid(player.main, 13)
+            main.add(mainLayout.root)
+
+            hotbar = ComponentVoid(0, 92)
+            player.hotbar.forEachIndexed { index, slot ->
+                hotbar.add(ComponentSlot(slot, index * 18, 0))
+            }
+
+            bags = ComponentVoid(180, 92)
+            player.bags.forEachIndexed { index, slot ->
+                bags.add(ComponentSlot(slot, index * 18, 0))
+            }
+
+            main.add(hotbar, bags)
+
+            root = ComponentVoid(0, 0)
+            root.add(armor, main)
         }
     }
 }

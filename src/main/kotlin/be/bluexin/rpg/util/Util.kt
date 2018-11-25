@@ -102,3 +102,7 @@ class BoundPropertyDelegateReadOnly<in R, T>(val prop: () -> T) : ReadOnlyProper
 
 val <T> (() -> T).delegate: ReadOnlyProperty<Any, T>
     get() = BoundPropertyDelegateReadOnly(this)
+
+infix fun IntRange.offset(by: Int) = IntRange(this.start + by, this.endInclusive + by)
+infix fun LongRange.offset(by: Long) = LongRange(this.start + by, this.endInclusive + by)
+infix fun CharRange.offset(by: Int) = CharRange(this.start + by, this.endInclusive + by)

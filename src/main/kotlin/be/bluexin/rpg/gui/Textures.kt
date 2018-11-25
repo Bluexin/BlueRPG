@@ -33,4 +33,6 @@ object Textures {
     val PROGRESS_FG = BASE.getSprite("progression_fg", 12, 8)
     val POWER_BG = BASE.getSprite("power_bg", 8, 56)
     val POWER_FG = BASE.getSprite("power_fg", 8, 56)
+    val NEW_INVENTORY = Texture(ResourceLocation(BlueRPG.MODID, "textures/gui/gui_inventory.png"))
+    val INVENTORY_BG = NEW_INVENTORY.getSprite("bg", 258, 250)
 }

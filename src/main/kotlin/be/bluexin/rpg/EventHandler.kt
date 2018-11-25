@@ -17,9 +17,14 @@
 
 package be.bluexin.rpg
 
+import be.bluexin.rpg.events.CreatePlayerContainerEvent
+import be.bluexin.rpg.events.CreatePlayerInventoryEvent
 import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.gear.WeaponType
+import be.bluexin.rpg.gui.GuiRpgInventory
+import be.bluexin.rpg.inventory.RPGContainer
+import be.bluexin.rpg.inventory.RPGInventory
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.RenderEggItem
 import be.bluexin.rpg.pets.eggData
@@ -27,8 +32,11 @@ import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
+import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
+import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.client.renderer.color.IItemColor
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer
 import net.minecraft.entity.ai.attributes.IAttributeInstance
@@ -37,10 +45,8 @@ import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.text.TextComponentTranslation
-import net.minecraftforge.client.event.ColorHandlerEvent
-import net.minecraftforge.client.event.ModelRegistryEvent
-import net.minecraftforge.client.event.RenderGameOverlayEvent
-import net.minecraftforge.client.event.TextureStitchEvent
+import net.minecraftforge.client.event.*
+import net.minecraftforge.common.util.FakePlayer
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.event.ServerChatEvent
 import net.minecraftforge.event.entity.EntityEvent
@@ -156,6 +162,16 @@ object CommonEventHandler {
     fun newRegistry(event: RegistryEvent.NewRegistry) {
         SkillRegistry
     }
+
+    @SubscribeEvent
+    fun playerInventoryCreated(event: CreatePlayerInventoryEvent) {
+        if (event.player !is FakePlayer) event.inventoryPlayer = RPGInventory(event.player)
+    }
+
+    @SubscribeEvent
+    fun playerContainerCreated(event: CreatePlayerContainerEvent) {
+        if (event.player !is FakePlayer) event.container = ContainerImpl(RPGContainer(event.player))
+    }
 }
 
 @SideOnly(Side.CLIENT)
@@ -202,12 +218,10 @@ object ClientEventHandler {
         }
     }
 
-    /*@SubscribeEvent
+    @SubscribeEvent
     fun openGui(event: GuiOpenEvent) {
-        if (event.gui is GuiInventory) {
-            event.gui = GuiRpgInventory(ContainerRpgPlayer(Minecraft().player))
-        }
-    }*/
+        if (event.gui is GuiInventory) event.gui = GuiRpgInventory(RPGContainer(Minecraft().player))
+    }
 
     /*@SubscribeEvent
     fun drawInventory(event: GuiContainerEvent.DrawForeground) {
@@ -218,10 +232,11 @@ object ClientEventHandler {
 
 @SideOnly(Side.SERVER)
 object ServerEventHandler {
+    private val regex = "[\\[(](i|item)[])]".toRegex()
+
     @SubscribeEvent
     fun messageSent(event: ServerChatEvent) {
         // [i],(i),[item] and (item)
-        val regex = "[\\[(](i|item)[])]".toRegex()
         if (event.message.contains(regex)) {
             val s = event.component.formattedText.split(regex, 2)
             val component = TextComponentTranslation(s[0])
