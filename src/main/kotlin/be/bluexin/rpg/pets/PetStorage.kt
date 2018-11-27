@@ -24,7 +24,6 @@ import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -32,22 +31,12 @@ import net.minecraft.util.ResourceLocation
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
-import net.minecraftforge.common.util.FakePlayer
-import net.minecraftforge.event.entity.EntityJoinWorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.PlayerEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
-import net.minecraftforge.items.IItemHandlerModifiable
-import net.minecraftforge.items.SlotItemHandler
 import java.lang.ref.WeakReference
 
 @SaveInPlace
-class PetStorage : AbstractEntityCapability(), IItemHandlerModifiable {
-
-    @Save
-    var stack: ItemStack = ItemStack.EMPTY
+class PetStorage : AbstractEntityCapability() {
 
     @Save
     internal var petID: Int = -1
@@ -76,31 +65,6 @@ class PetStorage : AbstractEntityCapability(), IItemHandlerModifiable {
     fun killPet() {
         petEntity?.setDead()
         petEntity = null
-    }
-
-    override fun insertItem(slot: Int, stack: ItemStack, simulate: Boolean): ItemStack =
-        if (this.stack.isEmpty && stack.item === EggItem) {
-            if (!simulate) this.stack = stack.copy().apply { count = 1 }
-            stack.copy().apply { this.shrink(1) }
-        } else stack
-
-    override fun getStackInSlot(slot: Int) = stack
-
-    override fun getSlotLimit(slot: Int) = 1
-
-    override fun getSlots() = 1
-
-    override fun extractItem(slot: Int, amount: Int, simulate: Boolean): ItemStack {
-        if (amount < 1) return ItemStack.EMPTY
-        val t = this.stack
-        if (!simulate) this.stack = ItemStack.EMPTY
-        this.killPet()
-        return t
-    }
-
-    override fun setStackInSlot(slot: Int, stack: ItemStack) {
-        this.stack = stack
-        this.killPet()
     }
 
     internal object Storage : Capability.IStorage<PetStorage> {
@@ -133,42 +97,11 @@ class PetStorage : AbstractEntityCapability(), IItemHandlerModifiable {
             internal set
 
         init {
-            MinecraftForge.EVENT_BUS.register(object {
-                @SubscribeEvent
-                fun onTick(event: TickEvent.PlayerTickEvent) {
-                    if (event.phase == TickEvent.Phase.END) {
-                        val petStorage = event.player.petStorage
-                        val i = petStorage.stack.item
-                        if (i === EggItem) i.onUpdateInPetSlot(
-                            event.player,
-                            petStorage.stack,
-                            event.player.world,
-                            petStorage
-                        )
-                    }
-                }
-
-                @SubscribeEvent
-                fun onPlayerLogout(event: PlayerEvent.PlayerLoggedOutEvent) = event.player.petStorage.killPet()
-
-                @SubscribeEvent
-                fun onPlayerAddedToWorld(event: EntityJoinWorldEvent) {
-                    with(event.entity) {
-                        if (this is EntityPlayer && this !is FakePlayer) {
-                            inventoryContainer.addSlotToContainer(object :
-                                SlotItemHandler(petStorage, 0, 77, 44) {
-                                @SideOnly(Side.CLIENT)
-                                override fun getSlotTexture(): String? {
-                                    return "minecraft:items/spawn_egg"
-                                }
-                            })
-                            MinecraftForge.EVENT_BUS.unregister(this)
-                        }
-                    }
-
-                }
-            })
+            MinecraftForge.EVENT_BUS.register(this)
         }
+
+        @SubscribeEvent
+        fun onPlayerLogout(event: PlayerEvent.PlayerLoggedOutEvent) = event.player.petStorage.killPet()
     }
 }
 

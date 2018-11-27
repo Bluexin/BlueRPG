@@ -17,6 +17,9 @@
 
 package be.bluexin.rpg.inventory
 
+import be.bluexin.rpg.gear.ItemOffHand
+import be.bluexin.rpg.pets.EggItem
+import be.bluexin.rpg.pets.petStorage
 import be.bluexin.rpg.util.offset
 import com.teamwizardry.librarianlib.features.kotlin.asNonnullListWithDefault
 import com.teamwizardry.librarianlib.features.kotlin.isNotEmpty
@@ -26,9 +29,11 @@ import net.minecraft.crash.CrashReport
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.item.Item
+import net.minecraft.item.ItemArmor
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagList
+import net.minecraft.util.NonNullList
 import net.minecraft.util.ReportedException
 import net.minecraft.util.math.MathHelper
 import net.minecraftforge.fml.relauncher.Side
@@ -65,6 +70,13 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
             eggSlot.asNonnullListWithDefault(ItemStack.EMPTY),
             bagSlots.asNonnullListWithDefault(ItemStack.EMPTY)
         )
+
+        this.mainInventory = FakeMain()
+    }
+
+    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+        super.setInventorySlotContents(index, stack)
+        if (index == eggIndex) player.petStorage.killPet()
     }
 
     override fun getSizeInventory(): Int {
@@ -234,7 +246,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
         super.decrementAnimations()
 
         eggSlot.forEach {
-            if (it.isNotEmpty) it.item.onArmorTick(player.world, player, it)
+            if (it.isNotEmpty) (it.item as? EggItem)?.onUpdateInPetSlot(player, it, player.world, player.petStorage)
         }
     }
 
@@ -253,4 +265,38 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
     override fun getSlotFor(stack: ItemStack) = this.realMainInventory.indexOfFirst {
         it.isNotEmpty && this.stackEqualExact(stack, it)
     }.let { if (it >= 0) it + this.realMainIndices.start else it }
+
+    override fun isItemValidForSlot(index: Int, stack: ItemStack): Boolean {
+        return when (index) {
+            in rpgHotbarIndices -> true
+            in realMainIndices -> true
+            in armorIndices -> stack.item is ItemArmor
+            offHandIndex -> stack.item is ItemOffHand
+            eggIndex -> stack.item === EggItem
+            in bagIndices -> false
+            else -> false
+        }
+    }
+
+    private inner class FakeMain : NonNullList<ItemStack>() {
+        override fun clear() {
+            TODO("Not implemented")
+        }
+
+        override fun add(index: Int, element: ItemStack) {
+            TODO("Not implemented")
+        }
+
+        override fun get(index: Int): ItemStack = if (index in rpgHotbarIndices) rpgHotbar[index] else ItemStack.EMPTY
+
+        override fun removeAt(p_remove_1_: Int): ItemStack {
+            TODO("Not implemented")
+        }
+
+        override fun set(index: Int, element: ItemStack): ItemStack =
+            if (index in rpgHotbarIndices) rpgHotbar.set(index, element) else ItemStack.EMPTY
+
+        override val size: Int
+            get() = rpgHotbar.size
+    }
 }

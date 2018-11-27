@@ -36,46 +36,35 @@ class GuiRpgInventory(private val ct: RPGContainer) : GuiContainerBase(ct, 258, 
             armor.isVisible = true
         }.root)
     }
+}
 
-    class PlayerLayout(player: RPGContainer.InventoryWrapperPlayer) {
-        val root: ComponentVoid
-        val armor: ComponentVoid
-        val main: ComponentVoid
-        val mainLayout: BaseLayouts.GridLayout
-        val hotbar: ComponentVoid
-        val bags: ComponentVoid
-
-        init {
-            armor = ComponentVoid(0, 0)
-            armor.isVisible = false
-            armor.add(
-                ComponentSlot(player.head, 0, 0),
-                ComponentSlot(player.chest, 0, 18),
-                ComponentSlot(player.legs, 0, 2 * 18),
-                ComponentSlot(player.feet, 0, 3 * 18),
-                ComponentSlot(player.offhand, 0, 4 * 18),
-                ComponentSlot(player.egg, 0, 5 * 18)
-            )
-
-            main = ComponentVoid(0, 0)
-
-            mainLayout = BaseLayouts.grid(player.main, 13)
-            main.add(mainLayout.root)
-
-            hotbar = ComponentVoid(0, 92)
-            player.hotbar.forEachIndexed { index, slot ->
-                hotbar.add(ComponentSlot(slot, index * 18, 0))
-            }
-
-            bags = ComponentVoid(180, 92)
-            player.bags.forEachIndexed { index, slot ->
-                bags.add(ComponentSlot(slot, index * 18, 0))
-            }
-
-            main.add(hotbar, bags)
-
-            root = ComponentVoid(0, 0)
-            root.add(armor, main)
+class PlayerLayout(player: RPGContainer.InventoryWrapperPlayer) {
+    val armor = ComponentVoid(0, 0).apply {
+        isVisible = false
+        add(
+            ComponentSlot(player.head, 0, 0),
+            ComponentSlot(player.chest, 0, 18),
+            ComponentSlot(player.legs, 0, 2 * 18),
+            ComponentSlot(player.feet, 0, 3 * 18),
+            ComponentSlot(player.offhand, 0, 4 * 18),
+            ComponentSlot(player.egg, 0, 5 * 18)
+        )
+    }
+    val mainLayout = BaseLayouts.grid(player.main, 13)
+    val hotbar = ComponentVoid(0, 92).apply {
+        player.hotbar.forEachIndexed { index, slot ->
+            add(ComponentSlot(slot, index * 18, 0))
         }
+    }
+    val bags = ComponentVoid(180, 92).apply {
+        player.bags.forEachIndexed { index, slot ->
+            add(ComponentSlot(slot, index * 18, 0))
+        }
+    }
+    val main = ComponentVoid(0, 0).apply {
+        add(mainLayout.root, hotbar, bags)
+    }
+    val root = ComponentVoid(0, 0).apply {
+        add(armor, main)
     }
 }

@@ -36,8 +36,9 @@ class RPGContainer(player: EntityPlayer) : ContainerBase(player) {
     init {
         addSlots(invPlayer)
 
-        transferRule().from(invPlayer.main).from(invPlayer.hotbar).deposit(invPlayer.egg).deposit(invPlayer.armor)
-        transferRule().from(invPlayer.egg).from(invPlayer.armor).deposit(invPlayer.hotbar).deposit(invPlayer.main)
+        transferRule().from(invPlayer.main).deposit(invPlayer.egg).deposit(invPlayer.armor).deposit(invPlayer.hotbar)
+        transferRule().from(invPlayer.hotbar).deposit(invPlayer.egg).deposit(invPlayer.armor).deposit(invPlayer.main)
+        transferRule().from(invPlayer.egg).from(invPlayer.armor).deposit(invPlayer.main).deposit(invPlayer.hotbar)
     }
 
     companion object {
@@ -58,23 +59,24 @@ class RPGContainer(player: EntityPlayer) : ContainerBase(player) {
 
         val rInventory = player.inventory as RPGInventory
         val armor = slots[rInventory.armorIndices]
-        val head = slots[rInventory.armorIndices.start + EntityEquipmentSlot.HEAD.index]
-        val chest = slots[rInventory.armorIndices.start + EntityEquipmentSlot.CHEST.index]
-        val legs = slots[rInventory.armorIndices.start + EntityEquipmentSlot.LEGS.index]
-        val feet = slots[rInventory.armorIndices.start + EntityEquipmentSlot.FEET.index]
+        val head = slots[rInventory.armorIndices.start + EntityEquipmentSlot.HEAD.index].apply {
+            type = SlotTypeEquipment(player, EntityEquipmentSlot.HEAD)
+        }
+        val chest = slots[rInventory.armorIndices.start + EntityEquipmentSlot.CHEST.index].apply {
+            type = SlotTypeEquipment(player, EntityEquipmentSlot.CHEST)
+        }
+        val legs = slots[rInventory.armorIndices.start + EntityEquipmentSlot.LEGS.index].apply {
+            type = SlotTypeEquipment(player, EntityEquipmentSlot.LEGS)
+        }
+        val feet = slots[rInventory.armorIndices.start + EntityEquipmentSlot.FEET.index].apply {
+            type = SlotTypeEquipment(player, EntityEquipmentSlot.FEET)
+        }
 
         val hotbar = slots[rInventory.rpgHotbarIndices]
         val main = slots[rInventory.realMainIndices]
         val offhand = slots[rInventory.offHandIndex]
         val egg = slots[rInventory.eggIndex]
         val bags = slots[rInventory.bagIndices]
-
-        init {
-            head.type = SlotTypeEquipment(player, EntityEquipmentSlot.HEAD)
-            chest.type = SlotTypeEquipment(player, EntityEquipmentSlot.CHEST)
-            legs.type = SlotTypeEquipment(player, EntityEquipmentSlot.LEGS)
-            feet.type = SlotTypeEquipment(player, EntityEquipmentSlot.FEET)
-        }
 
     }
 }
