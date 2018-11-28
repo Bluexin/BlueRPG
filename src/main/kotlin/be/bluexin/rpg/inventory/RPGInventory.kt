@@ -84,10 +84,15 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
     }
 
     override fun getCurrentItem(): ItemStack {
-        return if (isHotbar(this.currentItem)) this.rpgHotbar[this.currentItem] else ItemStack.EMPTY
+        if (player.isCreative) {
+            return if (currentItem in 0 until 9) this.mainInventory[currentItem]
+            else ItemStack.EMPTY
+        }
+        return if (this.currentItem in rpgHotbarIndices) this.rpgHotbar[this.currentItem] else ItemStack.EMPTY
     }
 
     override fun pickItem(index: Int) {
+        if (player.isCreative) return super.pickItem(index)
         this.currentItem = this.bestHotbarSlot
         val itemstack = this.getCurrentItem()
         this.rpgHotbar[this.currentItem] = this.rpgHotbar[index]
@@ -96,9 +101,10 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
 
     @SideOnly(Side.CLIENT)
     override fun setPickedItemStack(stack: ItemStack) {
+        if (player.isCreative) return super.setPickedItemStack(stack)
         val i = this.getSlotFor(stack)
 
-        if (isHotbar(i)) this.currentItem = i
+        if (i in rpgHotbarIndices) this.currentItem = i
         else {
             if (i == -1) {
                 this.currentItem = this.bestHotbarSlot
@@ -141,6 +147,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
     override fun isEmpty() = allAsSequence.all(ItemStack::isEmpty)
 
     override fun getBestHotbarSlot(): Int {
+        if (player.isCreative) return super.getBestHotbarSlot()
         for (i in rpgHotbarIndices) {
             val j = (this.currentItem + i) % rpgHotbar.size
             if (this.rpgHotbar[j].isEmpty) return j
@@ -156,6 +163,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
 
     @SideOnly(Side.CLIENT)
     override fun changeCurrentItem(direction: Int) {
+        if (player.isCreative) return super.changeCurrentItem(direction)
         this.currentItem = (this.currentItem - MathHelper.clamp(direction, -1, 1) + rpgHotbar.size) % rpgHotbar.size
     }
 
@@ -279,24 +287,23 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
     }
 
     private inner class FakeMain : NonNullList<ItemStack>() {
-        override fun clear() {
-            TODO("Not implemented")
+        override fun clear() = TODO("Not implemented")
+        override fun add(index: Int, element: ItemStack) = TODO("Not implemented")
+        override fun removeAt(p_remove_1_: Int): ItemStack = TODO("Not implemented")
+
+        override fun get(index: Int): ItemStack = when {
+            index in rpgHotbarIndices -> rpgHotbar[index]
+            player.isCreative -> realMainInventory[index - rpgHotbar.size]
+            else -> ItemStack.EMPTY
         }
 
-        override fun add(index: Int, element: ItemStack) {
-            TODO("Not implemented")
+        override fun set(index: Int, element: ItemStack): ItemStack = when {
+            index in rpgHotbarIndices -> rpgHotbar.set(index, element)
+            player.isCreative -> realMainInventory.set(index - rpgHotbar.size, element)
+            else -> ItemStack.EMPTY
         }
 
-        override fun get(index: Int): ItemStack = if (index in rpgHotbarIndices) rpgHotbar[index] else ItemStack.EMPTY
-
-        override fun removeAt(p_remove_1_: Int): ItemStack {
-            TODO("Not implemented")
-        }
-
-        override fun set(index: Int, element: ItemStack): ItemStack =
-            if (index in rpgHotbarIndices) rpgHotbar.set(index, element) else ItemStack.EMPTY
-
-        override val size: Int
+        override val size: Int // FIXME: EntityPlayer forge extensions (inventory capabilities)
             get() = rpgHotbar.size
     }
 }

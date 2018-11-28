@@ -24,6 +24,7 @@ import com.teamwizardry.librarianlib.features.guicontainer.ComponentSlot
 import com.teamwizardry.librarianlib.features.guicontainer.GuiContainerBase
 import com.teamwizardry.librarianlib.features.guicontainer.builtin.BaseLayouts
 import com.teamwizardry.librarianlib.features.helpers.vec
+import net.minecraft.client.gui.inventory.GuiContainerCreative
 
 class GuiRpgInventory(private val ct: RPGContainer) : GuiContainerBase(ct, 258, 250) {
     init {
@@ -36,6 +37,14 @@ class GuiRpgInventory(private val ct: RPGContainer) : GuiContainerBase(ct, 258, 
             armor.isVisible = true
         }.root)
     }
+
+    override fun updateScreen() {
+        if (this.mc.playerController.isInCreativeMode) this.mc.displayGuiScreen(GuiContainerCreative(this.mc.player))
+    }
+
+    override fun initGui() =
+        if (this.mc.playerController.isInCreativeMode) this.mc.displayGuiScreen(GuiContainerCreative(this.mc.player))
+        else super.initGui()
 }
 
 class PlayerLayout(player: RPGContainer.InventoryWrapperPlayer) {

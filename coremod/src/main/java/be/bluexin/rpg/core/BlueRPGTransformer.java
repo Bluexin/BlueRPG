@@ -48,7 +48,6 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
 
     static {
         transformers.put("net.minecraft.entity.player.EntityPlayer", BlueRPGTransformer::transformPlayer);
-        transformers.put("net.minecraft.entity.player.InventoryPlayer", BlueRPGTransformer::transformInventoryPlayer);
     }
 
     private static byte[] transformPlayer(byte[] basicClass) {
@@ -90,24 +89,6 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
                         }
                 )
         ));
-    }
-
-    private static byte[] transformInventoryPlayer(byte[] basicClass) {
-        MethodSignature getHotbarSize = new MethodSignature("getHotbarSize", " func_70451_h", "()I");
-        MethodSignature isHotbar = new MethodSignature("isHotbar", "  func_184435_e", "(I)Z");
-
-        MethodAction combiner = combine(
-                (node) -> node.getOpcode() == BIPUSH && ((IntInsnNode) node).operand == 9,
-                (method, node) -> {
-                    method.instructions.set(node, new IntInsnNode(BIPUSH, 4));
-                    return false;
-                }
-        );
-
-        return transform(transform(basicClass,
-                getHotbarSize, "Change hotbar size", combiner),
-                isHotbar, "Change hotbar size p2", combiner
-        );
     }
 
     // BOILERPLATE =====================================================================================================

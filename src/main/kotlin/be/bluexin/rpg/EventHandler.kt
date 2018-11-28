@@ -33,7 +33,6 @@ import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
-import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.inventory.GuiInventory
@@ -41,6 +40,7 @@ import net.minecraft.client.renderer.color.IItemColor
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer
 import net.minecraft.entity.ai.attributes.IAttributeInstance
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.inventory.ContainerPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagByte
@@ -170,7 +170,8 @@ object CommonEventHandler {
 
     @SubscribeEvent
     fun playerContainerCreated(event: CreatePlayerContainerEvent) {
-        if (event.player !is FakePlayer) event.container = ContainerImpl(RPGContainer(event.player))
+        if (event.player !is FakePlayer) event.container =
+                RPGContainer(event.player, event.container as ContainerPlayer).impl
     }
 }
 
@@ -220,7 +221,9 @@ object ClientEventHandler {
 
     @SubscribeEvent
     fun openGui(event: GuiOpenEvent) {
-        if (event.gui is GuiInventory) event.gui = GuiRpgInventory(RPGContainer(Minecraft().player))
+        val g = event.gui
+        if (g is GuiInventory) event.gui =
+                GuiRpgInventory((g.inventorySlots as ContainerImpl).container as RPGContainer)
     }
 
     /*@SubscribeEvent
