@@ -56,6 +56,7 @@ import net.minecraftforge.event.entity.living.*
 import net.minecraftforge.event.entity.player.CriticalHitEvent
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.event.entity.player.PlayerPickupXpEvent
+import net.minecraftforge.event.world.BlockEvent
 import net.minecraftforge.fml.common.eventhandler.Event
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
@@ -197,6 +198,14 @@ object CommonEventHandler {
         if (!event.entityPlayer.isCreative && (limitIsWhitelist xor (event.entityPlayer.world.getBlockState(event.pos).block in interactionLimitBlocks))) {
             event.useBlock = Event.Result.DENY
         }
+    }
+
+    @ConfigProperty("security", "Whether to protect farmland from trampling")
+    var protectFarmland = false
+
+    @SubscribeEvent
+    fun farmlandTrample(event: BlockEvent.FarmlandTrampleEvent) {
+        if (protectFarmland) event.isCanceled = true
     }
 }
 
