@@ -32,8 +32,10 @@ import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
+import com.teamwizardry.librarianlib.features.config.ConfigProperty
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
 import com.teamwizardry.librarianlib.features.kotlin.localize
+import net.minecraft.block.Block
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.client.renderer.color.IItemColor
@@ -172,6 +174,29 @@ object CommonEventHandler {
     fun playerContainerCreated(event: CreatePlayerContainerEvent) {
         if (event.player !is FakePlayer) event.container =
                 RPGContainer(event.player, event.container as ContainerPlayer).impl
+    }
+
+    fun loadInteractionLimit() {
+        var s = interactionLimit
+        limitIsWhitelist = !s.startsWith('!')
+        if (!limitIsWhitelist) s = s.substring(1)
+        interactionLimitBlocks = s.split(',')
+            .mapNotNull { Block.getBlockFromName(it) ?: null.apply { BlueRPG.LOGGER.warn("Invalid ID: `$it`") } }
+    }
+
+    @ConfigProperty(
+        "security",
+        "Comma-separated list with the registry names of all permitted blocks. Prefix with ! to turn into a blacklist instead."
+    )
+    var interactionLimit: String = "!"
+    private lateinit var interactionLimitBlocks: List<Block>
+    private var limitIsWhitelist = false
+
+    @SubscribeEvent
+    fun playerInteractWithBlock(event: PlayerInteractEvent.RightClickBlock) {
+        if (!event.entityPlayer.isCreative && (limitIsWhitelist xor (event.entityPlayer.world.getBlockState(event.pos).block in interactionLimitBlocks))) {
+            event.useBlock = Event.Result.DENY
+        }
     }
 }
 

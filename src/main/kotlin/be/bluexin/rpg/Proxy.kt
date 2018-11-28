@@ -158,6 +158,7 @@ open class CommonProxy {
         trickLiblib()
         FormulaeConfiguration.init()
         registerDataSerializer<PetMovementType>()
+        CommonEventHandler.loadInteractionLimit()
     }
 
     private fun trickLiblib() { // FIXME: remove once TeamWizardry/LibrarianLib#57 is fixed
