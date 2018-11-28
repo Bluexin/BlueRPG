@@ -226,6 +226,7 @@ enum class SecondaryStat(uuid: Array<String>, attribute: IAttribute? = null) : S
     ) {
         override val hasTransform = false
         override fun invoke(from: Int) = from.toDouble()
+        override val baseValue: Double get() = 2.0
     },
     SPIRIT(
         arrayOf(
