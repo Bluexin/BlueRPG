@@ -83,7 +83,7 @@ class EntityRpgArrow : ArrowEntityMod, RpgProjectile {
         initialY = super.posY
         initialZ = super.posZ
         val lookVec = shooter.lookVec
-        this.shoot(lookVec.x, lookVec.y, lookVec.z, velocity, inaccuracy)
+        this.shoot(lookVec.x, lookVec.y, lookVec.z, velocity * 3f, inaccuracy)
 
         if (shooter is TargetWithMovement) {
             this.motionX += shooter.motionX
