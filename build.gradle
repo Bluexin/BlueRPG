@@ -34,7 +34,7 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 
 version = modVersion
 group = modGroup
-archivesBaseName = modBaseName + mcVersion
+archivesBaseName = "$modBaseName-$mcVersion"
 
 minecraft {
     version = project.forgeVersion
@@ -59,8 +59,16 @@ repositories {
     }
 }
 
+configurations {
+    contained {
+        transitive = false
+    }
+}
+
 dependencies {
-    compile ('com.saomc:saoui:1.12.2-2.0.0.12-SNAPSHOT:deobf') {
+    compile project(':coremod')
+    contained project(':coremod')
+    compile('com.saomc:saoui:1.12.2-2.0.0.12-SNAPSHOT:deobf') {
         exclude group: 'com.teamwizardry.librarianlib'
     }
     compile 'com.teamwizardry.librarianlib:librarianlib-1.12.2:4.17-SNAPSHOT'
@@ -90,8 +98,36 @@ configurations.all {
 
 jar {
     manifest {
-        attributes 'FMLAT': 'bluerpg_at.cfg'
+        attributes([
+                'FMLAT'         : 'bluerpg_at.cfg',
+                'Maven-Artifact': "${project.group}:${project.archivesBaseName}:${project.version}",
+                'Timestamp'     : System.currentTimeMillis()
+        ])
     }
+}
+
+task bundleJar(type: Jar) {
+    classifier 'bundle'
+
+    from sourceSets.api.output
+    from sourceSets.main.output
+
+    from(configurations.contained.files) {
+        include '*'
+        into 'META-INF/libraries'
+    }
+
+    manifest {
+        attributes([
+                'ContainedDeps' : configurations.contained.files.collect { it.name }.join(' '),
+                'Maven-Artifact': "${project.group}:${project.archivesBaseName}:${project.version}",
+                'Timestamp'     : System.currentTimeMillis()
+        ])
+    }
+}
+
+reobf.create('bundleJar') {
+    extraLines += ["PK: gnu/jel saoui/shade/gnu/jel"]
 }
 
 task deobfJar(type: Jar) {
