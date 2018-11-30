@@ -119,6 +119,7 @@ task bundleJar(type: Jar) {
 
     manifest {
         attributes([
+                'FMLAT'         : 'bluerpg_at.cfg',
                 'ContainedDeps' : configurations.contained.files.collect { it.name }.join(' '),
                 'Maven-Artifact': "${project.group}:${project.archivesBaseName}:${project.version}",
                 'Timestamp'     : System.currentTimeMillis()
