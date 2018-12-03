@@ -17,21 +17,29 @@
 
 package be.bluexin.rpg.skills
 
+import com.teamwizardry.librarianlib.features.saving.NamedDynamic
+import com.teamwizardry.librarianlib.features.saving.Savable
 import net.minecraft.entity.EntityLivingBase
 
+@Savable
+@NamedDynamic("tr:t")
 interface Trigger {
-    fun startUsing(skill: SkillData, entity: EntityLivingBase): Boolean
-    fun stopUsing(skill: SkillData, entity: EntityLivingBase, time: Int): Boolean
+    fun startUsing(entity: EntityLivingBase): Boolean
+    fun stopUsing(entity: EntityLivingBase, time: Int): Boolean
 }
 
+@Savable
+@NamedDynamic("tr:i")
 class Instant : Trigger {
-    override fun startUsing(skill: SkillData, entity: EntityLivingBase) = false
+    override fun startUsing(entity: EntityLivingBase) = true
 
-    override fun stopUsing(skill: SkillData, entity: EntityLivingBase, time: Int) = true
+    override fun stopUsing(entity: EntityLivingBase, time: Int) = false
 }
 
+@Savable
+@NamedDynamic("tr:c")
 data class Channeled(val castTimeTicks: Int) : Trigger {
-    override fun startUsing(skill: SkillData, entity: EntityLivingBase) = false
+    override fun startUsing(entity: EntityLivingBase) = false
 
-    override fun stopUsing(skill: SkillData, entity: EntityLivingBase, time: Int) = time >= castTimeTicks
+    override fun stopUsing(entity: EntityLivingBase, time: Int) = time >= castTimeTicks
 }

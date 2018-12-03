@@ -17,35 +17,37 @@
 
 package be.bluexin.rpg.skills
 
+import be.bluexin.rpg.util.Quadruple
 import com.teamwizardry.librarianlib.features.saving.Savable
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.channels.filter
 import net.minecraft.entity.EntityLivingBase
 import java.util.*
 
 @Savable
 class Processor {
-    private var chain = LinkedList<Triple<Targeting<Target, Target>, Condition<Target>?, Effect<Target>>>()
+    private var chain = LinkedList<Quadruple<Trigger, Targeting<Target, Target>, Condition<Target>?, Effect<Target>>>()
 
-    fun process(caster: EntityLivingBase) {
-        chain.forEach { (t, c, e) ->
-            val channel = Channel<Target>(capacity = Channel.UNLIMITED)
-            t(caster, caster.holder, channel)
-            e(
-                caster,
-                if (c == null) channel else GlobalScope.produce { for (it in channel) if (c(caster, it)) send(it) })
+    fun stopUsing(caster: EntityLivingBase, timeChanneled: Int) {
+        chain.forEach { (tr, t, c, e) ->
+            if (tr.stopUsing(caster, timeChanneled)) {
+                val channel = Channel<Target>(capacity = Channel.UNLIMITED)
+                t(caster, caster.holder, channel)
+                e(caster, if (c == null) channel else channel.filter { c(caster, it) })
+            }
         }
     }
 
     fun <FROM : Target, TARGET : Target> addElement(
+        trigger: Trigger,
         targeting: Targeting<FROM, TARGET>,
         condition: Condition<TARGET>?,
         effect: Effect<TARGET>
     ) {
         @Suppress("UNCHECKED_CAST")
         chain.add(
-            Triple(
+            Quadruple(
+                trigger,
                 targeting as Targeting<Target, Target>,
                 condition as Condition<Target>?,
                 effect as Effect<Target>

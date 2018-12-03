@@ -106,3 +106,16 @@ val <T> (() -> T).delegate: ReadOnlyProperty<Any, T>
 infix fun IntRange.offset(by: Int) = IntRange(this.start + by, this.endInclusive + by)
 infix fun LongRange.offset(by: Long) = LongRange(this.start + by, this.endInclusive + by)
 infix fun CharRange.offset(by: Int) = CharRange(this.start + by, this.endInclusive + by)
+
+data class Quadruple<out A, out B, out C, out D>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D
+) {
+
+    override fun toString(): String = "($first, $second, $third, $fourth)"
+}
+
+fun <T> Quadruple<T, T, T, T>.toList(): List<T> = listOf(first, second, third, fourth)
+

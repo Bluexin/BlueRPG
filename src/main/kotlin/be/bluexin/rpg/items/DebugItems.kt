@@ -131,24 +131,27 @@ object DebugSkillItem : ItemMod("debug_skill") {
                 0 -> {
                     val p = Processor()
                     p.addElement(
+                        Channeled(0),
                         Projectile<PlayerHolder, LivingHolder<*>>(condition = RequireStatus(Status.AGGRESSIVE)),
                         null,
                         Damage(3.0)
                     )
-                    p.process(entityLiving)
+                    p.stopUsing(entityLiving, 1)
                 }
                 1 -> {
                     val p = Processor()
                     p.addElement(
+                        Channeled(0),
                         AoE<PlayerHolder, LivingHolder<*>>(),
                         RequireStatus(Status.AGGRESSIVE),
                         Damage(3.0)
                     )
-                    p.process(entityLiving)
+                    p.stopUsing(entityLiving, 1)
                 }
                 2 -> {
                     val p = Processor()
                     p.addElement(
+                        Channeled(0),
                         AoE<PlayerHolder, LivingHolder<*>>(),
                         RequireStatus(Status.AGGRESSIVE),
                         Skill(
@@ -160,11 +163,12 @@ object DebugSkillItem : ItemMod("debug_skill") {
                             Damage(2.0)
                         )
                     )
-                    p.process(entityLiving)
+                    p.stopUsing(entityLiving, 1)
                 }
                 3 -> {
                     val p = Processor()
                     p.addElement(
+                        Channeled(0),
                         Channelling<PlayerHolder, LivingHolder<*>>(
                             delayMillis = 1000,
                             procs = 10,
@@ -173,11 +177,12 @@ object DebugSkillItem : ItemMod("debug_skill") {
                         null,
                         Damage(-3.0)
                     )
-                    p.process(entityLiving)
+                    p.stopUsing(entityLiving, 1)
                 }
                 4 -> {
                     val p = Processor()
                     p.addElement(
+                        Channeled(0),
                         Projectile<PlayerHolder, WorldPosHolder>(
                             condition = RequireStatus(Status.AGGRESSIVE),
                             precise = true
@@ -189,11 +194,12 @@ object DebugSkillItem : ItemMod("debug_skill") {
                             Damage(3000.0)
                         )
                     )
-                    p.process(entityLiving)
+                    p.stopUsing(entityLiving, 1)
                 }
                 5 -> {
                     val p = Processor()
                     p.addElement(
+                        Channeled(0),
                         Channelling<PlayerHolder, LivingHolder<*>>(
                             delayMillis = 1000,
                             procs = 10,
