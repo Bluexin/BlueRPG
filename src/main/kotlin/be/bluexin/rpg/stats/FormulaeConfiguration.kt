@@ -120,7 +120,7 @@ object FormulaeConfiguration {
     }
 
     private object StatDeserializer : JsonDeserializer<Stat> {
-        override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Stat {
+        override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Stat? {
             val s = json.asString
             try {
                 return PrimaryStat.valueOf(s)
@@ -138,12 +138,13 @@ object FormulaeConfiguration {
                 return TrickStat.valueOf(s)
             } catch (_: Exception) {
             }
-            throw IllegalArgumentException("Invalid Stat: $s")
+            BlueRPG.LOGGER.warn("Invalid Stat: $s")
+            return null
         }
     }
 
     private object GearTypeDeserializer : JsonDeserializer<GearType> {
-        override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): GearType {
+        override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): GearType? {
             val s = json.asString
             try {
                 return MeleeWeaponType.valueOf(s)
@@ -161,7 +162,8 @@ object FormulaeConfiguration {
                 return ArmorType.valueOf(s)
             } catch (_: Exception) {
             }
-            throw IllegalArgumentException("Invalid GearType: $s")
+            BlueRPG.LOGGER.warn("Invalid GearType: $s")
+            return null
         }
     }
 

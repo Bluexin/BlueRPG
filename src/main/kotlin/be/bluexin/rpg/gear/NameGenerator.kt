@@ -387,7 +387,7 @@ object NameGenerator {
     }
 
     private object GearTypeDeserializer : JsonDeserializer<GearType> {
-        override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): GearType {
+        override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): GearType? {
             val s = json.asString
             try {
                 return MeleeWeaponType.valueOf(s)
@@ -401,7 +401,8 @@ object NameGenerator {
                 return OffHandType.valueOf(s)
             } catch (_: Exception) {
             }
-            throw IllegalArgumentException("Invalid GearType: $s")
+            BlueRPG.LOGGER.warn("Invalid GearType: $s")
+            return null
         }
     }
 }
