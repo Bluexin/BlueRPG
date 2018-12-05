@@ -22,6 +22,7 @@ import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.petStorage
 import be.bluexin.rpg.util.offset
 import com.teamwizardry.librarianlib.features.kotlin.asNonnullListWithDefault
+import com.teamwizardry.librarianlib.features.kotlin.clamp
 import com.teamwizardry.librarianlib.features.kotlin.isNotEmpty
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.util.RecipeItemHelper
@@ -158,7 +159,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
             if (!this.rpgHotbar[l].isItemEnchanted) return l
         }
 
-        return this.currentItem
+        return this.currentItem.clamp(rpgHotbarIndices.start, rpgHotbarIndices.endInclusive)
     }
 
     @SideOnly(Side.CLIENT)
@@ -263,7 +264,8 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
     }
 
     override fun getDestroySpeed(state: IBlockState) =
-        if (!this.rpgHotbar[this.currentItem].isEmpty) this.rpgHotbar[this.currentItem].getDestroySpeed(state)
+        if (this.currentItem in this.rpgHotbarIndices && !this.rpgHotbar[this.currentItem].isEmpty)
+            this.rpgHotbar[this.currentItem].getDestroySpeed(state)
         else 1f
 
     override fun hasItemStack(itemStackIn: ItemStack) =
