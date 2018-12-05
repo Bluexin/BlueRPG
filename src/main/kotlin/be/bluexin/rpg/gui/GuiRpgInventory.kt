@@ -38,11 +38,14 @@ import java.awt.Color
 
 class GuiRpgInventory(private val ct: RPGContainer) : GuiContainerBase(ct, 258, 250) {
     init {
-        val bg = ComponentSprite(Textures.INVENTORY_BG, 0, 0)
+        val bg = ComponentVoid(0, 0)
         mainComponents.add(bg)
+        val equipment = ComponentSprite(Textures.EQUIPMENT_BG, 0, 0)
 
         val scrollList = buildStatPanel()
         bg.add(
+            equipment,
+            ComponentSprite(Textures.INVENTORY_BG, 0, 135),
             PlayerLayout(ct.invPlayer).apply {
                 main.pos = vec(13, 137)
                 armor.pos = vec(13, 7)
@@ -59,9 +62,21 @@ class GuiRpgInventory(private val ct: RPGContainer) : GuiContainerBase(ct, 258, 
             },
             ComponentEntity(ct.player, 33, 14, 80, 99)
         )
+
+        repeat(2) {
+            equipment.add(ComponentSprite(Textures.GATHERING_BG, 34 + 18 * it, 116))
+        }
+
+        repeat(2) {
+            equipment.add(ComponentSprite(Textures.CRAFTING_BG, 79 + 18 * it, 116))
+        }
+
+        repeat(3) {
+            equipment.add(ComponentSprite(Textures.CLASS_BG, 150 + 18 * it, 116))
+        }
     }
 
-    private fun buildStatPanel() = ComponentScrollList(142, 10, 10, 10).apply {
+    private fun buildStatPanel() = ComponentScrollList(120, 10, 10, 10).apply {
         val textColor = Color.WHITE
         val f = { stat: Stat ->
             val att: IAttributeInstance? = ct.player.getEntityAttribute(stat.attribute)
@@ -74,7 +89,7 @@ class GuiRpgInventory(private val ct: RPGContainer) : GuiContainerBase(ct, 258, 
                     }
                     color(textColor)
                     shadow(true)
-                }, ComponentRect(0, -1, 80, 10).apply {
+                }, ComponentRect(0, -1, 100, 10).apply {
                     color(Color(0, 0, 0, 0))
                     render.tooltip {
                         listOf(
@@ -112,12 +127,24 @@ class PlayerLayout(player: RPGContainer.InventoryWrapperPlayer) {
     val armor = ComponentVoid(0, 0).apply {
         isVisible = false
         add(
-            ComponentSlot(player.head, 0, 0),
-            ComponentSlot(player.chest, 0, 18),
-            ComponentSlot(player.legs, 0, 2 * 18),
-            ComponentSlot(player.feet, 0, 3 * 18),
-            ComponentSlot(player.offhand, 0, 4 * 18),
-            ComponentSlot(player.egg, 0, 5 * 18)
+            ComponentSlot(player.head, 0, 0).apply {
+                background.add(ComponentSprite(Textures.HEAD_BG, 0, -1))
+            },
+            ComponentSlot(player.chest, 0, 18).apply {
+                background.add(ComponentSprite(Textures.CHESTPLATE_BG, 0, -1))
+            },
+            ComponentSlot(player.legs, 0, 2 * 18).apply {
+                background.add(ComponentSprite(Textures.LEGS_BG, 0, -1))
+            },
+            ComponentSlot(player.feet, 0, 3 * 18).apply {
+                background.add(ComponentSprite(Textures.FEET_BG, 0, -1))
+            },
+            ComponentSlot(player.offhand, 0, 4 * 18).apply {
+                background.add(ComponentSprite(Textures.OFFHAND_BG, 0, -1))
+            },
+            ComponentSlot(player.egg, 0, 5 * 18).apply {
+                background.add(ComponentSprite(Textures.EGG_BG, 0, -1))
+            }
         )
     }
     val mainLayout = BaseLayouts.grid(player.main, 13)
@@ -128,7 +155,9 @@ class PlayerLayout(player: RPGContainer.InventoryWrapperPlayer) {
     }
     val bags = ComponentVoid(180, 92).apply {
         player.bags.forEachIndexed { index, slot ->
-            add(ComponentSlot(slot, index * 18, 0))
+            add(ComponentSlot(slot, index * 18, 0).apply {
+                background.add(ComponentSprite(Textures.BAG_BG, 0, -1))
+            })
         }
     }
     val main = ComponentVoid(0, 0).apply {

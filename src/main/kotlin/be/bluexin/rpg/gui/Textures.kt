@@ -33,7 +33,27 @@ object Textures {
     val PROGRESS_FG = BASE.getSprite("progression_fg", 12, 8)
     val POWER_BG = BASE.getSprite("power_bg", 8, 56)
     val POWER_FG = BASE.getSprite("power_fg", 8, 56)
+
     val NEW_INVENTORY = Texture(ResourceLocation(BlueRPG.MODID, "textures/gui/gui_inventory.png"))
-    val INVENTORY_BG = NEW_INVENTORY.getSprite("bg", 258, 250)
+
     val SCROLLBAR_FG = NEW_INVENTORY.getSprite("scrollbar_fg", 8, 8)
+
+    val INVENTORY_BG = NEW_INVENTORY.getSprite("inventory_bg", 258, 115)
+    val EQUIPMENT_BG = NEW_INVENTORY.getSprite("equipment_bg", 258, 135)
+    val CHEST_BG = NEW_INVENTORY.getSprite("chest_bg", 258, 135)
+    val EMPTY_BG = NEW_INVENTORY.getSprite("empty_bg", 258, 135)
+    val CUSTOMIZATION_BG = NEW_INVENTORY.getSprite("customization_bg", 258, 135)
+
+    val HEAD_BG = NEW_INVENTORY.getSprite("head_bg", 18, 18)
+    val CHESTPLATE_BG = NEW_INVENTORY.getSprite("chestplate_bg", 18, 18)
+    val LEGS_BG = NEW_INVENTORY.getSprite("legs_bg", 18, 18)
+    val FEET_BG = NEW_INVENTORY.getSprite("feet_bg", 18, 18)
+    val OFFHAND_BG = NEW_INVENTORY.getSprite("offhand_bg", 18, 18)
+    val EGG_BG = NEW_INVENTORY.getSprite("egg_bg", 18, 18)
+    val GATHERING_BG = NEW_INVENTORY.getSprite("gathering_bg", 18, 18)
+    val CRAFTING_BG = NEW_INVENTORY.getSprite("crafting_bg", 18, 18)
+    val CLASS_BG = NEW_INVENTORY.getSprite("class_bg", 18, 18)
+    val BAG_BG = NEW_INVENTORY.getSprite("bag_bg", 18, 18)
+    val COG_BG = NEW_INVENTORY.getSprite("cog_bg", 18, 18)
+    val SLOT_BG = NEW_INVENTORY.getSprite("slot_bg", 18, 18)
 }
