@@ -22,7 +22,11 @@ import com.teamwizardry.librarianlib.features.gui.component.GuiComponent
 import com.teamwizardry.librarianlib.features.gui.component.GuiComponentEvents
 import com.teamwizardry.librarianlib.features.helpers.vec
 import com.teamwizardry.librarianlib.features.kotlin.clamp
+import com.teamwizardry.librarianlib.features.kotlin.height
+import com.teamwizardry.librarianlib.features.kotlin.width
 import com.teamwizardry.librarianlib.features.math.Vec2d
+import net.minecraft.client.gui.inventory.GuiInventory
+import net.minecraft.entity.EntityLivingBase
 import java.util.*
 import kotlin.math.max
 
@@ -96,4 +100,21 @@ class ComponentScrollList(posX: Int, posY: Int, var rowHeight: Int, var limit: I
         @JvmField val component: ComponentScrollList,
         val oldValue: Int, var newValue: Int
     ) : EventCancelable()
+}
+
+class ComponentEntity(
+    val entity: EntityLivingBase,
+    posX: Int,
+    posY: Int,
+    width: Int,
+    height: Int,
+    val scale: Int = 35
+) : GuiComponent(posX, posY, width, height) {
+    override fun drawComponent(mousePos: Vec2d, partialTicks: Float) {
+        val x = width / 2
+        val y = (height * (entity.eyeHeight / 1.8f)).toInt()
+        val mx = x - mousePos.xf
+        val my = (y - scale * (entity.eyeHeight)) - mousePos.yf
+        GuiInventory.drawEntityOnScreen(x, y, scale, mx, my, entity)
+    }
 }

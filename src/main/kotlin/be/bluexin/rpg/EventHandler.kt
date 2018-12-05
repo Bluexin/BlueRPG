@@ -34,20 +34,20 @@ import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
-import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.block.Block
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.client.renderer.color.IItemColor
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer
-import net.minecraft.entity.ai.attributes.IAttributeInstance
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.ContainerPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.text.TextComponentTranslation
-import net.minecraftforge.client.event.*
+import net.minecraftforge.client.event.ColorHandlerEvent
+import net.minecraftforge.client.event.GuiOpenEvent
+import net.minecraftforge.client.event.ModelRegistryEvent
+import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.common.util.FakePlayer
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.event.ServerChatEvent
@@ -211,16 +211,6 @@ object CommonEventHandler {
 
 @SideOnly(Side.CLIENT)
 object ClientEventHandler {
-    @SubscribeEvent
-    fun debugOverlay(event: RenderGameOverlayEvent.Text) {
-        val player = Minecraft.getMinecraft().player
-        event.left.add("(temporary)")
-        event.left.addAll(PrimaryStat.values().map {
-            val att: IAttributeInstance? = player.getEntityAttribute(it.attribute)
-            val base = att?.baseValue?.toInt() ?: 0
-            "rpg.display.stat".localize(it.longName(), "$base +${(att?.attributeValue?.toInt() ?: 0) - base}")
-        })
-    }
 
     @SubscribeEvent
     fun hitEmpty(event: PlayerInteractEvent.LeftClickEmpty) = DamageHandler.handleRange(event.entityPlayer)

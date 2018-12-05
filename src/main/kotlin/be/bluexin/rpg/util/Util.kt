@@ -94,10 +94,8 @@ fun <T> SendChannel<T>.offerOrSendAndClose(it: T) {
     }
 }
 
-class BoundPropertyDelegateReadOnly<in R, T>(val prop: () -> T) : ReadOnlyProperty<R, T> {
-    override fun getValue(thisRef: R, property: KProperty<*>): T {
-        return prop()
-    }
+class BoundPropertyDelegateReadOnly<in R, out T>(val prop: () -> T) : ReadOnlyProperty<R, T> {
+    override operator fun getValue(thisRef: R, property: KProperty<*>) = prop()
 }
 
 val <T> (() -> T).delegate: ReadOnlyProperty<Any, T>

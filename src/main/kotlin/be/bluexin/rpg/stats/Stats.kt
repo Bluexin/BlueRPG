@@ -36,6 +36,7 @@ import net.minecraftforge.fml.common.eventhandler.Event
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.lang.ref.WeakReference
+import java.text.DecimalFormat
 import java.util.*
 
 @SaveInPlace
@@ -126,12 +127,22 @@ interface Stat {
     fun shortName() = "rpg.${name.toLowerCase()}.short".localize()
 
     @SideOnly(Side.CLIENT)
+    fun tooltip() = "rpg.${name.toLowerCase()}.tooltip".localize()
+
+    @SideOnly(Side.CLIENT)
     fun localize(value: Int) =
-        if (hasTransform) "rpg.tooltip.pctstat".localize(this(value))
+        if (hasTransform) "rpg.tooltip.pctstat".localize(format.format(this(value)))
         else "rpg.tooltip.flatstat".localize(value)
+
+    @SideOnly(Side.CLIENT)
+    fun localize(value: Double) =
+        if (hasTransform) "rpg.tooltip.pctstat".localize(format.format(value))
+        else "rpg.tooltip.flatstat".localize(value.toInt())
 
     fun getRoll(ilvl: Int, rarity: Rarity, gearType: GearType, slot: EntityEquipmentSlot): Int
 }
+
+private val format = DecimalFormat("#.##")
 
 @NamedDynamic(resourceLocation = "b:ps")
 enum class PrimaryStat(uuid: Array<String>) : Stat {
@@ -291,7 +302,8 @@ enum class SecondaryStat(uuid: Array<String>, attribute: IAttribute? = null) : S
             "fdf24012-758d-4c7b-8672-d2f67751c4c8"
         ), SharedMonsterAttributes.MOVEMENT_SPEED
     ) {
-        override val operation = 2
+        override val operation = 1
+        override fun localize(value: Double) = "rpg.tooltip.pctstat".localize(format.format(value * 1_000))
     },
     LIFE_STEAL_CHANCE(
         arrayOf(
@@ -357,7 +369,7 @@ enum class SecondaryStat(uuid: Array<String>, attribute: IAttribute? = null) : S
     ) {
         override val baseValue = 20.0
     },
-    BONUS_TO_SKILL(
+    /*BONUS_TO_SKILL(
         arrayOf(
             "f0653db6-8aad-4476-970e-f0d8f85ab83c",
             "f4ff68f9-b44f-4242-adfd-c584fb2fb493",
@@ -366,7 +378,7 @@ enum class SecondaryStat(uuid: Array<String>, attribute: IAttribute? = null) : S
             "844f40b9-d9fc-46e4-a9c6-88db501891f1",
             "50dc62d1-9d19-421e-aeac-500f131e5527"
         )
-    ),
+    ),*/ // TODO: this stat should be a bonus to a random skill
     BONUS_DAMAGE(
         arrayOf(
             "30c2c5fb-00a4-4a56-b0bc-5dcecb7a58b2",
