@@ -17,11 +17,13 @@
 
 package be.bluexin.rpg.gear
 
+import be.bluexin.rpg.items.IUsable
 import be.bluexin.rpg.stats.TokenStats
 import be.bluexin.rpg.stats.tokenStats
 import be.bluexin.rpg.util.ItemCapabilityWrapper
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
+import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.player.EntityPlayer
@@ -33,7 +35,7 @@ import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 
-class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_token_${type.key}") {
+class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_token_${type.key}"), IUsable<ItemStack> {
 
     companion object {
         private val pieces = Array(TokenType.values().size) { typeIdx ->
@@ -44,10 +46,13 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
         operator fun get(type: TokenType) = pieces[type.ordinal]
     }
 
-    override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
-        var stack = playerIn.getHeldItem(handIn)
-        worldIn onServer { stack = stack.tokenStats?.open(playerIn) ?: stack }
-        return ActionResult.newResult(EnumActionResult.SUCCESS, stack)
+    override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand) =
+        this(playerIn.getHeldItem(handIn), worldIn, playerIn)
+
+    override fun invoke(stack: ItemStack, worldIn: World, playerIn: EntityPlayer): ActionResult<ItemStack> {
+        var iss = stack
+        worldIn onServer { iss = stack.tokenStats?.open(playerIn) ?: stack }
+        return ActionResult.newResult(EnumActionResult.SUCCESS, iss)
     }
 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
@@ -55,7 +60,7 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
         tooltip.add("rpg.display.itemlevel".localize(stats.ilvl))
         tooltip.add("rpg.display.levelreq".localize(stats.levelReq))
         if (stats.rarity != null) tooltip.add(stats.rarity!!.localized)
-        tooltip.add("rpg.display.open".localize())
+        tooltip.add("rpg.display.open".localize(Minecraft().gameSettings.keyBindPickBlock.displayName))
     }
 
     override fun initCapabilities(stack: ItemStack, nbt: NBTTagCompound?): ICapabilityProvider? {

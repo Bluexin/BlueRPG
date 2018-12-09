@@ -17,12 +17,14 @@
 
 package be.bluexin.rpg.gear
 
+import be.bluexin.rpg.items.IUsable
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.ItemCapabilityWrapper
 import be.bluexin.rpg.util.set
 import be.bluexin.saomclib.onServer
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
+import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.Minecraft
 import net.minecraft.client.util.ITooltipFlag
@@ -38,7 +40,7 @@ import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 
-interface IRPGGear { // TODO: use ISpecialArmor
+interface IRPGGear : IUsable<ItemStack> { // TODO: use ISpecialArmor
 
     val type: GearType
 
@@ -46,7 +48,7 @@ interface IRPGGear { // TODO: use ISpecialArmor
 
     fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
         val stats = stack.stats
-        if (stats?.generated != true) tooltip += "rpg.display.notgenerated".localize()
+        if (stats?.generated != true) tooltip += "rpg.display.notgenerated".localize(Minecraft().gameSettings.keyBindPickBlock.displayName)
         else {
             val spacer = "rpg.tooltip.spacer".localize()
             tooltip += "rpg.tooltip.desc".localize(
@@ -125,8 +127,10 @@ interface IRPGGear { // TODO: use ISpecialArmor
         GearStats.Storage.readNBT(GearStats.Capability, cap, null, capNbt)
     }
 
-    fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
-        val stack = playerIn.getHeldItem(handIn)
+    fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand) =
+        this(playerIn.getHeldItem(handIn), worldIn, playerIn)
+
+    override fun invoke(stack: ItemStack, worldIn: World, playerIn: EntityPlayer): ActionResult<ItemStack> {
         val stats = stack.stats
             ?: throw IllegalStateException("Missing capability!")
         return if (!stats.generated) {

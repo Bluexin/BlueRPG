@@ -22,14 +22,20 @@ import be.bluexin.rpg.gui.GuiRpgInventory
 import com.teamwizardry.librarianlib.features.container.ContainerBase
 import com.teamwizardry.librarianlib.features.container.GuiHandler
 import com.teamwizardry.librarianlib.features.container.InventoryWrapper
+import com.teamwizardry.librarianlib.features.container.SlotType
 import com.teamwizardry.librarianlib.features.container.builtin.SlotTypeEquipment
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
+import com.teamwizardry.librarianlib.features.container.internal.SlotBase
+import com.teamwizardry.librarianlib.features.kotlin.isNotEmpty
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.inventory.ClickType
 import net.minecraft.inventory.ContainerPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.inventory.Slot
 import net.minecraft.item.ItemStack
+import net.minecraft.util.EnumActionResult
+import net.minecraft.util.EnumHand
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.items.IItemHandler
 import net.minecraftforge.items.wrapper.InvWrapper
@@ -84,8 +90,16 @@ class RPGContainer(player: EntityPlayer, original: ContainerPlayer) : ContainerB
             type = SlotTypeEquipment(player, EntityEquipmentSlot.FEET)
         }
 
-        val hotbar = slots[rInventory.rpgHotbarIndices]
-        val main = slots[rInventory.realMainIndices]
+        val hotbar = slots[rInventory.rpgHotbarIndices].apply {
+            forEach {
+                it.type = SlotTypeUsable
+            }
+        }
+        val main = slots[rInventory.realMainIndices].apply {
+            forEach {
+                it.type = SlotTypeUsable
+            }
+        }
         val offhand = slots[rInventory.offHandIndex]
         val egg = slots[rInventory.eggIndex]
         val bags = slots[rInventory.bagIndices]
@@ -201,4 +215,24 @@ class RPGContainer(player: EntityPlayer, original: ContainerPlayer) : ContainerB
                 get() = (if (player.isCreative) vanillaSlots.inventorySlots else ourSlots).size
         }
     }
+}
+
+object SlotTypeUsable : SlotType() {
+    override fun handleClick(
+        slot: SlotBase,
+        container: ContainerBase,
+        dragType: Int,
+        clickType: ClickType?,
+        player: EntityPlayer
+    ): Pair<Boolean, ItemStack> =
+        if (!player.world.isRemote && slot.stack.isNotEmpty && !player.isCreative && clickType == ClickType.CLONE) {
+            val r = (player as EntityPlayerMP).interactionManager.processItemUse(
+                player,
+                player.world,
+                slot.stack,
+                EnumHand.MAIN_HAND
+            )
+            if (r == EnumActionResult.PASS) super.handleClick(slot, container, dragType, clickType, player)
+            else true to slot.stack
+        } else super.handleClick(slot, container, dragType, clickType, player)
 }
