@@ -251,6 +251,7 @@ enum class SecondaryStat(uuid: Array<String>, attribute: IAttribute? = null) : S
     ) {
         override val hasTransform = false
         override fun invoke(from: Int) = from.toDouble()
+        override val baseValue: Double get() = 1.0
     },
     REFLECT(
         arrayOf(
@@ -497,7 +498,9 @@ enum class FixedStat(uuid: Array<String>, attribute: IAttribute? = null) : Stat 
             "45779a50-cf0b-44fa-b972-17dda742287c",
             "48c52ea4-9a41-461e-a565-75b7d8aa987a"
         )
-    ),
+    ) {
+        override val baseValue = 20.0
+    },
     ARMOR(
         arrayOf(
             "1293882c-9486-4c18-a569-6a0918e440fb",
