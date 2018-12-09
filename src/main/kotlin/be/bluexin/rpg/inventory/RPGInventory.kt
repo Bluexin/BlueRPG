@@ -138,8 +138,8 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
             this.canMergeStacks(this.getStackInSlot(currentItem), itemStackIn) -> return currentItem
             this.canMergeStacks(this.getStackInSlot(offHandIndex), itemStackIn) -> return offHandIndex
             else -> {
-                for (i in rpgHotbarIndices) if (canMergeStacks(getStackInSlot(offHandIndex), itemStackIn)) return i
-                for (i in realMainIndices) if (canMergeStacks(getStackInSlot(offHandIndex), itemStackIn)) return i
+                for (i in rpgHotbarIndices) if (canMergeStacks(getStackInSlot(i), itemStackIn)) return i
+                for (i in realMainIndices) if (canMergeStacks(getStackInSlot(i), itemStackIn)) return i
                 return -1
             }
         }
@@ -199,8 +199,8 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
 
                     when {
                         index >= 0 -> {
-                            this.realMainInventory[index] = stack.copy()
-                            this.realMainInventory[index].animationsToGo = 5
+                            this.realMainInventory[index - this.realMainIndices.start] = stack.copy()
+                            this.realMainInventory[index - this.realMainIndices.start].animationsToGo = 5
                             stack.count = 0
                             true
                         }
