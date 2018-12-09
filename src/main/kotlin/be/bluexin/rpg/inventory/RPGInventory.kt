@@ -305,7 +305,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
             else -> ItemStack.EMPTY
         }
 
-        override val size: Int // FIXME: EntityPlayer forge extensions (inventory capabilities)
-            get() = rpgHotbar.size
+        override val size: Int
+            get() = rpgHotbar.size + realMainInventory.size
     }
 }
