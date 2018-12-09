@@ -24,6 +24,7 @@ import com.teamwizardry.librarianlib.features.saving.Savable
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.filter
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
@@ -33,24 +34,30 @@ import net.minecraft.util.EntityDamageSource
 import java.util.*
 import kotlin.math.abs
 
+// Can't use ReceiveChannel#map in these till jvm has union types
+
 @Savable
 @NamedDynamic("e:e")
-interface Effect<TARGET : Target> {
-    operator fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>)
+interface Effect {
+    operator fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<Target>)
 }
 
 @Savable
 @NamedDynamic("e:d")
-data class Damage<TARGET>(val value: Double) : Effect<TARGET>
-        where TARGET : TargetWithHealth, TARGET : TargetWithWorld { // TODO: take caster stats into account
-    override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {
+data class Damage(val value: () -> Float) : Effect {
+    override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<Target>) {
         GlobalScope.launch {
-            for (e in targets) e.world.minecraftServer?.runMainThread {
-                if (value >= 0) e.attack(
-                    DamageHandler.RpgDamageSource(EntityDamageSource("skill.test", caster)),
-                    value.toFloat()
-                )
-                else e.heal(abs(value.toFloat()))
+            for (e in targets.filter { it is TargetWithHealth && it is TargetWithWorld }) {
+                e as TargetWithWorld
+                e as TargetWithHealth
+                e.world.minecraftServer?.runMainThread {
+                    val value = this@Damage.value()
+                    if (value >= 0) e.attack(
+                        DamageHandler.RpgDamageSource(EntityDamageSource("skill.test", caster)),
+                        value
+                    )
+                    else e.heal(abs(value))
+                }
             }
         }
     }
@@ -58,12 +65,15 @@ data class Damage<TARGET>(val value: Double) : Effect<TARGET>
 
 @Savable
 @NamedDynamic("e:b") // TODO: (de)serialization of PotionEffects
-data class Buff<TARGET>(val effect: PotionEffect) : Effect<TARGET>
-        where TARGET : TargetWithEffects, TARGET : TargetWithWorld {
-    override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {
+data class Buff(val effect: () -> PotionEffect) : Effect {
+    override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<Target>) {
         GlobalScope.launch {
-            for (e in targets) e.world.minecraftServer?.runMainThread {
-                e.addPotionEffect(effect)
+            for (e in targets.filter { it is TargetWithEffects && it is TargetWithWorld }) {
+                e as TargetWithWorld
+                e as TargetWithEffects
+                e.world.minecraftServer?.runMainThread {
+                    e.addPotionEffect(effect())
+                }
             }
         }
     }
@@ -71,29 +81,27 @@ data class Buff<TARGET>(val effect: PotionEffect) : Effect<TARGET>
 
 @Savable
 @NamedDynamic("e:s")
-data class Skill<TARGET : Target, RESULT : Target>(
-    val targeting: Targeting<TARGET, RESULT>,
-    val condition: Condition<RESULT>?,
-    val effect: Effect<RESULT>
-) : Effect<TARGET> {
-    override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {
+data class Skill(
+    val targeting: Targeting,
+    val condition: Condition?,
+    val effect: Effect
+) : Effect {
+    override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<Target>) {
         GlobalScope.launch {
             val p = produce(capacity = Channel.UNLIMITED) {
                 for (e in targets) {
-                    val c = Channel<RESULT>(capacity = Channel.UNLIMITED)
+                    val c = Channel<Target>(capacity = Channel.UNLIMITED)
                     targeting(caster, e, c)
                     send(c)
                 }
             }
 
-            val result = Channel<RESULT>(capacity = Channel.UNLIMITED)
+            val result = Channel<Target>(capacity = Channel.UNLIMITED)
             effect(
                 caster,
-                if (condition == null) result else produce {
-                    for (it in result) if (condition.invoke(caster, it)) send(it)
-                })
-            val chs = LinkedList<Channel<RESULT>>()
-            val toAdd = LinkedList<Channel<RESULT>>()
+                if (condition == null) result else result.filter { condition(caster, it) })
+            val chs = LinkedList<Channel<Target>>()
+            val toAdd = LinkedList<Channel<Target>>()
             var flag = true
             while (flag || chs.isNotEmpty()) {
                 select<Unit> {
@@ -120,11 +128,11 @@ data class Skill<TARGET : Target, RESULT : Target>(
 
 @Savable
 @NamedDynamic("e:m")
-data class MultiEffect<TARGET : Target>(val effects: Array<Effect<TARGET>>) : Effect<TARGET> {
+data class MultiEffect(val effects: Array<Effect>) : Effect {
 
-    override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<TARGET>) {
+    override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<Target>) {
         GlobalScope.launch {
-            val channels = Array<Channel<TARGET>>(effects.size) {
+            val channels = Array<Channel<Target>>(effects.size) {
                 Channel(capacity = Channel.UNLIMITED)
             }
             for (e in targets) channels.forEach { it.send(e) }
@@ -134,7 +142,7 @@ data class MultiEffect<TARGET : Target>(val effects: Array<Effect<TARGET>>) : Ef
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is MultiEffect<*>) return false
+        if (other !is MultiEffect) return false
 
         if (!Arrays.equals(effects, other.effects)) return false
 

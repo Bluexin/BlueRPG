@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg.skills
 
+import be.bluexin.rpg.stats.Stat
 import be.bluexin.saomclib.party.IParty
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.ItemStack
@@ -100,6 +101,10 @@ interface TargetWithHealth : Target {
 
 interface TargetWithGear : Target {
     fun getItemStackFromSlot(slot: EntityEquipmentSlot): ItemStack
+}
+
+interface TargetWithStats : Target {
+    operator fun get(stat: Stat): Double
 }
 
 interface TargetWithUuid : Target {

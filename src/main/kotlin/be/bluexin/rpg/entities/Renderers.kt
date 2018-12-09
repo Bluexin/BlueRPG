@@ -45,4 +45,4 @@ abstract class RenderRpgProjectile<T : Entity>(renderManager: RenderManager) : R
 class RenderWandProjectile(renderManager: RenderManager) : RenderRpgProjectile<EntityWandProjectile>(renderManager)
 
 @SideOnly(Side.CLIENT)
-class RenderSkillProjectile(renderManager: RenderManager) : RenderRpgProjectile<EntitySkillProjectile<*>>(renderManager)
+class RenderSkillProjectile(renderManager: RenderManager) : RenderRpgProjectile<EntitySkillProjectile>(renderManager)

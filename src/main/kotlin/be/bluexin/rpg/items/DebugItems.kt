@@ -110,7 +110,7 @@ object DebugExpItem : ItemMod("debug_exp") {
 object DebugSkillItem : ItemMod("debug_skill") {
     init {
         maxStackSize = 1
-        maxDamage = 3000
+        hasSubtypes = true
     }
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
@@ -132,9 +132,9 @@ object DebugSkillItem : ItemMod("debug_skill") {
                     val p = Processor()
                     p.addElement(
                         Channeled(0),
-                        Projectile<PlayerHolder, LivingHolder<*>>(condition = RequireStatus(Status.AGGRESSIVE)),
+                        Projectile(condition = RequireStatus(Status.AGGRESSIVE)),
                         null,
-                        Damage(3.0)
+                        Damage { 3f }
                     )
                     p.stopUsing(entityLiving, 1)
                 }
@@ -142,9 +142,9 @@ object DebugSkillItem : ItemMod("debug_skill") {
                     val p = Processor()
                     p.addElement(
                         Channeled(0),
-                        AoE<PlayerHolder, LivingHolder<*>>(),
+                        AoE(),
                         RequireStatus(Status.AGGRESSIVE),
-                        Damage(3.0)
+                        Damage { 3f }
                     )
                     p.stopUsing(entityLiving, 1)
                 }
@@ -152,15 +152,15 @@ object DebugSkillItem : ItemMod("debug_skill") {
                     val p = Processor()
                     p.addElement(
                         Channeled(0),
-                        AoE<PlayerHolder, LivingHolder<*>>(),
+                        AoE(),
                         RequireStatus(Status.AGGRESSIVE),
                         Skill(
-                            Chain<LivingHolder<*>>(
+                            Chain(
                                 maxTargets = 3,
                                 condition = RequireStatus(Status.AGGRESSIVE)
                             ),
                             null,
-                            Damage(2.0)
+                            Damage { 2f }
                         )
                     )
                     p.stopUsing(entityLiving, 1)
@@ -169,13 +169,13 @@ object DebugSkillItem : ItemMod("debug_skill") {
                     val p = Processor()
                     p.addElement(
                         Channeled(0),
-                        Channelling<PlayerHolder, LivingHolder<*>>(
+                        Channelling(
                             delayMillis = 1000,
                             procs = 10,
-                            targeting = Self<PlayerHolder>().cast()
+                            targeting = Self
                         ),
                         null,
-                        Damage(-3.0)
+                        Damage { -3f }
                     )
                     p.stopUsing(entityLiving, 1)
                 }
@@ -183,15 +183,15 @@ object DebugSkillItem : ItemMod("debug_skill") {
                     val p = Processor()
                     p.addElement(
                         Channeled(0),
-                        Projectile<PlayerHolder, WorldPosHolder>(
+                        Projectile(
                             condition = RequireStatus(Status.AGGRESSIVE),
                             precise = true
                         ),
                         null,
                         Skill(
-                            AoE<WorldPosHolder, LivingHolder<*>>(),
+                            AoE(),
                             RequireStatus(Status.AGGRESSIVE),
-                            Damage(3000.0)
+                            Damage { 3_000f }
                         )
                     )
                     p.stopUsing(entityLiving, 1)
@@ -200,13 +200,13 @@ object DebugSkillItem : ItemMod("debug_skill") {
                     val p = Processor()
                     p.addElement(
                         Channeled(0),
-                        Channelling<PlayerHolder, LivingHolder<*>>(
+                        Channelling(
                             delayMillis = 1000,
                             procs = 10,
-                            targeting = Self<PlayerHolder>().cast()
+                            targeting = Self
                         ),
                         null,
-                        Damage(-3.0)
+                        Damage { -3f }
                     )
                     try {
                         BlueRPG.LOGGER.warn("Serializing $p")

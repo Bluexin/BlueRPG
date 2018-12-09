@@ -18,6 +18,7 @@
 package be.bluexin.rpg.entities
 
 import be.bluexin.rpg.skills.*
+import be.bluexin.rpg.skills.Target
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onClient
 import be.bluexin.saomclib.onServer
@@ -299,8 +300,7 @@ class EntityWandProjectile : ThrowableEntityMod, RpgProjectile {
 }
 
 @Savable
-class EntitySkillProjectile<RESULT> : ThrowableEntityMod, RpgProjectile
-        where RESULT : TargetWithPosition, RESULT : TargetWithWorld {
+class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
 
     private companion object {
         private val RANGE = EntitySkillProjectile::class.createFloatKey()
@@ -330,9 +330,9 @@ class EntitySkillProjectile<RESULT> : ThrowableEntityMod, RpgProjectile
 
     var range by managedValue(RANGE)
 
-    private var result: SendChannel<RESULT>? = null
+    private var result: SendChannel<Target>? = null
 
-    private var filter: Condition<RESULT>? = null
+    private var filter: Condition? = null
 
     private var precise = false
 
@@ -344,8 +344,8 @@ class EntitySkillProjectile<RESULT> : ThrowableEntityMod, RpgProjectile
         caster: PlayerHolder?,
         origin: TargetWithPosition,
         range: Double,
-        result: SendChannel<RESULT>,
-        filter: Condition<RESULT>? = null,
+        result: SendChannel<Target>,
+        filter: Condition? = null,
         precise: Boolean = false
     ) : super(world, origin.x, origin.y, origin.z) {
         this.caster = caster
@@ -402,7 +402,7 @@ class EntitySkillProjectile<RESULT> : ThrowableEntityMod, RpgProjectile
                 val e = result.entityHit
                 if (e is EntityLivingBase) {
                     @Suppress("UNCHECKED_CAST")
-                    val h = (if (precise) WorldPosHolder(world, positionVector) else LivingHolder(e)) as RESULT
+                    val h = (if (precise) WorldPosHolder(world, positionVector) else LivingHolder(e))
                     val f = filter
                     val c = caster
                     if (f == null || c == null || f(c.it, h)) {
@@ -412,7 +412,7 @@ class EntitySkillProjectile<RESULT> : ThrowableEntityMod, RpgProjectile
                 } else {
                     val v = result.hitVec
                     @Suppress("UNCHECKED_CAST")
-                    val h = WorldPosHolder(world, v) as RESULT
+                    val h = WorldPosHolder(world, v)
                     val f = filter
                     val c = caster
                     if (f == null || c == null || f(c.it, h)) {

@@ -17,9 +17,13 @@
 
 package be.bluexin.rpg.skills
 
+import be.bluexin.rpg.stats.Stat
+import be.bluexin.rpg.stats.get
 import be.bluexin.saomclib.capabilities.getPartyCapability
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.inventory.EntityEquipmentSlot
+import net.minecraft.item.ItemStack
 import net.minecraft.potion.Potion
 import net.minecraft.potion.PotionEffect
 import net.minecraft.util.DamageSource
@@ -45,7 +49,7 @@ open class DefaultHolder<T : Any>(override val it: T) : TargetWithStatus {
 
 open class LivingHolder<T : EntityLivingBase>(living: T) :
     DefaultHolder<T>(living), TargetWithEffects, TargetWithLookVec, TargetWithPosition, TargetWithWorld,
-    TargetWithMovement, TargetWithCollision, TargetWithHealth, TargetWithUuid {
+    TargetWithMovement, TargetWithCollision, TargetWithHealth, TargetWithUuid, TargetWithGear {
     override fun getPotionEffect(effect: Potion) = it.getActivePotionEffect(effect)
     override fun addPotionEffect(effect: PotionEffect) = it.addPotionEffect(effect)
     override val pos: Vec3d get() = it.getPositionEyes(1f)
@@ -56,6 +60,8 @@ open class LivingHolder<T : EntityLivingBase>(living: T) :
     override fun attack(source: DamageSource, amount: Float) = it.attackEntityFrom(source, amount)
     override fun heal(amount: Float) = it.heal(amount)
     override val uuid: UUID get() = it.persistentID
+
+    override fun getItemStackFromSlot(slot: EntityEquipmentSlot): ItemStack = it.getItemStackFromSlot(slot)
 
     /* Optimizing these */
     override val x: Double
@@ -72,8 +78,9 @@ open class LivingHolder<T : EntityLivingBase>(living: T) :
         get() = it.motionZ
 }
 
-class PlayerHolder(player: EntityPlayer) : LivingHolder<EntityPlayer>(player), TargetWithParty {
+class PlayerHolder(player: EntityPlayer) : LivingHolder<EntityPlayer>(player), TargetWithParty, TargetWithStats {
     override val party get() = it.getPartyCapability().party
+    override fun get(stat: Stat) = it[stat]
 }
 
 val EntityLivingBase.holder

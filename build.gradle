@@ -26,10 +26,12 @@ buildscript {
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
     }
 }
 
 apply plugin: 'kotlin'
+apply plugin: 'kotlinx-serialization'
 apply plugin: 'net.minecraftforge.gradle.forge'
 
 version = modVersion
@@ -57,6 +59,7 @@ repositories {
     maven {
         url = 'https://maven.bluexin.be/repository/releases/'
     }
+//    maven { url "https://kotlin.bintray.com/kotlinx" }
 }
 
 configurations {
@@ -71,6 +74,9 @@ dependencies {
     compile('com.saomc:saoui:1.12.2-2.0.0.12-SNAPSHOT:deobf') {
         exclude group: 'com.teamwizardry.librarianlib'
     }
+//    compile 'org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.9.1'
+//    contained 'org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.9.1'
+//    contained 'org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:0.9.1'
     compile 'com.teamwizardry.librarianlib:librarianlib-1.12.2:4.17-SNAPSHOT'
     compile 'moe.plushie:armourers_workshop-1.12.2:0.49.0-SNAPSHOT:deobf'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -112,8 +118,20 @@ task bundleJar(type: Jar) {
     from sourceSets.api.output
     from sourceSets.main.output
 
-    from(configurations.contained.files) {
-        include '*'
+    from(configurations.contained.resolvedConfiguration.resolvedArtifacts.collect {
+        def r = fileTree(it.file)
+        if (!it.file.exists()) r
+        else {
+            def ft = zipTree(it.file)
+            def f = (File) ft.find { it.name == "MANIFEST.MF" }
+            if (f == null || !f.text.contains("Maven-Artifact")) {
+                def nf = file("$buildDir/tmp/${it.file.name}.meta")
+                nf.text = "Maven-Artifact: $it.moduleVersion"
+                r += nf
+            }
+            r
+        }
+    }) {
         into 'META-INF/libraries'
     }
 
@@ -137,12 +155,6 @@ task deobfJar(type: Jar) {
         attributes 'FMLAT': 'bluerpg_at.cfg'
     }
     classifier = 'deobf'
-}
-
-kotlin {
-    experimental {
-        coroutines "enable"
-    }
 }
 
 compileKotlin {

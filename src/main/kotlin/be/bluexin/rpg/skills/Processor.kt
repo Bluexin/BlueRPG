@@ -26,7 +26,7 @@ import java.util.*
 
 @Savable
 class Processor {
-    private var chain = LinkedList<Quadruple<Trigger, Targeting<Target, Target>, Condition<Target>?, Effect<Target>>>()
+    private var chain = LinkedList<Quadruple<Trigger, Targeting, Condition?, Effect>>()
 
     fun stopUsing(caster: EntityLivingBase, timeChanneled: Int) {
         chain.forEach { (tr, t, c, e) ->
@@ -38,21 +38,14 @@ class Processor {
         }
     }
 
-    fun <FROM : Target, TARGET : Target> addElement(
+    fun addElement(
         trigger: Trigger,
-        targeting: Targeting<FROM, TARGET>,
-        condition: Condition<TARGET>?,
-        effect: Effect<TARGET>
+        targeting: Targeting,
+        condition: Condition?,
+        effect: Effect
     ) {
         @Suppress("UNCHECKED_CAST")
-        chain.add(
-            Quadruple(
-                trigger,
-                targeting as Targeting<Target, Target>,
-                condition as Condition<Target>?,
-                effect as Effect<Target>
-            )
-        )
+        chain.add(Quadruple(trigger, targeting, condition, effect))
     }
 
     override fun toString(): String {
