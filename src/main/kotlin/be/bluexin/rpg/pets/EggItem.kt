@@ -42,6 +42,7 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.text.TextComponentTranslation
 import net.minecraft.world.World
 import org.lwjgl.opengl.GL11
 
@@ -116,16 +117,16 @@ object EggItem : ItemMod("egg") {
         world: World,
         petStorage: PetStorage
     ) {
-        if (world.totalWorldTime % 20 == 0L) {
-            val data = EggData()
-            val tag = stack.tagCompound
-            if (tag != null) AbstractSaveHandler.readAutoNBT(
-                data,
-                tag.getCompoundTag("EntityTag").getCompoundTag("auto"),
-                false
-            )
-            if (data.isHatched) {
-                world onServer {
+        world onServer {
+            if (world.totalWorldTime % 20 == 0L) {
+                val data = EggData()
+                val tag = stack.tagCompound
+                if (tag != null) AbstractSaveHandler.readAutoNBT(
+                    data,
+                    tag.getCompoundTag("EntityTag").getCompoundTag("auto"),
+                    false
+                )
+                if (data.isHatched) {
                     val p = petStorage.petEntity
                     if (p?.isDead != false) {
                         val blockpos = player.position
@@ -141,19 +142,22 @@ object EggItem : ItemMod("egg") {
                         world.spawnEntity(entity)
                         petStorage.petEntity = entity
                     }
+                    return
                 }
-                return
-            }
-            ++data.secondsLived
-            if (data.shouldHatch) data.hatch()
+                ++data.secondsLived
+                if (data.shouldHatch) {
+                    data.hatch()
+                    player.sendMessage(TextComponentTranslation("rpg.pet.notifhatched", data.name))
+                }
 
-            val newTag = tagCompound {
-                "EntityTag" to tagCompound {
-                    "auto" to AbstractSaveHandler.writeAutoNBT(data, false)
+                val newTag = tagCompound {
+                    "EntityTag" to tagCompound {
+                        "auto" to AbstractSaveHandler.writeAutoNBT(data, false)
+                    }
                 }
+                tag?.merge(newTag)
+                stack.tagCompound = tag ?: newTag
             }
-            tag?.merge(newTag)
-            stack.tagCompound = tag ?: newTag
         }
     }
 }
