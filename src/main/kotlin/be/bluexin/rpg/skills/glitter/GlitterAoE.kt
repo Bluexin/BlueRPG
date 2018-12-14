@@ -18,8 +18,8 @@
 package be.bluexin.rpg.skills.glitter
 
 import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.Resources
-import be.bluexin.rpg.util.XoRoRNG
 import com.teamwizardry.librarianlib.features.animator.Easing
 import com.teamwizardry.librarianlib.features.kotlin.times
 import com.teamwizardry.librarianlib.features.math.interpolate.InterpFunction
@@ -47,9 +47,10 @@ import java.awt.Color
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.random.Random
 
 object GlitterAoE {
-    private val rng = XoRoRNG()
+    private val rng = Random(RNG.nextLong())
 
     fun test(world: World, center: Vec3d, from: Color = Color(0xFF0000), to: Color = Color(0xFFBF00)) {
 //        BlueRPG.LOGGER.warn("Spawn @$center")
@@ -127,13 +128,18 @@ object Glitter : ParticleSystem() {
         val size = bind(1)
 
         val path = object : ParticlePath {
-            override fun getSize() = 3
 
-            override fun getPosition(particle: DoubleArray, t: Double, index: Int) =
-                target[particle, index] * Easing.easeOutBack(t.toFloat())
+            override val value = DoubleArray(3)
 
-            override fun getTangent(particle: DoubleArray, t: Double, index: Int) =
-                target[particle, index] * Easing.easeOutBack(t.toFloat()).toDouble()
+            override fun computePosition(particle: DoubleArray, t: Double) {
+                target.load(particle)
+
+                repeat(3) {
+                    value[it] = target.contents[it] * Easing.easeOutBack(t.toFloat())
+                }
+            }
+
+            override fun computeTangent(particle: DoubleArray, t: Double) = computePosition(particle, t)
         }
         updateModules += SetValueUpdateModule(
             previousPosition,
@@ -183,22 +189,37 @@ class LifetimeColorInterpBinding(
     val from: ReadParticleBinding,
     val to: ReadParticleBinding
 ) : ReadParticleBinding {
-    override val size = 4
 
-    override fun get(particle: DoubleArray, index: Int): Double {
-        val fraction = age[particle, 0] / lifetime[particle, 0]
-        val c1 = Color(
-            from[particle, 0].toFloat(),
-            from[particle, 1].toFloat(),
-            from[particle, 2].toFloat(),
-            from[particle, 3].toFloat()
+    init {
+        lifetime.require(1)
+        lifetime.require(1)
+        age.require(4)
+        to.require(4)
+    }
+
+    override var contents = DoubleArray(4)
+
+    override fun load(particle: DoubleArray) {
+        lifetime.load(particle)
+        age.load(particle)
+        from.load(particle)
+        to.load(particle)
+
+        val fraction = (age.contents[0] / lifetime.contents[0]).toFloat()
+        val fromColor = Color(
+            from.contents[0].toFloat(),
+            from.contents[1].toFloat(),
+            from.contents[2].toFloat(),
+            from.contents[3].toFloat()
         )
-        val c2 = Color(
-            to[particle, 0].toFloat(),
-            to[particle, 1].toFloat(),
-            to[particle, 2].toFloat(),
-            to[particle, 3].toFloat()
+        val toColor = Color(
+            to.contents[0].toFloat(),
+            to.contents[1].toFloat(),
+            to.contents[2].toFloat(),
+            to.contents[3].toFloat()
         )
-        return interp(c1, c2).get(fraction.toFloat()).getRGBComponents(null)[index].toDouble()
+
+        val r = interp(fromColor, toColor).get(fraction).getRGBComponents(null)
+        contents = DoubleArray(4) { r[it].toDouble() }
     }
 }

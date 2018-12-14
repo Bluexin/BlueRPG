@@ -20,7 +20,9 @@ package be.bluexin.rpg.inventory
 import be.bluexin.rpg.gear.ItemOffHand
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.petStorage
+import be.bluexin.rpg.skills.SkillItem
 import be.bluexin.rpg.util.offset
+import com.teamwizardry.librarianlib.features.helpers.setNBTString
 import com.teamwizardry.librarianlib.features.kotlin.asNonnullListWithDefault
 import com.teamwizardry.librarianlib.features.kotlin.clamp
 import com.teamwizardry.librarianlib.features.kotlin.isNotEmpty
@@ -62,6 +64,10 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
         bagSlots
     ).flatten()
 
+    val skills = MutableList(5) {
+        ItemStack(SkillItem).apply { setNBTString("skill", "skill_$it") }
+    }
+
     init {
         this.allInventories = listOf(
             rpgHotbar.asNonnullListWithDefault(ItemStack.EMPTY),
@@ -84,13 +90,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
         return bagIndices.endInclusive + 1
     }
 
-    override fun getCurrentItem(): ItemStack {
-        if (player.isCreative) {
-            return if (currentItem in 0 until 9) this.mainInventory[currentItem]
-            else ItemStack.EMPTY
-        }
-        return if (this.currentItem in rpgHotbarIndices) this.rpgHotbar[this.currentItem] else ItemStack.EMPTY
-    }
+    override fun getCurrentItem() = this.mainInventory[currentItem]
 
     override fun pickItem(index: Int) {
         if (player.isCreative) return super.pickItem(index)
@@ -164,8 +164,9 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
 
     @SideOnly(Side.CLIENT)
     override fun changeCurrentItem(direction: Int) {
-        if (player.isCreative) return super.changeCurrentItem(direction)
-        this.currentItem = (this.currentItem - MathHelper.clamp(direction, -1, 1) + rpgHotbar.size) % rpgHotbar.size
+//        if (player.isCreative) return super.changeCurrentItem(direction)
+        this.currentItem = (this.currentItem - MathHelper.clamp(direction, -1, 1) + /*rpgHotbar.size*/ 9) %
+                /*rpgHotbar.size*/ 9
     }
 
     override fun getFirstEmptyStack() =
@@ -296,13 +297,13 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
         override fun get(index: Int): ItemStack = when {
             index in rpgHotbarIndices -> rpgHotbar[index]
             player.isCreative -> realMainInventory[index - rpgHotbar.size]
-            else -> ItemStack.EMPTY
+            else -> skills[index - rpgHotbarIndices.endInclusive - 1]
         }
 
         override fun set(index: Int, element: ItemStack): ItemStack = when {
             index in rpgHotbarIndices -> rpgHotbar.set(index, element)
             player.isCreative -> realMainInventory.set(index - rpgHotbar.size, element)
-            else -> ItemStack.EMPTY
+            else -> element
         }
 
         override val size: Int

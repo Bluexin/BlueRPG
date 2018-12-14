@@ -129,29 +129,24 @@ object DebugSkillItem : ItemMod("debug_skill") {
         worldIn onServer {
             when (stack.itemDamage) {
                 0 -> {
-                    val p = Processor()
-                    p.addElement(
-                        Channeled(0),
+                    Processor(
+                        Use(0),
                         Projectile(condition = RequireStatus(Status.AGGRESSIVE)),
                         null,
-                        Damage { 3f }
-                    )
-                    p.stopUsing(entityLiving, 1)
+                        Damage { _, _ -> 3.0 }
+                    ).stopUsing(entityLiving, 1)
                 }
                 1 -> {
-                    val p = Processor()
-                    p.addElement(
-                        Channeled(0),
+                    Processor(
+                        Use(0),
                         AoE(),
                         RequireStatus(Status.AGGRESSIVE),
-                        Damage { 3f }
-                    )
-                    p.stopUsing(entityLiving, 1)
+                        Damage { _, _ -> 3.0 }
+                    ).stopUsing(entityLiving, 1)
                 }
                 2 -> {
-                    val p = Processor()
-                    p.addElement(
-                        Channeled(0),
+                    Processor(
+                        Use(0),
                         AoE(),
                         RequireStatus(Status.AGGRESSIVE),
                         Skill(
@@ -160,29 +155,25 @@ object DebugSkillItem : ItemMod("debug_skill") {
                                 condition = RequireStatus(Status.AGGRESSIVE)
                             ),
                             null,
-                            Damage { 2f }
+                            Damage { _, _ -> 2.0 }
                         )
-                    )
-                    p.stopUsing(entityLiving, 1)
+                    ).stopUsing(entityLiving, 1)
                 }
                 3 -> {
-                    val p = Processor()
-                    p.addElement(
-                        Channeled(0),
+                    Processor(
+                        Use(0),
                         Channelling(
                             delayMillis = 1000,
                             procs = 10,
                             targeting = Self
                         ),
                         null,
-                        Damage { -3f }
-                    )
-                    p.stopUsing(entityLiving, 1)
+                        Damage { _, _ -> -3.0 }
+                    ).stopUsing(entityLiving, 1)
                 }
                 4 -> {
-                    val p = Processor()
-                    p.addElement(
-                        Channeled(0),
+                    Processor(
+                        Use(0),
                         Projectile(
                             condition = RequireStatus(Status.AGGRESSIVE),
                             precise = true
@@ -191,22 +182,20 @@ object DebugSkillItem : ItemMod("debug_skill") {
                         Skill(
                             AoE(),
                             RequireStatus(Status.AGGRESSIVE),
-                            Damage { 3_000f }
+                            Damage { _, _ -> 3_000.0 }
                         )
-                    )
-                    p.stopUsing(entityLiving, 1)
+                    ).stopUsing(entityLiving, 1)
                 }
                 5 -> {
-                    val p = Processor()
-                    p.addElement(
-                        Channeled(0),
+                    val p = Processor(
+                        Use(0),
                         Channelling(
                             delayMillis = 1000,
                             procs = 10,
                             targeting = Self
                         ),
                         null,
-                        Damage { -3f }
+                        Damage { _, _ -> -3.0 }
                     )
                     try {
                         BlueRPG.LOGGER.warn("Serializing $p")

@@ -304,6 +304,9 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
 
     private companion object {
         private val RANGE = EntitySkillProjectile::class.createFloatKey()
+
+        private val COLOR_1 = EntitySkillProjectile::class.createIntKey()
+        private val COLOR_2 = EntitySkillProjectile::class.createIntKey()
     }
 
     @Save
@@ -329,6 +332,8 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
         }
 
     var range by managedValue(RANGE)
+    var color1 by managedValue(COLOR_1)
+    var color2 by managedValue(COLOR_2)
 
     private var result: SendChannel<Target>? = null
 
@@ -359,6 +364,8 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
     override fun entityInit() { // Warning: this runs before CTOR
         super.entityInit()
         this.getDataManager().register(RANGE, 15f)
+        this.getDataManager().register(COLOR_1, 0xFF0000)
+        this.getDataManager().register(COLOR_2, 0xFFB10B)
     }
 
     override fun onUpdate() {
@@ -428,8 +435,8 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
     private fun renderParticles() {
 //        val from = Color(0x0055BB)
 //        val to = Color(0x00BB55)
-        val from = Color(0xFF0000)
-        val to = Color(0xFFB10B)
+        val from = Color(color1)
+        val to = Color(color2)
         val center = positionVector + vec(0, height / 2, 0)
 
         val trail = ParticleBuilder(10).apply {

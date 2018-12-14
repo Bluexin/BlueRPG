@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg.skills
 
+import be.bluexin.rpg.util.RNG
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable
 import net.minecraft.entity.EntityLivingBase
@@ -69,7 +70,7 @@ data class Inverted(val c1: Condition) : Condition {
 @Savable
 @NamedDynamic("t:r")
 data class Random(val chance: () -> Double) : Condition {
-    private val rng = Random(Random.nextLong())
+    private val rng = Random(RNG.nextLong())
 
     override fun invoke(caster: EntityLivingBase, target: Target) = rng.nextDouble() < chance()
 }

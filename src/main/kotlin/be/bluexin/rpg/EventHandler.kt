@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+@file:Suppress("unused")
+
 package be.bluexin.rpg
 
 import be.bluexin.rpg.events.CreatePlayerContainerEvent
@@ -28,8 +30,9 @@ import be.bluexin.rpg.inventory.RPGInventory
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.RenderEggItem
 import be.bluexin.rpg.pets.eggData
-import be.bluexin.rpg.skills.SkillRegistry
+import be.bluexin.rpg.skills.*
 import be.bluexin.rpg.stats.*
+import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
@@ -43,11 +46,13 @@ import net.minecraft.inventory.ContainerPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagByte
+import net.minecraft.util.ResourceLocation
 import net.minecraft.util.text.TextComponentTranslation
 import net.minecraftforge.client.event.ColorHandlerEvent
 import net.minecraftforge.client.event.GuiOpenEvent
 import net.minecraftforge.client.event.ModelRegistryEvent
 import net.minecraftforge.client.event.TextureStitchEvent
+import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.util.FakePlayer
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.event.ServerChatEvent
@@ -57,15 +62,18 @@ import net.minecraftforge.event.entity.player.CriticalHitEvent
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.event.entity.player.PlayerPickupXpEvent
 import net.minecraftforge.event.world.BlockEvent
+import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.eventhandler.Event
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
+@Mod.EventBusSubscriber(modid = BlueRPG.MODID)
 object CommonEventHandler {
 
     @SubscribeEvent
+    @JvmStatic
     fun playerTick(event: TickEvent.PlayerTickEvent) {
         if (event.phase != TickEvent.Phase.END) return
         event.player.world onServer {
@@ -84,6 +92,7 @@ object CommonEventHandler {
     }
 
     @SubscribeEvent
+    @JvmStatic
     fun changeGear(event: LivingEquipmentChangeEvent) {
         val p = event.entityLiving as? EntityPlayer ?: return
 
@@ -117,6 +126,7 @@ object CommonEventHandler {
     }
 
     @SubscribeEvent
+    @JvmStatic
     fun entityConstructing(event: EntityEvent.EntityConstructing) {
         val e = event.entity
         if (e is EntityPlayer) {
@@ -137,41 +147,76 @@ object CommonEventHandler {
     }
 
     @SubscribeEvent
+    @JvmStatic
     fun hitEntity(event: LivingAttackEvent) = DamageHandler(event)
 
     @SubscribeEvent
+    @JvmStatic
     fun livingHurt(event: LivingHurtEvent) = DamageHandler(event)
 
     @SubscribeEvent
+    @JvmStatic
     fun entityHit(event: LivingDamageEvent) = DamageHandler(event)
 
     @SubscribeEvent
+    @JvmStatic
     fun knockBack(event: LivingKnockBackEvent) {
         val a = event.attacker as? EntityPlayer ?: return
         event.strength += a[WeaponAttribute.KNOCKBACK].toFloat() * a.entityData.getFloat("bluerpg:lastweaponcd")
     }
 
     @SubscribeEvent
+    @JvmStatic
     fun vanillaCrit(event: CriticalHitEvent) {
         event.result = Event.Result.DENY
     }
 
     @SubscribeEvent
+    @JvmStatic
     fun pickupXp(event: PlayerPickupXpEvent) {
         event.entityPlayer.stats.level += event.orb.xpValue.toLong()
     }
 
     @SubscribeEvent
+    @JvmStatic
     fun newRegistry(event: RegistryEvent.NewRegistry) {
         SkillRegistry
     }
 
     @SubscribeEvent
+    @JvmStatic
+    fun registerSkills(event: RegistryEvent.Register<SkillData>) {
+        MinecraftForge.EVENT_BUS.unregister(this)
+
+        event.registry.registerAll(
+            SkillData(
+                ResourceLocation(BlueRPG.MODID, "skill_0"),
+                ResourceLocation(BlueRPG.MODID, "skill_0"),
+                "I don't really have a description yet",
+                mana = 10,
+                cooldown = 60,
+                levelTransformer = Placeholder(2),
+                processor = Processor(
+                    Use(10),
+                    Projectile(condition = RequireStatus(Status.AGGRESSIVE), color1 = 0x0055BB, color2 = 0x0085BB),
+                    null,
+                    Damage { caster, _ ->
+                        caster[PrimaryStat.INTELLIGENCE] * 2f *
+                                RNG.nextDouble(.95, 1.05) + RNG.nextInt(3)
+                    }
+                )
+            )
+        )
+    }
+
+    @SubscribeEvent
+    @JvmStatic
     fun playerInventoryCreated(event: CreatePlayerInventoryEvent) {
         if (event.player !is FakePlayer) event.inventoryPlayer = RPGInventory(event.player)
     }
 
     @SubscribeEvent
+    @JvmStatic
     fun playerContainerCreated(event: CreatePlayerContainerEvent) {
         if (event.player !is FakePlayer) event.container =
                 RPGContainer(event.player, event.container as ContainerPlayer).impl
@@ -194,6 +239,7 @@ object CommonEventHandler {
     private var limitIsWhitelist = false
 
     @SubscribeEvent
+    @JvmStatic
     fun playerInteractWithBlock(event: PlayerInteractEvent.RightClickBlock) {
         if (!event.entityPlayer.isCreative && (limitIsWhitelist xor (event.entityPlayer.world.getBlockState(event.pos).block in interactionLimitBlocks))) {
             event.useBlock = Event.Result.DENY
@@ -204,23 +250,28 @@ object CommonEventHandler {
     var protectFarmland = false
 
     @SubscribeEvent
+    @JvmStatic
     fun farmlandTrample(event: BlockEvent.FarmlandTrampleEvent) {
         if (protectFarmland) event.isCanceled = true
     }
 }
 
 @SideOnly(Side.CLIENT)
+@Mod.EventBusSubscriber(modid = BlueRPG.MODID, value = [Side.CLIENT])
 object ClientEventHandler {
 
     @SubscribeEvent
+    @JvmStatic
     fun hitEmpty(event: PlayerInteractEvent.LeftClickEmpty) = DamageHandler.handleRange(event.entityPlayer)
 
     @SubscribeEvent
+    @JvmStatic
     fun onTextureStitchEvent(event: TextureStitchEvent) {
         event.map.registerSprite(Resources.PARTICLE)
     }
 
     @SubscribeEvent
+    @JvmStatic
     fun registerItemHandlers(event: ColorHandlerEvent.Item) {
         event.itemColors.registerItemColorHandler(
             IItemColor { stack, tintIndex ->
@@ -231,6 +282,7 @@ object ClientEventHandler {
     }
 
     @SubscribeEvent
+    @JvmStatic
     fun registerModels(event: ModelRegistryEvent) {
         EggItem.tileEntityItemStackRenderer = object : TileEntityItemStackRenderer() {
             private val skinRenderer = RenderEggItem()
@@ -244,6 +296,7 @@ object ClientEventHandler {
     }
 
     @SubscribeEvent
+    @JvmStatic
     fun openGui(event: GuiOpenEvent) {
         val g = event.gui
         if (g is GuiInventory) event.gui =
@@ -258,10 +311,12 @@ object ClientEventHandler {
 }
 
 @SideOnly(Side.SERVER)
+@Mod.EventBusSubscriber(modid = BlueRPG.MODID, value = [Side.SERVER])
 object ServerEventHandler {
     private val regex = "[\\[(](i|item)[])]".toRegex()
 
     @SubscribeEvent
+    @JvmStatic
     fun messageSent(event: ServerChatEvent) {
         // [i],(i),[item] and (item)
         if (event.message.contains(regex)) {

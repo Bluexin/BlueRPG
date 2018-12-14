@@ -26,20 +26,13 @@ import net.minecraft.entity.EntityLivingBase
 interface Trigger {
     fun startUsing(entity: EntityLivingBase): Boolean
     fun stopUsing(entity: EntityLivingBase, time: Int): Boolean
-}
-
-@Savable
-@NamedDynamic("tr:i")
-class Instant : Trigger {
-    override fun startUsing(entity: EntityLivingBase) = true
-
-    override fun stopUsing(entity: EntityLivingBase, time: Int) = false
+    val castTimeTicks: Int
 }
 
 @Savable
 @NamedDynamic("tr:c")
-data class Channeled(val castTimeTicks: Int) : Trigger {
-    override fun startUsing(entity: EntityLivingBase) = false
+data class Use(override val castTimeTicks: Int) : Trigger {
+    override fun startUsing(entity: EntityLivingBase) = this.castTimeTicks == 0
 
-    override fun stopUsing(entity: EntityLivingBase, time: Int) = time >= castTimeTicks
+    override fun stopUsing(entity: EntityLivingBase, time: Int) = this.castTimeTicks != 0 && time >= this.castTimeTicks
 }

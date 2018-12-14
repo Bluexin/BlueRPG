@@ -45,8 +45,6 @@ import net.minecraft.util.math.Vec3d
 import java.lang.StrictMath.pow
 import java.util.*
 
-// TODO Some of these need to be ported to the new system to handle targeting both blocks & entities
-
 @Savable
 @NamedDynamic("t:t")
 interface Targeting {
@@ -57,8 +55,13 @@ interface Targeting {
 @Savable
 @NamedDynamic("t:p")
 data class Projectile(
-    override val range: Double = 15.0, val velocity: Float = 1f, val inaccuracy: Float = 1f,
-    val condition: Condition? = null, val precise: Boolean = false
+    override val range: Double = 15.0,
+    val velocity: Float = 1f,
+    val inaccuracy: Float = 1f,
+    val condition: Condition? = null,
+    val precise: Boolean = false,
+    val color1: Int = 0xFF0000,
+    val color2: Int = 0xFFB10B
 ) : Targeting {
     override operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>) {
         if (from is TargetWithWorld && from is TargetWithPosition) from.world.minecraftServer!!.runMainThread {
@@ -71,6 +74,8 @@ data class Projectile(
                 condition,
                 precise
             ).apply {
+                color1 = this@Projectile.color1
+                color2 = this@Projectile.color2
                 if (from is TargetWithLookVec) realShoot(from, 0.0f, velocity, inaccuracy)
             })
         }

@@ -27,6 +27,7 @@ import be.bluexin.rpg.items.DebugExpItem
 import be.bluexin.rpg.items.DebugSkillItem
 import be.bluexin.rpg.items.DebugStatsItem
 import be.bluexin.rpg.pets.*
+import be.bluexin.rpg.skills.SkillItem
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.registerDataSerializer
 import be.bluexin.saomclib.capabilities.CapabilitiesHandler
@@ -34,13 +35,14 @@ import com.teamwizardry.librarianlib.features.base.ModCreativeTab
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.attributes.BaseAttribute
 import net.minecraft.entity.ai.attributes.RangedAttribute
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
-import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.capabilities.CapabilityManager
 import net.minecraftforge.common.util.FakePlayer
 import net.minecraftforge.fml.client.registry.RenderingRegistry
@@ -70,10 +72,8 @@ open class CommonProxy {
             PetStorage.Storage
         ) { it is EntityPlayer && it !is FakePlayer }
 
-        MinecraftForge.EVENT_BUS.register(CommonEventHandler)
-
-        NameGenerator.preInit(event)
-        FormulaeConfiguration.preInit(event)
+        GlobalScope.launch { NameGenerator.preInit(event) }
+        GlobalScope.launch { FormulaeConfiguration.preInit(event) }
     }
 
     private fun vanillaHax() {
@@ -103,6 +103,7 @@ open class CommonProxy {
         ItemMeleeWeapon
         ItemRangedWeapon
         ItemOffHand
+        SkillItem
 
         BlockEditor
         ContainerEditor
@@ -187,8 +188,6 @@ class ClientProxy : CommonProxy() {
         super.preInit(event)
 
         registerEntityRenderers()
-
-        MinecraftForge.EVENT_BUS.register(ClientEventHandler)
     }
 
     private fun registerEntityRenderers() {
@@ -200,10 +199,4 @@ class ClientProxy : CommonProxy() {
 }
 
 @SideOnly(Side.SERVER)
-class ServerProxy : CommonProxy() {
-    override fun preInit(event: FMLPreInitializationEvent) {
-        super.preInit(event)
-
-        MinecraftForge.EVENT_BUS.register(ServerEventHandler)
-    }
-}
+class ServerProxy : CommonProxy()

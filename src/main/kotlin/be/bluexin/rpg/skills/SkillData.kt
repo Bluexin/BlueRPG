@@ -18,10 +18,8 @@
 package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.BlueRPG
+import net.minecraft.entity.EntityLivingBase
 import net.minecraft.util.ResourceLocation
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.event.RegistryEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.registries.IForgeRegistry
 import net.minecraftforge.registries.IForgeRegistryEntry
 import net.minecraftforge.registries.RegistryBuilder
@@ -34,27 +32,30 @@ object SkillRegistry {
         .allowModification()
         .create()
 
-    init {
-        MinecraftForge.EVENT_BUS.register(this)
-    }
+    operator fun get(rl: ResourceLocation) = registry.getValue(rl)
+    operator fun get(str: String) = this[ResourceLocation(BlueRPG.MODID, str)]
 
-    @SubscribeEvent
-    fun registerSkills(event: RegistryEvent.Register<SkillData>) {
-        MinecraftForge.EVENT_BUS.unregister(this)
-
-        // TODO: register skills
-    }
+    val allSkillStrings by lazy { registry.keys.map(ResourceLocation::getPath).toTypedArray() }
 }
 
 data class SkillData(
     val key: ResourceLocation,
-    val name: String,
     val icon: ResourceLocation,
     val description: String,
     val mana: Int,
     val cooldown: Int,
     val levelTransformer: Placeholder,
     val processor: Processor
-) : IForgeRegistryEntry.Impl<SkillData>()
+) : IForgeRegistryEntry.Impl<SkillData>() {
+    init {
+        this.registryName = key
+    }
+
+    fun startUsing(caster: EntityLivingBase): Boolean =
+        processor.startUsing(caster)
+
+    fun stopUsing(caster: EntityLivingBase, timeChanneled: Int) =
+        processor.stopUsing(caster, timeChanneled)
+}
 
 data class Placeholder(val t: Int)

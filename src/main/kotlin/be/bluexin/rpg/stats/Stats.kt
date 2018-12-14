@@ -27,6 +27,7 @@ import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.saving.SaveInPlace
+import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.attributes.IAttribute
 import net.minecraft.entity.ai.attributes.RangedAttribute
@@ -94,9 +95,11 @@ Modifier operations :
     - 2: multiply by (1.0 + x)
  */
 
-operator fun EntityPlayer.get(stat: Stat) =
-    if (stat.hasTransform) this.getEntityAttribute(stat.attribute).attributeValue / 100.0
-    else this.getEntityAttribute(stat.attribute).attributeValue
+operator fun EntityLivingBase.get(stat: Stat) = when {
+    this !is EntityPlayer -> 0.0
+    stat.hasTransform -> this.getEntityAttribute(stat.attribute).attributeValue / 100.0
+    else -> this.getEntityAttribute(stat.attribute).attributeValue
+}
 
 @NamedDynamic(resourceLocation = "b:s")
 @Savable

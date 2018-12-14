@@ -17,38 +17,35 @@
 
 package be.bluexin.rpg.skills
 
-import be.bluexin.rpg.util.Quadruple
+import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.saving.Savable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.filter
 import net.minecraft.entity.EntityLivingBase
-import java.util.*
 
 @Savable
-class Processor {
-    private var chain = LinkedList<Quadruple<Trigger, Targeting, Condition?, Effect>>()
+data class Processor(
+    val trigger: Trigger,
+    val targeting: Targeting,
+    val condition: Condition?,
+    val effect: Effect
+) {
 
-    fun stopUsing(caster: EntityLivingBase, timeChanneled: Int) {
-        chain.forEach { (tr, t, c, e) ->
-            if (tr.stopUsing(caster, timeChanneled)) {
-                val channel = Channel<Target>(capacity = Channel.UNLIMITED)
-                t(caster, caster.holder, channel)
-                e(caster, if (c == null) channel else channel.filter { c(caster, it) })
-            }
-        }
-    }
+    fun startUsing(caster: EntityLivingBase): Boolean =
+        if (trigger.startUsing(caster)) {
+            caster.world onServer { this.cast(caster) }
+            true
+        } else false
 
-    fun addElement(
-        trigger: Trigger,
-        targeting: Targeting,
-        condition: Condition?,
-        effect: Effect
-    ) {
-        @Suppress("UNCHECKED_CAST")
-        chain.add(Quadruple(trigger, targeting, condition, effect))
-    }
+    fun stopUsing(caster: EntityLivingBase, timeChanneled: Int) =
+        if (trigger.stopUsing(caster, timeChanneled)) {
+            caster.world onServer { this.cast(caster) }
+            true
+        } else false
 
-    override fun toString(): String {
-        return "Processor(chain=$chain)"
+    private fun cast(caster: EntityLivingBase) {
+        val channel = Channel<Target>(capacity = Channel.UNLIMITED)
+        targeting(caster, caster.holder, channel)
+        effect(caster, condition?.let { c -> channel.filter { c(caster, it) } } ?: channel)
     }
 }

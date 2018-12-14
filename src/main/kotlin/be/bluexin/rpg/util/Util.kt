@@ -29,11 +29,12 @@ import net.minecraft.util.IThreadListener
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.Event
 import kotlin.properties.ReadOnlyProperty
+import kotlin.random.Random
 import kotlin.reflect.KProperty
 
 fun fire(event: Event) = !MinecraftForge.EVENT_BUS.post(event)
 
-val RNG = XoRoRNG()
+val RNG = Random(Random.nextLong())
 
 /**
  * Generates a random number between [min] and [max] (both inclusive).
@@ -104,16 +105,4 @@ val <T> (() -> T).delegate: ReadOnlyProperty<Any, T>
 infix fun IntRange.offset(by: Int) = IntRange(this.start + by, this.endInclusive + by)
 infix fun LongRange.offset(by: Long) = LongRange(this.start + by, this.endInclusive + by)
 infix fun CharRange.offset(by: Int) = CharRange(this.start + by, this.endInclusive + by)
-
-data class Quadruple<out A, out B, out C, out D>(
-    val first: A,
-    val second: B,
-    val third: C,
-    val fourth: D
-) {
-
-    override fun toString(): String = "($first, $second, $third, $fourth)"
-}
-
-fun <T> Quadruple<T, T, T, T>.toList(): List<T> = listOf(first, second, third, fourth)
 

@@ -44,14 +44,14 @@ interface Effect {
 
 @Savable
 @NamedDynamic("e:d")
-data class Damage(val value: () -> Float) : Effect {
+data class Damage(val value: (caster: EntityLivingBase, target: TargetWithHealth) -> Double) : Effect {
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<Target>) {
         GlobalScope.launch {
             for (e in targets.filter { it is TargetWithHealth && it is TargetWithWorld }) {
                 e as TargetWithWorld
                 e as TargetWithHealth
                 e.world.minecraftServer?.runMainThread {
-                    val value = this@Damage.value()
+                    val value = this@Damage.value(caster, e).toFloat()
                     if (value >= 0) e.attack(
                         DamageHandler.RpgDamageSource(EntityDamageSource("skill.test", caster)),
                         value
@@ -65,14 +65,14 @@ data class Damage(val value: () -> Float) : Effect {
 
 @Savable
 @NamedDynamic("e:b") // TODO: (de)serialization of PotionEffects
-data class Buff(val effect: () -> PotionEffect) : Effect {
+data class Buff(val effect: (caster: EntityLivingBase, target: TargetWithEffects) -> PotionEffect) : Effect {
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<Target>) {
         GlobalScope.launch {
             for (e in targets.filter { it is TargetWithEffects && it is TargetWithWorld }) {
                 e as TargetWithWorld
                 e as TargetWithEffects
                 e.world.minecraftServer?.runMainThread {
-                    e.addPotionEffect(effect())
+                    e.addPotionEffect(effect(caster, e))
                 }
             }
         }
@@ -99,7 +99,10 @@ data class Skill(
             val result = Channel<Target>(capacity = Channel.UNLIMITED)
             effect(
                 caster,
-                if (condition == null) result else result.filter { condition(caster, it) })
+                if (condition == null) result else result.filter {
+                    @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
+                    condition!!(caster, it)
+                })
             val chs = LinkedList<Channel<Target>>()
             val toAdd = LinkedList<Channel<Target>>()
             var flag = true
