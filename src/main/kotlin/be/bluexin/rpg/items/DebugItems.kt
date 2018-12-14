@@ -134,7 +134,7 @@ object DebugSkillItem : ItemMod("debug_skill") {
                         Projectile(condition = RequireStatus(Status.AGGRESSIVE)),
                         null,
                         Damage { _, _ -> 3.0 }
-                    ).stopUsing(entityLiving, 1)
+                    ).startUsing(entityLiving)
                 }
                 1 -> {
                     Processor(
@@ -142,7 +142,7 @@ object DebugSkillItem : ItemMod("debug_skill") {
                         AoE(),
                         RequireStatus(Status.AGGRESSIVE),
                         Damage { _, _ -> 3.0 }
-                    ).stopUsing(entityLiving, 1)
+                    ).startUsing(entityLiving)
                 }
                 2 -> {
                     Processor(
@@ -157,7 +157,7 @@ object DebugSkillItem : ItemMod("debug_skill") {
                             null,
                             Damage { _, _ -> 2.0 }
                         )
-                    ).stopUsing(entityLiving, 1)
+                    ).startUsing(entityLiving)
                 }
                 3 -> {
                     Processor(
@@ -169,7 +169,7 @@ object DebugSkillItem : ItemMod("debug_skill") {
                         ),
                         null,
                         Damage { _, _ -> -3.0 }
-                    ).stopUsing(entityLiving, 1)
+                    ).startUsing(entityLiving)
                 }
                 4 -> {
                     Processor(
@@ -184,7 +184,7 @@ object DebugSkillItem : ItemMod("debug_skill") {
                             RequireStatus(Status.AGGRESSIVE),
                             Damage { _, _ -> 3_000.0 }
                         )
-                    ).stopUsing(entityLiving, 1)
+                    ).startUsing(entityLiving)
                 }
                 5 -> {
                     val p = Processor(

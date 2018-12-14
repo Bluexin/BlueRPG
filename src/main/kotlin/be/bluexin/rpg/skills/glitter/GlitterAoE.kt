@@ -21,6 +21,7 @@ import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.Resources
 import com.teamwizardry.librarianlib.features.animator.Easing
+import com.teamwizardry.librarianlib.features.kotlin.randomNormal
 import com.teamwizardry.librarianlib.features.kotlin.times
 import com.teamwizardry.librarianlib.features.math.interpolate.InterpFunction
 import com.teamwizardry.librarianlib.features.math.interpolate.StaticInterp
@@ -32,13 +33,10 @@ import com.teamwizardry.librarianlib.features.particle.ParticleSpawner
 import com.teamwizardry.librarianlib.features.particle.functions.InterpColorHSV
 import com.teamwizardry.librarianlib.features.particle.spawn
 import com.teamwizardry.librarianlib.features.particlesystem.BlendMode
-import com.teamwizardry.librarianlib.features.particlesystem.ParticlePath
 import com.teamwizardry.librarianlib.features.particlesystem.ParticleSystem
 import com.teamwizardry.librarianlib.features.particlesystem.ReadParticleBinding
-import com.teamwizardry.librarianlib.features.particlesystem.bindings.ConstantBinding
 import com.teamwizardry.librarianlib.features.particlesystem.bindings.InterpBinding
-import com.teamwizardry.librarianlib.features.particlesystem.bindings.PathBinding
-import com.teamwizardry.librarianlib.features.particlesystem.modules.SetValueUpdateModule
+import com.teamwizardry.librarianlib.features.particlesystem.modules.BasicPhysicsUpdateModule
 import com.teamwizardry.librarianlib.features.particlesystem.modules.SpriteRenderModule
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.Vec3d
@@ -92,15 +90,17 @@ object GlitterAoE {
         }
     }
 
-    fun test2(world: World, center: Vec3d, from: Color = Color(0xFFB10B), to: Color = Color(0xFF0000)) {
+    fun test2(world: World, origin: Vec3d, from: Color = Color(0xFFDD0B), to: Color = Color(0xFF0000)) {
         repeat(250) {
-            val d = rng.nextDouble() / 2 + 0.5
-            val target =
-                rotationMatrix(rng.nextDouble() * 2 * PI, rng.nextDouble() * 2 * PI, rng.nextDouble() * 2 * PI).rotate(
-                    Vec3d(d, d, d)
-                )
-
-            Glitter.spawn(rng.nextDouble() * 5 + 10, center, target, from, to, rng.nextDouble() / 4 + 0.25)
+            val spread = .6
+            Glitter.spawn(
+                rng.nextInt(10, 15).toDouble(),
+                origin,
+                randomNormal() * spread * rng.nextDouble(.2, 1.2),
+                from,
+                to,
+                rng.nextDouble() / 4 + 0.25
+            )
         }
     }
 }
@@ -119,42 +119,22 @@ class InterpEasing3d(val easing: Easing, private val targetRelative: Vec3d) : In
 
 object Glitter : ParticleSystem() {
     override fun configure() {
-        val origin = bind(3)
+        val size = bind(1)
         val position = bind(3)
         val previousPosition = bind(3)
-        val target = bind(3)
+        val velocity = bind(3)
         val fromColor = bind(4)
         val toColor = bind(4)
-        val size = bind(1)
 
-        val path = object : ParticlePath {
-
-            override val value = DoubleArray(3)
-
-            override fun computePosition(particle: DoubleArray, t: Double) {
-                target.load(particle)
-
-                repeat(3) {
-                    value[it] = target.contents[it] * Easing.easeOutBack(t.toFloat())
-                }
-            }
-
-            override fun computeTangent(particle: DoubleArray, t: Double) = computePosition(particle, t)
-        }
-        updateModules += SetValueUpdateModule(
-            previousPosition,
-            position
-        )
-        updateModules += SetValueUpdateModule(
+        updateModules += BasicPhysicsUpdateModule(
             position,
-            PathBinding(
-                lifetime = lifetime,
-                age = age,
-                timescale = ConstantBinding(1.0),
-                offset = ConstantBinding(0.0),
-                origin = origin,
-                path = path
-            )
+            previousPosition,
+            velocity,
+            gravity = -0.005,
+            enableCollision = true,
+            bounciness = 0.4f,
+            damping = 0.2f,
+            friction = 0.1f
         )
         renderModules += SpriteRenderModule(
             sprite = ResourceLocation(BlueRPG.MODID, "textures/particles/sparkle_blurred.png"),
@@ -163,21 +143,19 @@ object Glitter : ParticleSystem() {
             position = position,
             color = LifetimeColorInterpBinding(lifetime, age, ::InterpColorHSV, fromColor, toColor),
             size = size,
-            alphaMultiplier = InterpBinding(lifetime, age, interp = InterpFloatInOut(0.1f, 0.1f)),
-            depthMask = false
+            alphaMultiplier = InterpBinding(lifetime, age, interp = InterpFloatInOut(3, 10, 5))
         )
     }
 
-    fun spawn(lifetime: Double, position: Vec3d, target: Vec3d, from: Color, to: Color, size: Double) {
+    fun spawn(lifetime: Double, position: Vec3d, velocity: Vec3d, from: Color, to: Color, size: Double) {
         this.addParticle(
             lifetime,
-            position.x, position.y, position.z, // origin(3)
+            size, // size(1)
             position.x, position.y, position.z, // position(3)
             position.x, position.y, position.z, // previousPosition(3)
-            target.x, target.y, target.z, // target(3)
+            velocity.x, velocity.y, velocity.z, // velocity(3)
             from.red / 255.0, from.green / 255.0, from.blue / 255.0, from.alpha / 255.0, // fromColor(4)
-            to.red / 255.0, to.green / 255.0, to.blue / 255.0, to.alpha / 255.0, // toColor(4)
-            size // size(1)
+            to.red / 255.0, to.green / 255.0, to.blue / 255.0, to.alpha / 255.0 // toColor(4)
         )
     }
 }
@@ -192,8 +170,8 @@ class LifetimeColorInterpBinding(
 
     init {
         lifetime.require(1)
-        lifetime.require(1)
-        age.require(4)
+        age.require(1)
+        from.require(4)
         to.require(4)
     }
 
@@ -206,6 +184,7 @@ class LifetimeColorInterpBinding(
         to.load(particle)
 
         val fraction = (age.contents[0] / lifetime.contents[0]).toFloat()
+        BlueRPG.LOGGER.info("Fraction: $fraction (age = ${age.contents[0]}, lifetime = ${lifetime.contents[0]})")
         val fromColor = Color(
             from.contents[0].toFloat(),
             from.contents[1].toFloat(),
