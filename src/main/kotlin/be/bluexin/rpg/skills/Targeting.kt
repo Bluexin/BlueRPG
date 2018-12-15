@@ -19,6 +19,7 @@
 
 package be.bluexin.rpg.skills
 
+import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.PacketGlitter
 import be.bluexin.rpg.entities.EntitySkillProjectile
 import be.bluexin.rpg.util.offerOrSendAndClose
@@ -41,7 +42,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.Vec3d
+import java.awt.Color
 import java.lang.StrictMath.pow
 import java.util.*
 
@@ -61,7 +64,8 @@ data class Projectile(
     val condition: Condition? = null,
     val precise: Boolean = false,
     val color1: Int = 0xFF0000,
-    val color2: Int = 0xFFB10B
+    val color2: Int = 0xFFB10B,
+    val trailSystem: ResourceLocation = ResourceLocation(BlueRPG.MODID, "none")
 ) : Targeting {
     override operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>) {
         if (from is TargetWithWorld && from is TargetWithPosition) from.world.minecraftServer!!.runMainThread {
@@ -76,6 +80,7 @@ data class Projectile(
             ).apply {
                 color1 = this@Projectile.color1
                 color2 = this@Projectile.color2
+                trailSystemKey = this@Projectile.trailSystem
                 if (from is TargetWithLookVec) realShoot(from, 0.0f, velocity, inaccuracy)
             })
         }
@@ -157,7 +162,7 @@ data class AoE(
     override operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>) {
         if (from is TargetWithPosition && from is TargetWithWorld) {
             PacketHandler.NETWORK.sendToAllAround(
-                PacketGlitter(PacketGlitter.Type.AOE, from.pos),
+                PacketGlitter(PacketGlitter.Type.AOE, from.pos, Color(0xFFDD0B), Color(0xFF0000)),
                 from.world,
                 from.pos,
                 64.0

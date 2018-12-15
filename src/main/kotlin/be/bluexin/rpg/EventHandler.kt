@@ -198,7 +198,11 @@ object CommonEventHandler {
                 levelTransformer = Placeholder(2),
                 processor = Processor(
                     Use(10),
-                    Projectile(condition = RequireStatus(Status.AGGRESSIVE), color1 = 0x0055BB, color2 = 0x0085BB),
+                    Projectile(
+                        condition = RequireStatus(Status.AGGRESSIVE),
+                        color1 = 0x0055BB, color2 = 0x0085BB,
+                        trailSystem = ResourceLocation(BlueRPG.MODID, "ice")
+                    ),
                     null,
                     Damage { caster, _ ->
                         caster[PrimaryStat.INTELLIGENCE] * 2f *

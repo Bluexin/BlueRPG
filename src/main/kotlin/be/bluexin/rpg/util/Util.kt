@@ -20,16 +20,22 @@ package be.bluexin.rpg.util
 import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.WeaponType
 import com.google.common.collect.Multimap
+import com.teamwizardry.librarianlib.features.kotlin.createKey
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
+import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
+import net.minecraft.network.PacketBuffer
+import net.minecraft.network.datasync.DataParameter
 import net.minecraft.util.IThreadListener
+import net.minecraft.util.ResourceLocation
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.Event
 import kotlin.properties.ReadOnlyProperty
 import kotlin.random.Random
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 fun fire(event: Event) = !MinecraftForge.EVENT_BUS.post(event)
@@ -106,3 +112,9 @@ infix fun IntRange.offset(by: Int) = IntRange(this.start + by, this.endInclusive
 infix fun LongRange.offset(by: Long) = LongRange(this.start + by, this.endInclusive + by)
 infix fun CharRange.offset(by: Int) = CharRange(this.start + by, this.endInclusive + by)
 
+inline fun KClass<out Entity>.createResourceLocationKey(): DataParameter<ResourceLocation> =
+    createKey(writer = { packetBuffer, resourceLocationIn ->
+        packetBuffer.writeResourceLocation(
+            resourceLocationIn
+        )
+    }, reader = PacketBuffer::readResourceLocation)

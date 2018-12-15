@@ -126,7 +126,7 @@ task bundleJar(type: Jar) {
             def f = (File) ft.find { it.name == "MANIFEST.MF" }
             if (f == null || !f.text.contains("Maven-Artifact")) {
                 def nf = file("$buildDir/tmp/${it.file.name}.meta")
-                nf.text = "Maven-Artifact: $it.moduleVersion"
+                if (!nf.exists()) nf.text = "Maven-Artifact: $it.moduleVersion"
                 r += nf
             }
             r

@@ -17,9 +17,14 @@
 
 package be.bluexin.rpg.entities
 
+import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.skills.*
 import be.bluexin.rpg.skills.Target
+import be.bluexin.rpg.skills.glitter.ProjectileCore
+import be.bluexin.rpg.skills.glitter.ProjectileCore.renderParticles
+import be.bluexin.rpg.skills.glitter.TrailSystem
 import be.bluexin.rpg.util.Resources
+import be.bluexin.rpg.util.createResourceLocationKey
 import be.bluexin.saomclib.onClient
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.base.entity.ArrowEntityMod
@@ -44,6 +49,7 @@ import net.minecraft.entity.IProjectile
 import net.minecraft.entity.projectile.EntityArrow
 import net.minecraft.item.ItemStack
 import net.minecraft.util.DamageSource
+import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
@@ -307,6 +313,8 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
 
         private val COLOR_1 = EntitySkillProjectile::class.createIntKey()
         private val COLOR_2 = EntitySkillProjectile::class.createIntKey()
+
+        private val TRAIL_SYSTEM = EntitySkillProjectile::class.createResourceLocationKey()
     }
 
     @Save
@@ -334,12 +342,16 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
     var range by managedValue(RANGE)
     var color1 by managedValue(COLOR_1)
     var color2 by managedValue(COLOR_2)
+    var trailSystemKey by managedValue(TRAIL_SYSTEM)
+    val trailSystem by lazy { TrailSystem[trailSystemKey] }
 
     private var result: SendChannel<Target>? = null
 
     private var filter: Condition? = null
 
     private var precise = false
+
+    private val spawnedParticles = LinkedList<DoubleArray>()
 
     @Suppress("unused")
     constructor(world: World) : super(world)
@@ -366,13 +378,14 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
         this.getDataManager().register(RANGE, 15f)
         this.getDataManager().register(COLOR_1, 0xFF0000)
         this.getDataManager().register(COLOR_2, 0xFFB10B)
+        this.getDataManager().register(TRAIL_SYSTEM, ResourceLocation(BlueRPG.MODID, "ice"))
     }
 
     override fun onUpdate() {
         super.onUpdate()
 
         world onClient {
-            renderParticles()
+            renderParticles(spawnedParticles)
             if (initialX == 0.0) {
                 initialX = super.posX
                 initialY = super.posY
@@ -431,97 +444,15 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
         }
     }
 
-    @SideOnly(Side.CLIENT)
-    private fun renderParticles() {
-//        val from = Color(0x0055BB)
-//        val to = Color(0x00BB55)
-        val from = Color(color1)
-        val to = Color(color2)
-        val center = positionVector + vec(0, height / 2, 0)
-
-        val trail = ParticleBuilder(10).apply {
-            setAlphaFunction(object : InterpFunction<Float> {
-                override fun get(i: Float): Float {
-                    val a = 0.05f
-                    val b = 0.6f
-
-                    var alpha = if (i < 1 && i > a) 1f else 0f
-
-                    if (i <= a * 2) alpha = (i - a) / a
-                    else if (i >= 1 - b) {
-                        alpha = 1 - (i - (1 - b)) / b
-                    }
-                    return if (alpha < 0) 0f else alpha
-                }
-            })
-            setRender(Resources.PARTICLE)
-            setCollision(true)
-            canBounce = true
-            setColorFunction(InterpColorHSV(from, to))
-        }
-
-        trail.setMotion(Vec3d.ZERO)
-        trail.setAcceleration(Vec3d.ZERO)
-        ParticleSpawner.spawn(trail, world, StaticInterp(center), 6, 1) { _, b ->
-            b.setScaleFunction(object : InterpFunction<Float> {
-                private val start = rand.nextFloat() / 2 + 0.3f
-                private val finish = 0f
-
-                override operator fun get(i: Float): Float {
-                    return Math.abs(start * (1 - i) + finish * i)
-                }
-            })
-            b.setPositionOffset(b.positionOffset - motionVec / 6)
-            b.setLifetime(rand.nextInt(20) + 20)
-            b.addMotion(
-                Vec3d(
-                    rand.nextDouble() * 0.02 - 0.01,
-                    rand.nextDouble() * 0.02 - 0.01,
-                    rand.nextDouble() * 0.02 - 0.01
-                )
-            )
-            b.addAcceleration(
-                Vec3d(
-                    rand.nextDouble() * 0.001 - 0.0005,
-                    rand.nextDouble() * 0.001 - 0.0005,
-                    rand.nextDouble() * 0.001 - 0.0005
-                )
-            )
-        }
-
-        val core = ParticleBuilder(10).apply {
-            setAlphaFunction(InterpFloatInOut(0.3f, 0.6f))
-            setRender(Resources.PARTICLE)
-            setCollision(false)
-            canBounce = false
-            setColorFunction(InterpColorHSV(from, to))
-            setAcceleration(Vec3d.ZERO)
-        }
-
-        core.setMotion(motionVec)
-        core.setTick(object : TickFunction {
-            override fun tick(particle: ParticleBase) {
-                if (isDead) particle.setExpired()
-            }
-        })
-        ParticleSpawner.spawn(core, world, StaticInterp(center), 6, 1) { _, build ->
-            build.setLifetime(rand.nextInt(15) + 5)
-            build.setScaleFunction(object : InterpFunction<Float> {
-                private val start = rand.nextFloat() / 2 + 1.5f
-                private val finish = 0f
-
-                override operator fun get(i: Float): Float {
-                    return Math.abs(start * (1 - i) + finish * i)
-                }
-            })
-        }
-    }
-
     override fun getGravityVelocity(): Float {
         return 0.001f
     }
 
     override fun setDead() {
+        if (isDead) return
+        world onClient {
+            ProjectileCore.killParticles(this.spawnedParticles)
+        }
         result?.close()
         super.setDead()
     }

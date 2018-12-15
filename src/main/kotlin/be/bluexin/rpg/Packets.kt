@@ -20,17 +20,17 @@ package be.bluexin.rpg
 import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.pets.EggData
-import be.bluexin.rpg.skills.glitter.GlitterAoE
+import be.bluexin.rpg.skills.glitter.AoEBurst
 import be.bluexin.rpg.stats.*
 import com.teamwizardry.librarianlib.features.autoregister.PacketRegister
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
-import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.network.PacketBase
 import com.teamwizardry.librarianlib.features.saving.Save
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
 import net.minecraftforge.fml.relauncher.Side
+import java.awt.Color
 
 @PacketRegister(Side.SERVER)
 class PacketRaiseStat(stat: PrimaryStat, amount: Int) : PacketBase() {
@@ -123,7 +123,7 @@ class PacketAttack(entityID: Int) : PacketBase() {
 }
 
 @PacketRegister(Side.CLIENT)
-class PacketGlitter(type: Type, pos: Vec3d) : PacketBase() {
+class PacketGlitter(type: Type, pos: Vec3d, color1: Int, color2: Int) : PacketBase() {
     @Save
     var type = type
         internal set
@@ -132,8 +132,18 @@ class PacketGlitter(type: Type, pos: Vec3d) : PacketBase() {
     var pos = pos
         internal set
 
+    @Save
+    var color1 = color1
+        internal set
+
+    @Save
+    var color2 = color2
+        internal set
+
     @Suppress("unused")
-    internal constructor() : this(Type.AOE, Vec3d.ZERO)
+    internal constructor() : this(Type.AOE, Vec3d.ZERO, 0, 0)
+
+    constructor(type: Type, pos: Vec3d, color1: Color, color2: Color) : this(type, pos, color1.rgb, color2.rgb)
 
     enum class Type {
         AOE
@@ -141,7 +151,7 @@ class PacketGlitter(type: Type, pos: Vec3d) : PacketBase() {
 
     override fun handle(ctx: MessageContext) {
         when (type) {
-            Type.AOE -> GlitterAoE.test2(Minecraft().world, pos)
+            Type.AOE -> AoEBurst.burst(pos, Color(color1), Color(color2))
         }
     }
 }

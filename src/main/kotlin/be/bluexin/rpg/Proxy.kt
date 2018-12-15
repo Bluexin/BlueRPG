@@ -19,6 +19,7 @@
 
 package be.bluexin.rpg
 
+import be.bluexin.rpg.blocks.BlockCaster
 import be.bluexin.rpg.blocks.BlockEditor
 import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.entities.*
@@ -28,6 +29,7 @@ import be.bluexin.rpg.items.DebugSkillItem
 import be.bluexin.rpg.items.DebugStatsItem
 import be.bluexin.rpg.pets.*
 import be.bluexin.rpg.skills.SkillItem
+import be.bluexin.rpg.skills.glitter.TrailSystem
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.registerDataSerializer
 import be.bluexin.saomclib.capabilities.CapabilitiesHandler
@@ -107,6 +109,7 @@ open class CommonProxy {
 
         BlockEditor
         ContainerEditor
+        BlockCaster
 
         EggItem
     }
@@ -186,6 +189,9 @@ open class CommonProxy {
 class ClientProxy : CommonProxy() {
     override fun preInit(event: FMLPreInitializationEvent) {
         super.preInit(event)
+
+        TrailSystem.Companion.None
+        TrailSystem.Companion.Ice
 
         registerEntityRenderers()
     }
