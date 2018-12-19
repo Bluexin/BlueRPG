@@ -20,6 +20,7 @@ package be.bluexin.rpg.skills
 import be.bluexin.rpg.stats.Stat
 import be.bluexin.rpg.stats.get
 import be.bluexin.saomclib.capabilities.getPartyCapability
+import com.teamwizardry.librarianlib.features.kotlin.motionVec
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
@@ -53,9 +54,15 @@ open class LivingHolder<T : EntityLivingBase>(living: T) :
     override fun getPotionEffect(effect: Potion) = it.getActivePotionEffect(effect)
     override fun addPotionEffect(effect: PotionEffect) = it.addPotionEffect(effect)
     override val pos: Vec3d get() = it.getPositionEyes(1f)
+    override val feet: Vec3d get() = it.positionVector
     override val lookVec: Vec3d get() = it.lookVec
     override val world: World get() = it.world
-    override val movement: Vec3d get() = Vec3d(it.motionX, it.motionY, it.motionZ)
+    override var movement: Vec3d
+        get() = it.motionVec
+        set(value) {
+            it.motionVec = value
+            it.velocityChanged = true
+        }
     override val onGround: Boolean get() = it.onGround
     override fun attack(source: DamageSource, amount: Float) = it.attackEntityFrom(source, amount)
     override fun heal(amount: Float) = it.heal(amount)
@@ -70,12 +77,24 @@ open class LivingHolder<T : EntityLivingBase>(living: T) :
         get() = it.posY + it.eyeHeight - 0.10000000149011612
     override val z: Double
         get() = it.posZ
-    override val motionX: Double
+    override var motionX: Double
         get() = it.motionX
-    override val motionY: Double
+        set(value) {
+            it.motionX = value
+            it.velocityChanged = true
+        }
+    override var motionY: Double
         get() = it.motionY
-    override val motionZ: Double
+        set(value) {
+            it.motionY = value
+            it.velocityChanged = true
+        }
+    override var motionZ: Double
         get() = it.motionZ
+        set(value) {
+            it.motionZ = value
+            it.velocityChanged = true
+        }
 }
 
 class PlayerHolder(player: EntityPlayer) : LivingHolder<EntityPlayer>(player), TargetWithParty, TargetWithStats {

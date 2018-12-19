@@ -190,8 +190,7 @@ class ClientProxy : CommonProxy() {
     override fun preInit(event: FMLPreInitializationEvent) {
         super.preInit(event)
 
-        TrailSystem.Companion.None
-        TrailSystem.Companion.Ice
+        TrailSystem.load()
 
         registerEntityRenderers()
     }

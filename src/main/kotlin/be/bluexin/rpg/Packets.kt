@@ -20,7 +20,8 @@ package be.bluexin.rpg
 import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.pets.EggData
-import be.bluexin.rpg.skills.glitter.AoEBurst
+import be.bluexin.rpg.skills.glitter.AoE
+import be.bluexin.rpg.skills.glitter.Heal
 import be.bluexin.rpg.stats.*
 import com.teamwizardry.librarianlib.features.autoregister.PacketRegister
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
@@ -123,7 +124,7 @@ class PacketAttack(entityID: Int) : PacketBase() {
 }
 
 @PacketRegister(Side.CLIENT)
-class PacketGlitter(type: Type, pos: Vec3d, color1: Int, color2: Int) : PacketBase() {
+class PacketGlitter(type: Type, pos: Vec3d, color1: Int, color2: Int, spread: Double) : PacketBase() {
     @Save
     var type = type
         internal set
@@ -140,18 +141,30 @@ class PacketGlitter(type: Type, pos: Vec3d, color1: Int, color2: Int) : PacketBa
     var color2 = color2
         internal set
 
-    @Suppress("unused")
-    internal constructor() : this(Type.AOE, Vec3d.ZERO, 0, 0)
+    @Save
+    var spread = spread
+        internal set
 
-    constructor(type: Type, pos: Vec3d, color1: Color, color2: Color) : this(type, pos, color1.rgb, color2.rgb)
+    @Suppress("unused")
+    internal constructor() : this(Type.AOE, Vec3d.ZERO, 0, 0, .0)
+
+    constructor(type: Type, pos: Vec3d, color1: Color, color2: Color, spread: Double) : this(
+        type,
+        pos,
+        color1.rgb,
+        color2.rgb,
+        spread
+    )
 
     enum class Type {
-        AOE
+        AOE,
+        HEAL
     }
 
     override fun handle(ctx: MessageContext) {
         when (type) {
-            Type.AOE -> AoEBurst.burst(pos, Color(color1), Color(color2))
+            Type.AOE -> AoE.burst(pos, Color(color1), Color(color2), spread)
+            Type.HEAL -> Heal.burst(pos, Color(color1), Color(color2), spread)
         }
     }
 }

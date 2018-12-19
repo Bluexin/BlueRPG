@@ -22,6 +22,7 @@ import be.bluexin.rpg.entities.EntitySkillProjectile
 import be.bluexin.rpg.skills.glitter.ext.EasingInOut
 import be.bluexin.rpg.skills.glitter.ext.LifetimeColorInterpBinding
 import be.bluexin.rpg.util.RNG
+import be.bluexin.rpg.util.randomNormal
 import com.teamwizardry.librarianlib.features.animator.Easing
 import com.teamwizardry.librarianlib.features.helpers.vec
 import com.teamwizardry.librarianlib.features.kotlin.*

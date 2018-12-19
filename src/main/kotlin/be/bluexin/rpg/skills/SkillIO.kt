@@ -19,6 +19,7 @@ package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.stats.Stat
 import be.bluexin.saomclib.party.IParty
+import com.teamwizardry.librarianlib.features.helpers.vec
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.ItemStack
 import net.minecraft.potion.Potion
@@ -66,6 +67,7 @@ interface TargetWithEffects : Target {
 
 interface TargetWithPosition : Target {
     val pos: Vec3d
+    val feet: Vec3d get() = pos
 
     val x get() = pos.x
     val y get() = pos.y
@@ -83,11 +85,23 @@ interface TargetWithWorld : Target {
 }
 
 interface TargetWithMovement : Target {
-    val movement: Vec3d
+    var movement: Vec3d
 
-    val motionX get() = movement.x
-    val motionY get() = movement.y
-    val motionZ get() = movement.z
+    var motionX
+        get() = movement.x
+        set(value) {
+            movement = vec(value, motionY, motionZ)
+        }
+    var motionY
+        get() = movement.y
+        set(value) {
+            movement = vec(motionX, value, motionZ)
+        }
+    var motionZ
+        get() = movement.z
+        set(value) {
+            movement = vec(motionX, motionY, value)
+        }
 }
 
 interface TargetWithCollision : Target {

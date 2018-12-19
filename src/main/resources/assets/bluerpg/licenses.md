@@ -24,6 +24,7 @@
 ### [textures/skills](textures/skills)
 
  * [beveled_star.png](textures/skills/beveled_star.png)
+ * [burning_embers.png](textures/skills/burning_embers.png)
  * [missingno.png](textures/skills/missingno.png)
  
 **Lorc** trough [game-icons](https://game-icons.net), *CC BY 3.0*

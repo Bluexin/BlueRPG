@@ -21,9 +21,10 @@ import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.skills.glitter.ext.EasingInOut
 import be.bluexin.rpg.skills.glitter.ext.ScaledBinding
 import be.bluexin.rpg.util.RNG
+import be.bluexin.rpg.util.randomNormal
 import com.teamwizardry.librarianlib.core.client.ClientTickHandler
 import com.teamwizardry.librarianlib.features.helpers.vec
-import com.teamwizardry.librarianlib.features.kotlin.randomNormal
+import com.teamwizardry.librarianlib.features.particle.functions.InterpColorHSV
 import com.teamwizardry.librarianlib.features.particlesystem.BlendMode
 import com.teamwizardry.librarianlib.features.particlesystem.ParticleSystem
 import com.teamwizardry.librarianlib.features.particlesystem.ParticleUpdateModule
@@ -46,6 +47,7 @@ interface TrailSystem {
     fun spawn(lifetime: Int, position: Vec3d, velocity: Vec3d, color1: Color, color2: Color, size: Double)
 
     companion object {
+
         private val systems = mutableMapOf<ResourceLocation, TrailSystem>()
 
         operator fun get(rl: ResourceLocation) =
@@ -53,6 +55,12 @@ interface TrailSystem {
 
         operator fun set(rl: ResourceLocation, system: TrailSystem) {
             systems[rl] = system
+        }
+
+        fun load() {
+            None
+            Ice
+            Embers
         }
 
         object None : TrailSystem {
@@ -184,7 +192,7 @@ interface TrailSystem {
                 size: Double
             ) {
                 val rotation = randomNormal()
-                val color = if (rng.nextBoolean()) color1 else color2
+                val color = InterpColorHSV(color1, color2).get(rng.nextFloat())
                 this.addParticle(
                     lifetime.toDouble(),
                     size, // size(1)
@@ -195,6 +203,80 @@ interface TrailSystem {
                     rotation.x, rotation.y, rotation.z, // previousRotation
                     rng.nextDouble(.1, .2), // yawRotate
                     rng.nextDouble(.1, .2), // pitchRotate
+                    color.red / 255.0, color.green / 255.0, color.blue / 255.0, color.alpha / 255.0 // color(4)
+                )
+            }
+        }
+
+        object Embers : ParticleSystem(), TrailSystem {
+
+            init {
+                TrailSystem[ResourceLocation(BlueRPG.MODID, "embers")] = this
+            }
+
+            private val rng = Random(RNG.nextLong())
+
+            override fun configure() {
+                val size = bind(1)
+                val position = bind(3)
+                val previousPosition = bind(3)
+                val velocity = bind(3)
+                val color = bind(4)
+
+                updateModules += BasicPhysicsUpdateModule(
+                    position,
+                    previousPosition,
+                    velocity,
+                    gravity = .0,
+                    enableCollision = false,
+                    damping = .01f
+                )
+                updateModules += AccelerationUpdateModule(
+                    velocity,
+                    CallbackBinding(3) { _, contents ->
+                        repeat(3) {
+                            contents[it] = rng.nextDouble(-.01, .01)
+                        }
+                    }
+                )
+                renderModules += SpriteRenderModule(
+                    sprite = ResourceLocation(BlueRPG.MODID, "textures/particles/sparkle_blurred.png"),
+                    blendMode = BlendMode.ADDITIVE,
+                    previousPosition = previousPosition,
+                    position = position,
+                    color = color,
+                    size = EaseBinding(
+                        lifetime, age,
+                        target = size,
+                        origin = ConstantBinding(.0),
+                        easing = EasingInOut(1, 7, 6),
+                        bindingSize = 1
+                    ),
+                    alphaMultiplier = EaseBinding(
+                        lifetime,
+                        age,
+                        easing = EasingInOut(3, 10, 5),
+                        bindingSize = 1
+                    ),
+                    depthMask = false
+                )
+            }
+
+            override fun spawn(
+                lifetime: Int,
+                position: Vec3d,
+                velocity: Vec3d,
+                color1: Color,
+                color2: Color,
+                size: Double
+            ) {
+                val color = InterpColorHSV(color1, color2).get(rng.nextFloat())
+                this.addParticle(
+                    lifetime.toDouble(),
+                    size, // size(1)
+                    position.x, position.y, position.z, // position(3)
+                    position.x, position.y, position.z, // previousPosition(3)
+                    velocity.x, velocity.y, velocity.z, // velocity(3)
                     color.red / 255.0, color.green / 255.0, color.blue / 255.0, color.alpha / 255.0 // color(4)
                 )
             }

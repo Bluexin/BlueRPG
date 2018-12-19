@@ -19,6 +19,7 @@ package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.DamageHandler
 import be.bluexin.rpg.util.runMainThread
+import com.teamwizardry.librarianlib.features.kotlin.plus
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable
 import kotlinx.coroutines.GlobalScope
@@ -31,6 +32,7 @@ import kotlinx.coroutines.selects.select
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.potion.PotionEffect
 import net.minecraft.util.EntityDamageSource
+import net.minecraft.util.math.Vec3d
 import java.util.*
 import kotlin.math.abs
 
@@ -73,6 +75,22 @@ data class Buff(val effect: (caster: EntityLivingBase, target: TargetWithEffects
                 e as TargetWithEffects
                 e.world.minecraftServer?.runMainThread {
                     e.addPotionEffect(effect(caster, e))
+                }
+            }
+        }
+    }
+}
+
+@Savable
+@NamedDynamic("e:v")
+data class Velocity(val additionalVelocity: (caster: EntityLivingBase, target: TargetWithMovement) -> Vec3d) : Effect {
+    override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<Target>) {
+        GlobalScope.launch {
+            for (e in targets.filter { it is TargetWithMovement && it is TargetWithWorld }) {
+                e as TargetWithWorld
+                e as TargetWithMovement
+                e.world.minecraftServer?.runMainThread {
+                    e.movement += additionalVelocity(caster, e)
                 }
             }
         }

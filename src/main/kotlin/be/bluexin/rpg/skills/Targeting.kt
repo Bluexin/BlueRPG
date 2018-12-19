@@ -44,7 +44,6 @@ import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.Vec3d
-import java.awt.Color
 import java.lang.StrictMath.pow
 import java.util.*
 
@@ -63,8 +62,8 @@ data class Projectile(
     val inaccuracy: Float = 1f,
     val condition: Condition? = null,
     val precise: Boolean = false,
-    val color1: Int = 0xFF0000,
-    val color2: Int = 0xFFB10B,
+    val color1: Int = 0,
+    val color2: Int = 0,
     val trailSystem: ResourceLocation = ResourceLocation(BlueRPG.MODID, "none")
 ) : Targeting {
     override operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>) {
@@ -89,8 +88,18 @@ data class Projectile(
 
 @Savable
 @NamedDynamic("t:s")
-object Self : Targeting {
+data class Self(
+    val color1: Int = 0,
+    val color2: Int = 0,
+    val glitter: PacketGlitter.Type = PacketGlitter.Type.AOE
+) : Targeting {
     override operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>) {
+        if (from is TargetWithPosition && from is TargetWithWorld) PacketHandler.NETWORK.sendToAllAround(
+            PacketGlitter(glitter, from.feet, color1, color2, .4),
+            from.world,
+            from.pos,
+            64.0
+        )
         result.offerOrSendAndClose(from)
     }
 
@@ -157,12 +166,14 @@ data class Channelling(
 @Savable
 @NamedDynamic("t:a")
 data class AoE(
-    override val range: Double = 3.0, val shape: Shape = Shape.CIRCLE
+    override val range: Double = 3.0, val shape: Shape = Shape.CIRCLE,
+    val color1: Int = 0,
+    val color2: Int = 0
 ) : Targeting {
     override operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>) {
         if (from is TargetWithPosition && from is TargetWithWorld) {
             PacketHandler.NETWORK.sendToAllAround(
-                PacketGlitter(PacketGlitter.Type.AOE, from.pos, Color(0xFFDD0B), Color(0xFF0000)),
+                PacketGlitter(PacketGlitter.Type.AOE, from.pos, color1, color2, range / 5),
                 from.world,
                 from.pos,
                 64.0

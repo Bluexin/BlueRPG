@@ -20,6 +20,7 @@ package be.bluexin.rpg.util
 import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.WeaponType
 import com.google.common.collect.Multimap
+import com.teamwizardry.librarianlib.features.helpers.vec
 import com.teamwizardry.librarianlib.features.kotlin.createKey
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import kotlinx.coroutines.GlobalScope
@@ -31,6 +32,8 @@ import net.minecraft.network.PacketBuffer
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.util.IThreadListener
 import net.minecraft.util.ResourceLocation
+import net.minecraft.util.math.MathHelper
+import net.minecraft.util.math.Vec3d
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.Event
 import kotlin.properties.ReadOnlyProperty
@@ -118,3 +121,22 @@ inline fun KClass<out Entity>.createResourceLocationKey(): DataParameter<Resourc
             resourceLocationIn
         )
     }, reader = PacketBuffer::readResourceLocation)
+
+private const val fpi = Math.PI.toFloat()
+
+fun randomNormal(pitchDistribution: Float): Vec3d {
+    val yaw = RNG.nextFloat() * 2 * fpi
+    val ppi = fpi * pitchDistribution
+    val pitch = RNG.nextFloat() * ppi - ppi / 2
+    val multiplier = MathHelper.cos(pitch)
+
+    return vec(MathHelper.sin(yaw) * multiplier, MathHelper.cos(yaw) * multiplier, MathHelper.sin(pitch))
+}
+
+fun randomNormal(): Vec3d {
+    val yaw = RNG.nextFloat() * 2 * fpi
+    val pitch = RNG.nextFloat() * fpi - fpi / 2
+    val multiplier = MathHelper.cos(pitch)
+
+    return vec(MathHelper.sin(yaw) * multiplier, MathHelper.cos(yaw) * multiplier, MathHelper.sin(pitch))
+}

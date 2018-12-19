@@ -165,7 +165,7 @@ object DebugSkillItem : ItemMod("debug_skill") {
                         Channelling(
                             delayMillis = 1000,
                             procs = 10,
-                            targeting = Self
+                            targeting = Self()
                         ),
                         null,
                         Damage { _, _ -> -3.0 }
@@ -192,7 +192,7 @@ object DebugSkillItem : ItemMod("debug_skill") {
                         Channelling(
                             delayMillis = 1000,
                             procs = 10,
-                            targeting = Self
+                            targeting = Self()
                         ),
                         null,
                         Damage { _, _ -> -3.0 }

@@ -47,6 +47,7 @@ import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.ResourceLocation
+import net.minecraft.util.math.Vec3d
 import net.minecraft.util.text.TextComponentTranslation
 import net.minecraftforge.client.event.ColorHandlerEvent
 import net.minecraftforge.client.event.GuiOpenEvent
@@ -201,12 +202,83 @@ object CommonEventHandler {
                     Projectile(
                         condition = RequireStatus(Status.AGGRESSIVE),
                         color1 = 0x0055BB, color2 = 0x0085BB,
-                        trailSystem = ResourceLocation(BlueRPG.MODID, "ice")
+                        trailSystem = ResourceLocation(BlueRPG.MODID, "ice"),
+                        velocity = 1.5f
                     ),
                     null,
                     Damage { caster, _ ->
                         caster[PrimaryStat.INTELLIGENCE] * 2f *
                                 RNG.nextDouble(.95, 1.05) + RNG.nextInt(3)
+                    }
+                )
+            ),
+            SkillData(
+                ResourceLocation(BlueRPG.MODID, "skill_1"),
+                ResourceLocation(BlueRPG.MODID, "skill_1"),
+                "I don't really have a description yet",
+                mana = 10,
+                cooldown = 60,
+                levelTransformer = Placeholder(2),
+                processor = Processor(
+                    Use(20),
+                    Projectile(
+                        velocity = .8f,
+                        inaccuracy = 2.5f,
+                        color1 = 0xFFDD0B, color2 = 0xFF0000,
+                        trailSystem = ResourceLocation(BlueRPG.MODID, "embers"),
+                        precise = true
+                    ),
+                    null,
+                    Skill(
+                        AoE(color1 = 0xFFDD0B, color2 = 0xFF0000),
+                        RequireStatus(Status.AGGRESSIVE),
+                        Damage { caster, _ ->
+                            caster[PrimaryStat.STRENGTH] * 2f *
+                                    RNG.nextDouble(1.05, 1.15) + RNG.nextInt(6)
+                        }
+                    )
+
+                )
+            ),
+            SkillData(
+                ResourceLocation(BlueRPG.MODID, "skill_2"),
+                ResourceLocation(BlueRPG.MODID, "skill_2"),
+                "I don't really have a description yet",
+                mana = 10,
+                cooldown = 60,
+                levelTransformer = Placeholder(2),
+                processor = Processor(
+                    Use(10),
+                    Self(
+                        color1 = 0x2CB000,
+                        color2 = 0x8EE807,
+                        glitter = PacketGlitter.Type.HEAL
+                    ),
+                    null,
+                    Damage { caster, _ ->
+                        -(caster[PrimaryStat.WISDOM] * 2f *
+                                RNG.nextDouble(.95, 1.05) + RNG.nextInt(3))
+                    }
+                )
+            ),
+            SkillData(
+                ResourceLocation(BlueRPG.MODID, "skill_3"),
+                ResourceLocation(BlueRPG.MODID, "skill_3"),
+                "I don't really have a description yet",
+                mana = 10,
+                cooldown = 60,
+                levelTransformer = Placeholder(2),
+                processor = Processor(
+                    Use(15),
+                    Self(
+                        color1 = 0xA4D9F7,
+                        color2 = 0xCADDE8,
+                        glitter = PacketGlitter.Type.AOE
+                    ),
+                    null,
+                    Velocity { _, target ->
+                        if (target is TargetWithLookVec) target.lookVec
+                        else Vec3d.ZERO
                     }
                 )
             )

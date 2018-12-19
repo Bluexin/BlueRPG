@@ -336,7 +336,7 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
     var caster_uuid: UUID?
         get() = caster?.uuid
         set(value) {
-            caster = if (value != null) PlayerHolder(world.getPlayerEntityByUUID(value)!!) else null
+            caster = if (value != null) world.getPlayerEntityByUUID(value)?.let { PlayerHolder(it) } else null
         }
 
     var range by managedValue(RANGE)
