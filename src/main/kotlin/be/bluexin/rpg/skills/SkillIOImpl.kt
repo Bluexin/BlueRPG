@@ -28,6 +28,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.potion.Potion
 import net.minecraft.potion.PotionEffect
 import net.minecraft.util.DamageSource
+import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
@@ -50,7 +51,7 @@ open class DefaultHolder<T : Any>(override val it: T) : TargetWithStatus {
 
 open class LivingHolder<T : EntityLivingBase>(living: T) :
     DefaultHolder<T>(living), TargetWithEffects, TargetWithLookVec, TargetWithPosition, TargetWithWorld,
-    TargetWithMovement, TargetWithCollision, TargetWithHealth, TargetWithUuid, TargetWithGear {
+    TargetWithMovement, TargetWithCollision, TargetWithHealth, TargetWithUuid, TargetWithGear, TargetWithBoundingBox {
     override fun getPotionEffect(effect: Potion) = it.getActivePotionEffect(effect)
     override fun addPotionEffect(effect: PotionEffect) = it.addPotionEffect(effect)
     override val pos: Vec3d get() = it.getPositionEyes(1f)
@@ -67,6 +68,7 @@ open class LivingHolder<T : EntityLivingBase>(living: T) :
     override fun attack(source: DamageSource, amount: Float) = it.attackEntityFrom(source, amount)
     override fun heal(amount: Float) = it.heal(amount)
     override val uuid: UUID get() = it.persistentID
+    override val boundingBox: AxisAlignedBB get() = it.entityBoundingBox
 
     override fun getItemStackFromSlot(slot: EntityEquipmentSlot): ItemStack = it.getItemStackFromSlot(slot)
 

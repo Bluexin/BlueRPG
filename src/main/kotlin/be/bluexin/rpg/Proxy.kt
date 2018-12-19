@@ -112,6 +112,8 @@ open class CommonProxy {
         BlockCaster
 
         EggItem
+
+        EntitySkillProjectile.Companion // This is needed for it's custom serializer
     }
 
     private fun registerEntities() {

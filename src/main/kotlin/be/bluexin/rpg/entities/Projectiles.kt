@@ -308,7 +308,7 @@ class EntityWandProjectile : ThrowableEntityMod, RpgProjectile {
 @Savable
 class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
 
-    private companion object {
+    internal companion object {
         private val RANGE = EntitySkillProjectile::class.createFloatKey()
 
         private val COLOR_1 = EntitySkillProjectile::class.createIntKey()

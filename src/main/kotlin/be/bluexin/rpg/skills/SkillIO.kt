@@ -25,6 +25,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.potion.Potion
 import net.minecraft.potion.PotionEffect
 import net.minecraft.util.DamageSource
+import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import java.util.*
@@ -74,6 +75,10 @@ interface TargetWithPosition : Target {
     val z get() = pos.z
 
     fun getDistanceSq(other: TargetWithPosition) = pos.squareDistanceTo(other.pos)
+}
+
+interface TargetWithBoundingBox : Target {
+    val boundingBox: AxisAlignedBB
 }
 
 interface TargetWithLookVec : Target {

@@ -21,13 +21,16 @@ package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.PacketGlitter
+import be.bluexin.rpg.PacketLightning
 import be.bluexin.rpg.entities.EntitySkillProjectile
+import be.bluexin.rpg.util.getEntityLookedAt
 import be.bluexin.rpg.util.offerOrSendAndClose
 import be.bluexin.rpg.util.runMainThread
 import com.google.common.base.Predicate
 import com.teamwizardry.librarianlib.features.helpers.aabb
 import com.teamwizardry.librarianlib.features.kotlin.minus
 import com.teamwizardry.librarianlib.features.kotlin.plus
+import com.teamwizardry.librarianlib.features.kotlin.times
 import com.teamwizardry.librarianlib.features.network.PacketHandler
 import com.teamwizardry.librarianlib.features.network.sendToAllAround
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
@@ -113,10 +116,18 @@ data class Raycast(
     override val range: Double = 3.0
 ) : Targeting {
     override operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>) {
-        if (from is LivingHolder<*>) GlobalScope.launch {
-            val e = RaycastUtils.getEntityLookedAt(from.it, range)
-            if (e is EntityLivingBase) result.send(e.holder)
-            result.close()
+        if (from is TargetWithPosition && from is TargetWithLookVec && from is TargetWithWorld) GlobalScope.launch {
+            val r = RaycastUtils.raycast(from.world, from.pos, from.lookVec, range)
+            val e = getEntityLookedAt(from, from.world, r, range)
+            val t: TargetWithPosition = if (e is EntityLivingBase) e.holder
+            else PosHolder(r?.hitVec ?: (from.pos + from.lookVec * range))
+            result.offerOrSendAndClose(t)
+            PacketHandler.NETWORK.sendToAllAround(
+                PacketLightning(from.pos, t.pos),
+                from.world,
+                from.pos,
+                64.0
+            )
         }
     }
 }
@@ -206,13 +217,15 @@ data class AoE(
 @NamedDynamic("t:i")
 data class Chain(
     override val range: Double = 3.0, val maxTargets: Int = 5, val delayMillis: Long = 500, val repeat: Boolean = false,
-    val condition: Condition? = null
+    val condition: Condition? = null, val includeFrom: Boolean = false
 ) : Targeting {
     override operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>) {
-        val w = Vec3d(range, range, range)
-        val dist = pow(range, 2.0)
         if (from is TargetWithPosition && from is TargetWithWorld) GlobalScope.launch {
+            val w = Vec3d(range, range, range)
+            val dist = pow(range, 2.0)
             val targets = LinkedHashSet<Target>()
+            targets.add(from)
+            if (includeFrom) result.send(from)
             var previousTarget: TargetWithPosition = from
             repeat(maxTargets) { c ->
                 if (c != 0) delay(delayMillis)
@@ -234,6 +247,12 @@ data class Chain(
                     val h = LivingHolder(e)
                     if (!repeat) targets += h
                     result.send(h)
+                    PacketHandler.NETWORK.sendToAllAround(
+                        PacketLightning(previousTarget.pos, h.pos),
+                        from.world,
+                        from.pos,
+                        64.0
+                    )
                     previousTarget = h
                 } else {
                     result.close()

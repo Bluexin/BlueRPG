@@ -21,6 +21,7 @@ import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.pets.EggData
 import be.bluexin.rpg.skills.glitter.AoE
+import be.bluexin.rpg.skills.glitter.BeamLightningSystem
 import be.bluexin.rpg.skills.glitter.Heal
 import be.bluexin.rpg.stats.*
 import com.teamwizardry.librarianlib.features.autoregister.PacketRegister
@@ -167,4 +168,20 @@ class PacketGlitter(type: Type, pos: Vec3d, color1: Int, color2: Int, spread: Do
             Type.HEAL -> Heal.burst(pos, Color(color1), Color(color2), spread)
         }
     }
+}
+
+@PacketRegister(Side.CLIENT)
+class PacketLightning(from: Vec3d, to: Vec3d) : PacketBase() {
+
+    @Save
+    var from = from
+        internal set
+    @Save
+    var to = to
+        internal set
+
+    @Suppress("unused")
+    internal constructor() : this(Vec3d.ZERO, Vec3d.ZERO)
+
+    override fun handle(ctx: MessageContext) = BeamLightningSystem.lightItUp(from, to)
 }

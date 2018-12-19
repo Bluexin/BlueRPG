@@ -19,7 +19,11 @@ package be.bluexin.rpg.util
 
 import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.WeaponType
+import be.bluexin.rpg.skills.TargetWithBoundingBox
+import be.bluexin.rpg.skills.TargetWithLookVec
+import be.bluexin.rpg.skills.TargetWithPosition
 import com.google.common.collect.Multimap
+import com.teamwizardry.librarianlib.features.helpers.aabb
 import com.teamwizardry.librarianlib.features.helpers.vec
 import com.teamwizardry.librarianlib.features.kotlin.createKey
 import com.teamwizardry.librarianlib.features.kotlin.localize
@@ -33,7 +37,9 @@ import net.minecraft.network.datasync.DataParameter
 import net.minecraft.util.IThreadListener
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.MathHelper
+import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.math.Vec3d
+import net.minecraft.world.World
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.Event
 import kotlin.properties.ReadOnlyProperty
@@ -139,4 +145,66 @@ fun randomNormal(): Vec3d {
     val multiplier = MathHelper.cos(pitch)
 
     return vec(MathHelper.sin(yaw) * multiplier, MathHelper.cos(yaw) * multiplier, MathHelper.sin(pitch))
+}
+
+fun getEntityLookedAt(
+    from: TargetWithPosition,
+    world: World,
+    pos: RayTraceResult?,
+    maxDistance: Double = 32.0
+): Entity? {
+    var foundEntity: Entity? = null
+    var distance = maxDistance
+    val positionVector = from.pos
+    if (pos != null) distance = pos.hitVec.distanceTo(positionVector)
+
+    val lookVector = if (from is TargetWithLookVec) from.lookVec else Vec3d.ZERO
+    val reachVector =
+        positionVector.add(lookVector.x * maxDistance, lookVector.y * maxDistance, lookVector.z * maxDistance)
+    var lookedEntity: Entity? = null
+    val entitiesInBoundingBox = world.getEntitiesWithinAABBExcludingEntity(
+        from.it as? Entity, ((from as? TargetWithBoundingBox)?.boundingBox ?: aabb(
+            Vec3d.ZERO, Vec3d.ZERO
+        )).expand(lookVector.x * maxDistance, lookVector.y * maxDistance, lookVector.z * maxDistance).expand(
+            1.0,
+            1.0,
+            1.0
+        )
+    )
+    var minDistance = distance
+    val var14 = entitiesInBoundingBox.iterator()
+
+    while (true) {
+        do {
+            do {
+                if (!var14.hasNext()) {
+                    return foundEntity
+                }
+                val next = var14.next()
+                if (next.canBeCollidedWith()) {
+                    val collisionBorderSize = next.collisionBorderSize
+                    val hitbox = next.entityBoundingBox.expand(
+                        collisionBorderSize.toDouble(),
+                        collisionBorderSize.toDouble(),
+                        collisionBorderSize.toDouble()
+                    )
+                    val interceptPosition = hitbox.calculateIntercept(positionVector, reachVector)
+                    if (hitbox.contains(positionVector)) {
+                        if (0.0 < minDistance || minDistance == 0.0) {
+                            lookedEntity = next
+                            minDistance = 0.0
+                        }
+                    } else if (interceptPosition != null) {
+                        val distanceToEntity = positionVector.distanceTo(interceptPosition.hitVec)
+                        if (distanceToEntity < minDistance || minDistance == 0.0) {
+                            lookedEntity = next
+                            minDistance = distanceToEntity
+                        }
+                    }
+                }
+            } while (lookedEntity == null)
+        } while (minDistance >= distance && pos != null)
+
+        foundEntity = lookedEntity
+    }
 }

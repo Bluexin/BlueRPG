@@ -206,7 +206,7 @@ object CommonEventHandler {
                         trailSystem = ResourceLocation(BlueRPG.MODID, "ice"),
                         velocity = 1.5f
                     ),
-                    null,
+                    RequireStatus(Status.AGGRESSIVE),
                     Damage { caster, _ ->
                         caster[PrimaryStat.INTELLIGENCE] * 2f *
                                 RNG.nextDouble(.95, 1.05) + RNG.nextInt(3)
@@ -229,7 +229,7 @@ object CommonEventHandler {
                         trailSystem = ResourceLocation(BlueRPG.MODID, "embers"),
                         precise = true
                     ),
-                    null,
+                    RequireStatus(Status.AGGRESSIVE),
                     Skill(
                         AoE(color1 = 0xFFDD0B, color2 = 0xFF0000),
                         RequireStatus(Status.AGGRESSIVE),
@@ -255,7 +255,7 @@ object CommonEventHandler {
                         color2 = 0x8EE807,
                         glitter = PacketGlitter.Type.HEAL
                     ),
-                    null,
+                    RequireStatus(Status.FRIENDLY),
                     Damage { caster, _ ->
                         -(caster[PrimaryStat.WISDOM] * 2f *
                                 RNG.nextDouble(.95, 1.05) + RNG.nextInt(3))
@@ -281,6 +281,32 @@ object CommonEventHandler {
                         if (target is TargetWithLookVec) target.lookVec
                         else Vec3d.ZERO
                     }
+                )
+            ),
+            SkillData(
+                ResourceLocation(BlueRPG.MODID, "skill_4"),
+                ResourceLocation(BlueRPG.MODID, "skill_4"),
+                "I don't really have a description yet",
+                mana = 10,
+                cooldown = 60,
+                levelTransformer = Placeholder(2),
+                processor = Processor(
+                    Use(10),
+                    Raycast(range = 15.0),
+                    RequireStatus(Status.AGGRESSIVE),
+                    MultiEffect(
+                        arrayOf(
+                            Damage { caster, _ ->
+                                caster[PrimaryStat.DEXTERITY] * 2f * RNG.nextDouble(.95, 1.05) + RNG.nextInt(3)
+                            },
+                            Skill(
+                                Chain(delayMillis = 100),
+                                RequireStatus(Status.AGGRESSIVE),
+                                Damage { caster, _ ->
+                                    caster[PrimaryStat.DEXTERITY] * RNG.nextDouble(.95, 1.05) + RNG.nextInt(3)
+                                }
+                            ))
+                    )
                 )
             )
         )

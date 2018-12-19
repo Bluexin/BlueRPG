@@ -156,6 +156,7 @@ data class MultiEffect(val effects: Array<Effect>) : Effect {
             val channels = Array<Channel<Target>>(effects.size) {
                 Channel(capacity = Channel.UNLIMITED)
             }
+            effects.forEachIndexed { i, effect -> effect(caster, channels[i]) }
             for (e in targets) channels.forEach { it.send(e) }
             channels.forEach { it.close() }
         }
