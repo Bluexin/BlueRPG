@@ -17,9 +17,7 @@
 
 package be.bluexin.rpg.items
 
-import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.gui.GuiAttributes
-import be.bluexin.rpg.skills.*
 import be.bluexin.rpg.stats.PlayerStats
 import be.bluexin.rpg.stats.exp
 import be.bluexin.rpg.stats.stats
@@ -27,11 +25,9 @@ import be.bluexin.saomclib.onClient
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.kotlin.localize
-import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ActionResult
@@ -105,115 +101,4 @@ object DebugExpItem : ItemMod("debug_exp") {
 
         return super.onItemRightClick(worldIn, playerIn, handIn)
     }
-}
-
-object DebugSkillItem : ItemMod("debug_skill") {
-    init {
-        maxStackSize = 1
-        hasSubtypes = true
-    }
-
-    override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
-        val stack = playerIn.getHeldItem(handIn)
-        if (playerIn.isSneaking) stack.itemDamage = (stack.itemDamage + 1) % 6
-        else playerIn.activeHand = handIn
-
-        return ActionResult.newResult(EnumActionResult.SUCCESS, stack)
-    }
-
-    override fun getMaxItemUseDuration(stack: ItemStack) = 72000
-
-    override fun getItemStackDisplayName(stack: ItemStack) = "Skill ${stack.itemDamage}"
-
-    override fun onPlayerStoppedUsing(stack: ItemStack, worldIn: World, entityLiving: EntityLivingBase, timeLeft: Int) {
-        worldIn onServer {
-            when (stack.itemDamage) {
-                0 -> {
-                    Processor(
-                        Use(0),
-                        Projectile(condition = RequireStatus(Status.AGGRESSIVE)),
-                        null,
-                        Damage { _, _ -> 3.0 }
-                    ).startUsing(entityLiving)
-                }
-                1 -> {
-                    Processor(
-                        Use(0),
-                        AoE(),
-                        RequireStatus(Status.AGGRESSIVE),
-                        Damage { _, _ -> 3.0 }
-                    ).startUsing(entityLiving)
-                }
-                2 -> {
-                    Processor(
-                        Use(0),
-                        AoE(),
-                        RequireStatus(Status.AGGRESSIVE),
-                        Skill(
-                            Chain(
-                                maxTargets = 3,
-                                condition = RequireStatus(Status.AGGRESSIVE)
-                            ),
-                            null,
-                            Damage { _, _ -> 2.0 }
-                        )
-                    ).startUsing(entityLiving)
-                }
-                3 -> {
-                    Processor(
-                        Use(0),
-                        Channelling(
-                            delayMillis = 1000,
-                            procs = 10,
-                            targeting = Self()
-                        ),
-                        null,
-                        Damage { _, _ -> -3.0 }
-                    ).startUsing(entityLiving)
-                }
-                4 -> {
-                    Processor(
-                        Use(0),
-                        Projectile(
-                            condition = RequireStatus(Status.AGGRESSIVE),
-                            precise = true
-                        ),
-                        null,
-                        Skill(
-                            AoE(),
-                            RequireStatus(Status.AGGRESSIVE),
-                            Damage { _, _ -> 3_000.0 }
-                        )
-                    ).startUsing(entityLiving)
-                }
-                5 -> {
-                    val p = Processor(
-                        Use(0),
-                        Channelling(
-                            delayMillis = 1000,
-                            procs = 10,
-                            targeting = Self()
-                        ),
-                        null,
-                        Damage { _, _ -> -3.0 }
-                    )
-                    try {
-                        BlueRPG.LOGGER.warn("Serializing $p")
-                        val nbt = AbstractSaveHandler.writeAutoNBT(p, false)
-                        BlueRPG.LOGGER.warn("Result: $nbt")
-                        BlueRPG.LOGGER.warn(
-                            "Loaded: ${AbstractSaveHandler.readAutoNBTByClass(
-                                Processor::class.java,
-                                nbt, false
-                            )}"
-                        )
-                    } catch (e: Exception) {
-                        BlueRPG.LOGGER.warn("Unable to save Processor :", e)
-                    }
-                }
-            }
-        }
-    }
-
-    override fun showDurabilityBar(stack: ItemStack) = false
 }
