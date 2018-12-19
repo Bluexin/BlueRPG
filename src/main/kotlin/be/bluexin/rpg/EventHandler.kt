@@ -37,8 +37,12 @@ import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
+import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import net.minecraft.block.Block
+import net.minecraft.client.gui.Gui
+import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.gui.inventory.GuiInventory
+import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.color.IItemColor
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer
 import net.minecraft.entity.player.EntityPlayer
@@ -49,11 +53,7 @@ import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.text.TextComponentTranslation
-import net.minecraftforge.client.event.ColorHandlerEvent
-import net.minecraftforge.client.event.GuiOpenEvent
-import net.minecraftforge.client.event.ModelRegistryEvent
-import net.minecraftforge.client.event.TextureStitchEvent
-import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.client.event.*
 import net.minecraftforge.common.util.FakePlayer
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.event.ServerChatEvent
@@ -63,12 +63,15 @@ import net.minecraftforge.event.entity.player.CriticalHitEvent
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.event.entity.player.PlayerPickupXpEvent
 import net.minecraftforge.event.world.BlockEvent
+import net.minecraftforge.fml.client.config.GuiUtils.drawTexturedModalRect
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.eventhandler.Event
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import org.lwjgl.opengl.GL11
+import kotlin.math.min
 
 @Mod.EventBusSubscriber(modid = BlueRPG.MODID)
 object CommonEventHandler {
@@ -187,8 +190,6 @@ object CommonEventHandler {
     @SubscribeEvent
     @JvmStatic
     fun registerSkills(event: RegistryEvent.Register<SkillData>) {
-        MinecraftForge.EVENT_BUS.unregister(this)
-
         event.registry.registerAll(
             SkillData(
                 ResourceLocation(BlueRPG.MODID, "skill_0"),
@@ -377,6 +378,36 @@ object ClientEventHandler {
         val g = event.gui
         if (g is GuiInventory) event.gui =
                 GuiRpgInventory((g.inventorySlots as ContainerImpl).container as RPGContainer)
+    }
+
+    @SubscribeEvent
+    @JvmStatic
+    fun renderCastBar(event: RenderGameOverlayEvent.Post) { // TODO: Skin with SAOUI
+        if (event.type == RenderGameOverlayEvent.ElementType.HOTBAR) {
+            val mc = Minecraft()
+            val iss = mc.player.activeItemStack
+            if (iss.item == SkillItem && iss.maxItemUseDuration > 0) {
+                GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
+                GlStateManager.disableBlend()
+
+                mc.profiler.startSection("castBar")
+                val charge = min(1 - mc.player.itemInUseCount / iss.maxItemUseDuration.toFloat(), 1f)
+                val barWidth = 182
+                val res = ScaledResolution(mc)
+                val x = res.scaledWidth / 2 - barWidth / 2
+                val filled = (charge * barWidth).toInt()
+                val top = res.scaledHeight - 80
+
+                mc.textureManager.bindTexture(Gui.ICONS)
+
+                drawTexturedModalRect(x, top, 0, 84, barWidth, 5, 1f)
+                if (filled > 0) drawTexturedModalRect(x, top, 0, 89, filled, 5, 1f)
+
+                GlStateManager.enableBlend()
+                mc.profiler.endSection()
+                GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
+            }
+        }
     }
 
     /*@SubscribeEvent
