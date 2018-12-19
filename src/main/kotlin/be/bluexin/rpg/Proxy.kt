@@ -25,7 +25,6 @@ import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.entities.*
 import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.items.DebugExpItem
-import be.bluexin.rpg.items.DebugSkillItem
 import be.bluexin.rpg.items.DebugStatsItem
 import be.bluexin.rpg.pets.*
 import be.bluexin.rpg.skills.SkillItem
@@ -100,7 +99,6 @@ open class CommonProxy {
         ItemGearToken
         DebugStatsItem
         DebugExpItem
-        DebugSkillItem
         ItemArmor
         ItemMeleeWeapon
         ItemRangedWeapon
