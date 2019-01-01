@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,9 @@ import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.random
 import be.bluexin.saomclib.capabilities.Key
 import be.bluexin.saomclib.onServer
+import com.teamwizardry.librarianlib.features.helpers.getNBTByte
+import com.teamwizardry.librarianlib.features.helpers.removeNBTEntry
+import com.teamwizardry.librarianlib.features.helpers.setNBTByte
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable
@@ -221,8 +224,7 @@ val ItemStack.stats get() = this.getCapability(GearStats.Capability, null)
 
 fun ItemStack.requirementMet(player: EntityPlayer): Boolean {
     val s = stats ?: return false
-    return if (!s.levelReqMet(player)) false
-    else statsReqMet(player)
+    return s.levelReqMet(player) && statsReqMet(player)
 }
 
 fun GearStats.levelReqMet(player: EntityPlayer) = levelReq <= player.stats.level.level_a
@@ -230,6 +232,14 @@ fun GearStats.levelReqMet(player: EntityPlayer) = levelReq <= player.stats.level
 fun ItemStack.statsReqMet(player: EntityPlayer): Boolean {
     val s = stats ?: return false
     val r = s.requiredStat ?: return true
-    val f = tagCompound?.getByte("bluerpg:disabled") == 0.toByte() && player.equipmentAndArmor.contains(this)
-    return player[r] - (if (f) s[r] else 0) >= s.requiredValue
+    return player[r] - (if (enabled && player.equipmentAndArmor.contains(this)) s[r] else 0) >= s.requiredValue
 }
+
+var ItemStack.enabled
+    get() = getNBTByte("bluerpg:disabled") == 0.toByte()
+    set(value) {
+        if (item is IRPGGear) {
+            if (value) removeNBTEntry("bluerpg:disabled")
+            else setNBTByte("bluerpg:disabled", 1)
+        }
+    }

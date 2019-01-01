@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ package be.bluexin.rpg
 
 import be.bluexin.rpg.events.CreatePlayerContainerEvent
 import be.bluexin.rpg.events.CreatePlayerInventoryEvent
+import be.bluexin.rpg.events.LivingEquipmentPostChangeEvent
 import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.gear.WeaponType
@@ -123,9 +124,15 @@ object CommonEventHandler {
                 )
             }
         }
+    }
 
-        p.equipmentAndArmor.forEach {
-            if (it.item is IRPGGear) it.setTagInfo("bluerpg:disabled", NBTTagByte(if (it.requirementMet(p)) 0 else 1))
+    @SubscribeEvent
+    @JvmStatic
+    fun postChangeGear(event: LivingEquipmentPostChangeEvent) {
+        (event.entityLiving as? EntityPlayer)?.apply {
+            equipmentAndArmor.forEach {
+                if (it.item is IRPGGear) it.enabled = it.requirementMet(this)
+            }
         }
     }
 

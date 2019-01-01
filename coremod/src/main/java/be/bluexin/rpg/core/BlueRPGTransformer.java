@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
 
     static {
         transformers.put("net.minecraft.entity.player.EntityPlayer", BlueRPGTransformer::transformPlayer);
+        transformers.put("net.minecraft.entity.EntityLivingBase", BlueRPGTransformer::transformELB);
     }
 
     private static byte[] transformPlayer(byte[] basicClass) {
@@ -70,7 +71,7 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
 
                             method.instructions.insertBefore(node, l);
 
-                            return false;
+                            return true;
                         }
                 ),
                 combine(
@@ -85,9 +86,62 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
 
                             method.instructions.insertBefore(node, l);
 
-                            return false;
+                            return true;
                         }
                 )
+        ));
+    }
+
+    private static byte[] transformELB(byte[] basicClass) {
+        // Lnet/minecraft/entity/EntityLivingBase;onUpdate()V
+        final MethodSignature onUpdate = new MethodSignature("onUpdate", "func_70071_h_", "()V");
+        // net/minecraft/entity/EntityLivingBase$1.$SwitchMap$net$minecraft$inventory$EntityEquipmentSlot$Type : [I
+        final FieldSignature switchLookup = new FieldSignature(
+                "$SwitchMap$net$minecraft$inventory$EntityEquipmentSlot$Type",
+                "$SwitchMap$net$minecraft$inventory$EntityEquipmentSlot$Type",
+                "[I"
+        );
+        return transform(basicClass, onUpdate, "EntityLivingBase post equipment change hook", combine(
+                (node) -> {
+                    boolean ok = node.getOpcode() == GETSTATIC && switchLookup.matches((FieldInsnNode) node);
+                    if (!ok) return false;
+
+                    ok = false;
+                    AbstractInsnNode prev = node;
+                    for (int i = 0; !ok && i < 5; i++) {
+                        prev = prev.getPrevious();
+                        ok = prev.getOpcode() == INVOKEVIRTUAL;
+                    }
+                    return ok;
+                },
+                (method, node) -> {
+                    InsnList l = new InsnList();
+                    LabelNode newLabel = new LabelNode();
+                    l.add(newLabel);
+                    l.add(new VarInsnNode(ALOAD, 0));
+                    l.add(new VarInsnNode(ALOAD, 5));
+                    l.add(new MethodInsnNode(INVOKESTATIC, ASM_HOOKS, "equipmentPostChangeHook",
+                            "(Lnet/minecraft/entity/EntityLivingBase;Lnet/minecraft/inventory/EntityEquipmentSlot;)V", false));
+
+                    AbstractInsnNode next = node.getNext();
+                    while (!(next instanceof LookupSwitchInsnNode)) next = next.getNext();
+
+                    LookupSwitchInsnNode sw = (LookupSwitchInsnNode) next;
+                    LabelNode oldLabel = sw.dflt;
+                    sw.dflt = newLabel;
+
+                    method.instructions.insertBefore(oldLabel, l);
+
+                    while (!(next instanceof LabelNode) || ((LabelNode) next).getLabel() != oldLabel.getLabel()) {
+                        if (next instanceof JumpInsnNode) {
+                            JumpInsnNode j = ((JumpInsnNode) next);
+                            if (j.label.getLabel() == oldLabel.getLabel()) j.label = newLabel;
+                        }
+                        next = next.getNext();
+                    }
+
+                    return true;
+                }
         ));
     }
 
@@ -484,7 +538,9 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
      * The way COMPUTE_FRAMES works may require loading additional classes. This can cause ClassCircularityErrors.
      * The override for getCommonSuperClass will ensure that COMPUTE_FRAMES works properly by using the right ClassLoader.
      * <p>
-     * Code from: https://github.com/JamiesWhiteShirt/clothesline/blob/master/src/core/java/com/jamieswhiteshirt/clothesline/core/SafeClassWriter.java
+     * Code adapted from: https://github.com/JamiesWhiteShirt/clothesline/blob/master/src/core/java/com/jamieswhiteshirt/clothesline/core/SafeClassWriter.java
+     * <p>
+     * // FIXME: this still causes ClassCircularityErrors, and default implementation seems to use the correct class loader. Worked around by checking for Object preemptively.
      */
     public static class SafeClassWriter extends ClassWriter {
         public SafeClassWriter(int flags) {
@@ -497,13 +553,14 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
 
         @Override
         protected String getCommonSuperClass(String type1, String type2) {
+            if (type2.equals("java/lang/Object")) return type2;
             Class<?> c, d;
             ClassLoader classLoader = Launch.classLoader;
             try {
                 c = Class.forName(type1.replace('/', '.'), false, classLoader);
                 d = Class.forName(type2.replace('/', '.'), false, classLoader);
             } catch (Exception e) {
-                throw new RuntimeException(e.toString());
+                throw new RuntimeException(e);
             }
             if (c.isAssignableFrom(d)) {
                 return type1;

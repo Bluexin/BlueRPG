@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,13 @@ package be.bluexin.rpg.core;
 
 import be.bluexin.rpg.events.CreatePlayerContainerEvent;
 import be.bluexin.rpg.events.CreatePlayerInventoryEvent;
+import be.bluexin.rpg.events.LivingEquipmentPostChangeEvent;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerPlayer;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraftforge.common.MinecraftForge;
 
 @SuppressWarnings("unused")
@@ -41,5 +44,9 @@ public class BlueRPGHooks {
         CreatePlayerContainerEvent evt = new CreatePlayerContainerEvent(player, container);
         MinecraftForge.EVENT_BUS.post(evt);
         return evt.container;
+    }
+
+    public static void equipmentPostChangeHook(EntityLivingBase entity, EntityEquipmentSlot slot) {
+        MinecraftForge.EVENT_BUS.post(new LivingEquipmentPostChangeEvent(entity, slot));
     }
 }

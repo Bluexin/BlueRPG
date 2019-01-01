@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,7 +94,7 @@ interface IRPGGear : IUsable<ItemStack> { // TODO: use ISpecialArmor
     fun getAttributeModifiers(slot: EntityEquipmentSlot, stack: ItemStack): Multimap<String, AttributeModifier> {
         val m = HashMultimap.create<String, AttributeModifier>()
         if (slot != this.gearSlot) return m
-        if (stack.tagCompound?.getByte("bluerpg:disabled") != 0.toByte()) return m
+        if (!stack.enabled) return m
         val stats = stack.stats ?: return m
         if (!stats.generated) return m
 
