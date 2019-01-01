@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,15 +64,15 @@ class GuiRpgInventory(private val ct: RPGContainer) : GuiContainerBase(ct, 258, 
         )
 
         repeat(2) {
-            equipment.add(ComponentSprite(Textures.GATHERING_BG, 34 + 18 * it, 116))
+            equipment.add(ComponentSprite(Textures.GATHERING_BG, 33 + 18 * it, 116))
         }
 
         repeat(2) {
-            equipment.add(ComponentSprite(Textures.CRAFTING_BG, 79 + 18 * it, 116))
+            equipment.add(ComponentSprite(Textures.CRAFTING_BG, 78 + 18 * it, 116))
         }
 
         repeat(3) {
-            equipment.add(ComponentSprite(Textures.CLASS_BG, 150 + 18 * it, 116))
+            equipment.add(ComponentSprite(Textures.CLASS_BG, 149 + 18 * it, 116))
         }
     }
 
@@ -128,22 +128,22 @@ class PlayerLayout(player: RPGContainer.InventoryWrapperPlayer) {
         isVisible = false
         add(
             ComponentSlot(player.head, 0, 0).apply {
-                background.add(ComponentSprite(Textures.HEAD_BG, 0, -1))
+                background.add(ComponentSprite(Textures.HEAD_BG, -1, -1))
             },
             ComponentSlot(player.chest, 0, 18).apply {
-                background.add(ComponentSprite(Textures.CHESTPLATE_BG, 0, -1))
+                background.add(ComponentSprite(Textures.CHESTPLATE_BG, -1, -1))
             },
             ComponentSlot(player.legs, 0, 2 * 18).apply {
-                background.add(ComponentSprite(Textures.LEGS_BG, 0, -1))
+                background.add(ComponentSprite(Textures.LEGS_BG, -1, -1))
             },
             ComponentSlot(player.feet, 0, 3 * 18).apply {
-                background.add(ComponentSprite(Textures.FEET_BG, 0, -1))
+                background.add(ComponentSprite(Textures.FEET_BG, -1, -1))
             },
             ComponentSlot(player.offhand, 0, 4 * 18).apply {
-                background.add(ComponentSprite(Textures.OFFHAND_BG, 0, -1))
+                background.add(ComponentSprite(Textures.OFFHAND_BG, -1, -1))
             },
             ComponentSlot(player.egg, 0, 5 * 18).apply {
-                background.add(ComponentSprite(Textures.EGG_BG, 0, -1))
+                background.add(ComponentSprite(Textures.EGG_BG, -1, -1))
             }
         )
     }

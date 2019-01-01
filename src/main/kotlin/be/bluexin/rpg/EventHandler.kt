@@ -27,6 +27,7 @@ import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.gear.WeaponType
 import be.bluexin.rpg.gui.GuiRpgInventory
 import be.bluexin.rpg.inventory.RPGContainer
+import be.bluexin.rpg.inventory.RPGEnderChestContainer
 import be.bluexin.rpg.inventory.RPGInventory
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.RenderEggItem
@@ -37,6 +38,7 @@ import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
+import com.teamwizardry.librarianlib.features.container.GuiHandler
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
 import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import net.minecraft.block.Block
@@ -47,11 +49,14 @@ import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.color.IItemColor
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.inventory.ContainerChest
 import net.minecraft.inventory.ContainerPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
+import net.minecraft.inventory.InventoryEnderChest
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.ResourceLocation
+import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.text.TextComponentTranslation
 import net.minecraftforge.client.event.*
@@ -61,6 +66,7 @@ import net.minecraftforge.event.ServerChatEvent
 import net.minecraftforge.event.entity.EntityEvent
 import net.minecraftforge.event.entity.living.*
 import net.minecraftforge.event.entity.player.CriticalHitEvent
+import net.minecraftforge.event.entity.player.PlayerContainerEvent
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.event.entity.player.PlayerPickupXpEvent
 import net.minecraftforge.event.world.BlockEvent
@@ -364,6 +370,19 @@ object CommonEventHandler {
     fun farmlandTrample(event: BlockEvent.FarmlandTrampleEvent) {
         if (protectFarmland) event.isCanceled = true
     }
+
+    @SubscribeEvent
+    @JvmStatic
+    fun openContainer(event: PlayerContainerEvent.Open) {
+        val c = event.container
+        when (c) {
+            is ContainerChest -> {
+                if (c.lowerChestInventory is InventoryEnderChest) {
+                    GuiHandler.open(RPGEnderChestContainer.NAME, event.entityPlayer, BlockPos.ORIGIN)
+                }
+            }
+        }
+    }
 }
 
 @SideOnly(Side.CLIENT)
@@ -409,8 +428,11 @@ object ClientEventHandler {
     @JvmStatic
     fun openGui(event: GuiOpenEvent) {
         val g = event.gui
-        if (g is GuiInventory) event.gui =
-                GuiRpgInventory((g.inventorySlots as ContainerImpl).container as RPGContainer)
+        when (g) {
+            is GuiInventory -> event.gui =
+                    GuiRpgInventory((g.inventorySlots as ContainerImpl).container as RPGContainer)
+//            is GuiChest -> event.gui = GuiRpgEnderInventory(RPGEnderChestContainer(Minecraft().player))
+        }
     }
 
     @SubscribeEvent
