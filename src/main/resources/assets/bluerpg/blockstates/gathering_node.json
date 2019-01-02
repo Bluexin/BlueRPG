@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "bluerpg:gathering_node",
+      "y": 0
+    },
+    "facing=south": {
+      "model": "bluerpg:gathering_node"
+    },
+    "facing=west": {
+      "model": "bluerpg:gathering_node",
+      "y": -90
+    },
+    "facing=east": {
+      "model": "bluerpg:gathering_node",
+      "y": 90
+    }
+  }
+}

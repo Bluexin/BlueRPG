@@ -17,7 +17,7 @@
 
 package be.bluexin.rpg.gui
 
-import be.bluexin.rpg.inventory.RPGContainer
+import be.bluexin.rpg.containers.RPGContainer
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.PrimaryStat
 import be.bluexin.rpg.stats.SecondaryStat

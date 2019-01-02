@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,14 @@ package be.bluexin.rpg
 
 import be.bluexin.rpg.blocks.BlockCaster
 import be.bluexin.rpg.blocks.BlockEditor
+import be.bluexin.rpg.blocks.BlockGatheringNode
 import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.entities.*
 import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.items.DebugExpItem
 import be.bluexin.rpg.items.DebugStatsItem
+import be.bluexin.rpg.jobs.GatheringCapability
+import be.bluexin.rpg.jobs.GatheringRegistry
 import be.bluexin.rpg.pets.*
 import be.bluexin.rpg.skills.SkillItem
 import be.bluexin.rpg.skills.glitter.TrailSystem
@@ -36,8 +39,7 @@ import com.teamwizardry.librarianlib.features.base.ModCreativeTab
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.attributes.BaseAttribute
 import net.minecraft.entity.ai.attributes.RangedAttribute
@@ -48,15 +50,32 @@ import net.minecraftforge.common.capabilities.CapabilityManager
 import net.minecraftforge.common.util.FakePlayer
 import net.minecraftforge.fml.client.registry.RenderingRegistry
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.registry.EntityRegistry
 import net.minecraftforge.fml.relauncher.ReflectionHelper
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import java.io.File
 import java.lang.ref.WeakReference
 
-open class CommonProxy {
+open class CommonProxy : CoroutineScope {
+
+    private val job = Job()
+    override val coroutineContext = Dispatchers.IO + job
+
     open fun preInit(event: FMLPreInitializationEvent) {
+        launch { NameGenerator.preInit(event) }
+        launch { FormulaeConfiguration.preInit(event) }
+        launch {
+            GatheringRegistry.setupDataDir(
+                File(
+                    event.suggestedConfigurationFile.parentFile.parentFile,
+                    BlueRPG.MODID
+                )
+            )
+        }
+
         classLoadItems()
         vanillaHax()
         registerEntities()
@@ -68,13 +87,14 @@ open class CommonProxy {
         // Not using SAOMCLib for this one because we don't want it autoregistered
         CapabilityManager.INSTANCE.register(GearStats::class.java, GearStats.Storage) { GearStats(ItemStack.EMPTY) }
         CapabilityManager.INSTANCE.register(TokenStats::class.java, TokenStats.Storage) { TokenStats(ItemStack.EMPTY) }
+        CapabilityManager.INSTANCE.register(
+            GatheringCapability::class.java,
+            GatheringCapability.Storage
+        ) { GatheringCapability() }
         CapabilitiesHandler.registerEntityCapability(
             PetStorage::class.java,
             PetStorage.Storage
         ) { it is EntityPlayer && it !is FakePlayer }
-
-        GlobalScope.launch { NameGenerator.preInit(event) }
-        GlobalScope.launch { FormulaeConfiguration.preInit(event) }
     }
 
     private fun vanillaHax() {
@@ -108,6 +128,7 @@ open class CommonProxy {
         BlockEditor
         ContainerEditor
         BlockCaster
+        BlockGatheringNode
 
         EggItem
 
@@ -159,8 +180,10 @@ open class CommonProxy {
     }
 
     open fun init(event: FMLInitializationEvent) {
+        runBlocking { job.children.forEach { it.join() } }
+        launch { GatheringRegistry.load() }
+        launch { FormulaeConfiguration.init() }
         trickLiblib()
-        FormulaeConfiguration.init()
         registerDataSerializer<PetMovementType>()
         CommonEventHandler.loadInteractionLimit()
     }
@@ -182,6 +205,10 @@ open class CommonProxy {
         AbstractSaveHandler.writeAutoNBT(T2(PrimaryStat.DEXTERITY), false)
         AbstractSaveHandler.writeAutoNBT(T2(SecondaryStat.REGEN), false)
         AbstractSaveHandler.writeAutoNBT(T2(FixedStat.HEALTH), false)
+    }
+
+    fun postInit(event: FMLPostInitializationEvent) {
+        runBlocking { job.children.forEach { it.join() } }
     }
 }
 

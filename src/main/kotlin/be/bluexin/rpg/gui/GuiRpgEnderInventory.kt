@@ -17,7 +17,7 @@
 
 package be.bluexin.rpg.gui
 
-import be.bluexin.rpg.inventory.RPGEnderChestContainer
+import be.bluexin.rpg.containers.RPGEnderChestContainer
 import com.teamwizardry.librarianlib.features.gui.components.ComponentSprite
 import com.teamwizardry.librarianlib.features.gui.components.ComponentVoid
 import com.teamwizardry.librarianlib.features.guicontainer.GuiContainerBase

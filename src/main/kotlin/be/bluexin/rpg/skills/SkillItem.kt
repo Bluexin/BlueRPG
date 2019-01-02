@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.util.get
 import com.teamwizardry.librarianlib.features.base.IExtraVariantHolder
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.helpers.getNBTString
@@ -36,7 +37,10 @@ import net.minecraft.world.World
 
 object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
 
-    private val ItemStack.skillName get() = this.getNBTString("skill") ?: "unknown_skill"
+    private val ItemStack.skillName
+        get() = ResourceLocation(
+            this.getNBTString("skill") ?: "${BlueRPG.MODID}:unknown_skill"
+        )
     private val ItemStack.skill get() = SkillRegistry[this.skillName]
 
     override fun getTranslationKey(stack: ItemStack) = stack.skill?.key?.toString() ?: "${BlueRPG.MODID}:unknown_skill"

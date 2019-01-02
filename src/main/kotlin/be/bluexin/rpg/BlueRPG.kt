@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.SidedProxy
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent
 import noppes.npcs.CustomNpcs
@@ -72,6 +73,11 @@ object BlueRPG {
     @Mod.EventHandler
     fun init(event: FMLInitializationEvent) {
         proxy.init(event)
+    }
+
+    @Mod.EventHandler
+    fun postInit(event: FMLPostInitializationEvent) {
+        proxy.postInit(event)
     }
 
     @Mod.EventHandler

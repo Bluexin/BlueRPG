@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@ import com.teamwizardry.librarianlib.features.kotlin.isNotEmpty
 import com.teamwizardry.librarianlib.features.saving.Save
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.IBlockState
-import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.EnumHand
 import net.minecraft.util.math.BlockPos
@@ -37,10 +36,8 @@ import net.minecraftforge.common.util.FakePlayerFactory
 import java.lang.ref.WeakReference
 import java.util.*
 
-object BlockCaster : BlockModContainer("block_caster", Material.CLOTH) {
-    override fun createTileEntity(world: World, state: IBlockState): TileEntity? {
-        return BlockCasterTE()
-    }
+object BlockCaster : BlockModContainer("caster", Material.CLOTH) {
+    override fun createTileEntity(world: World, state: IBlockState) = BlockCasterTE()
 
     override fun canConnectRedstone(
         state: IBlockState?,

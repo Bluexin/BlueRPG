@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg.inventory
 
+import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.gear.ItemOffHand
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.petStorage
@@ -65,7 +66,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
     ).flatten()
 
     val skills = MutableList(5) {
-        ItemStack(SkillItem).apply { setNBTString("skill", "skill_$it") }
+        ItemStack(SkillItem).apply { setNBTString("skill", "${BlueRPG.MODID}:skill_$it") }
     }
 
     init {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,10 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package be.bluexin.rpg.inventory
+package be.bluexin.rpg.containers
 
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.gui.GuiRpgInventory
+import be.bluexin.rpg.inventory.RPGInventory
+import be.bluexin.rpg.inventory.processItemUse
 import com.teamwizardry.librarianlib.features.container.ContainerBase
 import com.teamwizardry.librarianlib.features.container.GuiHandler
 import com.teamwizardry.librarianlib.features.container.InventoryWrapper

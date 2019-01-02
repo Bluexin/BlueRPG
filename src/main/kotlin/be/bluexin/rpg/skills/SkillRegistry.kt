@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,25 +17,16 @@
 
 package be.bluexin.rpg.skills
 
-import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.util.buildRegistry
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.util.ResourceLocation
-import net.minecraftforge.registries.IForgeRegistry
 import net.minecraftforge.registries.IForgeRegistryEntry
-import net.minecraftforge.registries.RegistryBuilder
+import net.minecraftforge.registries.IForgeRegistryModifiable
 
-object SkillRegistry {
-    private val registry: IForgeRegistry<SkillData> = RegistryBuilder<SkillData>()
-        .setName(ResourceLocation(BlueRPG.MODID, "skills"))
-        .setType(SkillData::class.java)
-        .disableSaving()
-        .allowModification()
-        .create()
+object SkillRegistry : IForgeRegistryModifiable<SkillData> by buildRegistry("skills") {
+    // TODO: set missing callback to return dummy value to be replaced by network loading
 
-    operator fun get(rl: ResourceLocation) = registry.getValue(rl)
-    operator fun get(str: String) = this[ResourceLocation(BlueRPG.MODID, str)]
-
-    val allSkillStrings by lazy { registry.keys.map(ResourceLocation::getPath).toTypedArray() }
+    val allSkillStrings by lazy { keys.map(ResourceLocation::getPath).toTypedArray() }
 }
 
 data class SkillData(

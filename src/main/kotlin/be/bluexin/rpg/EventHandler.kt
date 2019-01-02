@@ -19,6 +19,8 @@
 
 package be.bluexin.rpg
 
+import be.bluexin.rpg.containers.RPGContainer
+import be.bluexin.rpg.containers.RPGEnderChestContainer
 import be.bluexin.rpg.events.CreatePlayerContainerEvent
 import be.bluexin.rpg.events.CreatePlayerInventoryEvent
 import be.bluexin.rpg.events.LivingEquipmentPostChangeEvent
@@ -26,8 +28,6 @@ import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.gear.WeaponType
 import be.bluexin.rpg.gui.GuiRpgInventory
-import be.bluexin.rpg.inventory.RPGContainer
-import be.bluexin.rpg.inventory.RPGEnderChestContainer
 import be.bluexin.rpg.inventory.RPGInventory
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.RenderEggItem
@@ -343,7 +343,10 @@ object CommonEventHandler {
         limitIsWhitelist = !s.startsWith('!')
         if (!limitIsWhitelist) s = s.substring(1)
         interactionLimitBlocks = s.split(',')
-            .mapNotNull { Block.getBlockFromName(it) ?: null.apply { BlueRPG.LOGGER.warn("Invalid ID: `$it`") } }
+            .mapNotNull {
+                if (it.isNotBlank()) Block.getBlockFromName(it)
+                    ?: null.apply { BlueRPG.LOGGER.warn("Invalid ID: `$it`") } else null
+            }
     }
 
     @ConfigProperty(

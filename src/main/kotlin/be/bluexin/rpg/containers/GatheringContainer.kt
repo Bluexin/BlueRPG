@@ -15,40 +15,36 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package be.bluexin.rpg.inventory
+package be.bluexin.rpg.containers
 
 import be.bluexin.rpg.BlueRPG
-import be.bluexin.rpg.gui.GuiRpgEnderInventory
+import be.bluexin.rpg.blocks.BlockGatheringNodeTE
 import com.teamwizardry.librarianlib.features.container.ContainerBase
 import com.teamwizardry.librarianlib.features.container.GuiHandler
 import com.teamwizardry.librarianlib.features.container.builtin.BaseWrappers
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.InventoryEnderChest
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.items.wrapper.InvWrapper
 
-class RPGEnderChestContainer(player: EntityPlayer, chest: InventoryEnderChest) : ContainerBase(player) {
+class GatheringContainer(player: EntityPlayer, val te: BlockGatheringNodeTE) : ContainerBase(player) {
 
     val invPlayer = RPGContainer.InventoryWrapperPlayer(InvWrapper(player.inventory), player)
-    val invChest = BaseWrappers.inventory(chest)
+    val invBlock = BaseWrappers.stacks(te)
 
     init {
         addSlots(invPlayer)
-        addSlots(invChest)
-
-        transferRule().from(invPlayer.slotArray).deposit(invChest.slotArray)
-        transferRule().from(invChest.slotArray).deposit(invPlayer.main).deposit(invPlayer.hotbar)
+        addSlots(invBlock)
     }
 
     companion object {
-        val NAME = ResourceLocation(BlueRPG.MODID, "container_rpg_ender_player")
+        val NAME = ResourceLocation(BlueRPG.MODID, "container_gathering")
 
         init {
             GuiHandler.registerBasicContainer(
-                NAME, { player, _, _ ->
-                    RPGEnderChestContainer(player, player.inventoryEnderChest)
+                NAME, { player, _, te ->
+                    GatheringContainer(player, te as BlockGatheringNodeTE)
                 }, { _, container ->
-                    GuiRpgEnderInventory(container)
+                    TODO("not implemented")
                 }
             )
         }
