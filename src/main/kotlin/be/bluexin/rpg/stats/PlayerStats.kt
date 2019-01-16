@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -228,7 +228,7 @@ class Level(private val player: WeakReference<EntityPlayer>) {
 
     companion object {
         @ConfigIntRange(0, Int.MAX_VALUE)
-        @ConfigProperty("general", "defaults and range are skewed ;-;")
+        @ConfigProperty("general", "Hard cap for level")
         var LEVEL_CAP = 100
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,42 +50,42 @@ import kotlin.math.max
 object DamageHandler {
 
     @ConfigIntRange(0, Int.MAX_VALUE)
-    @ConfigProperty("cooldowns", "(in ticks) defaults and range are skewed ;-;")
+    @ConfigProperty("cooldowns", "Reflect cooldown in ticks")
     var reflectCD = 100
         internal set
 
     @ConfigIntRange(0, Int.MAX_VALUE)
-    @ConfigProperty("cooldowns", "(in ticks) defaults and range are skewed ;-;")
+    @ConfigProperty("cooldowns", "Block cooldown in ticks")
     var blockCD = 100
         internal set
 
     @ConfigIntRange(0, Int.MAX_VALUE)
-    @ConfigProperty("cooldowns", "(in ticks) defaults and range are skewed ;-;")
+    @ConfigProperty("cooldowns", "Dodge cooldown in ticks")
     var dodgeCD = 100
         internal set
 
     @ConfigIntRange(0, Int.MAX_VALUE)
-    @ConfigProperty("cooldowns", "(in ticks) defaults and range are skewed ;-;")
+    @ConfigProperty("cooldowns", "Parry cooldown in ticks")
     var parryCD = 100
         internal set
 
     @ConfigIntRange(0, Int.MAX_VALUE)
-    @ConfigProperty("cooldowns", "(in ticks) defaults and range are skewed ;-;")
+    @ConfigProperty("cooldowns", "LifeSteal cooldown in ticks")
     var lifeStealCD = 100
         internal set
 
     @ConfigIntRange(0, Int.MAX_VALUE)
-    @ConfigProperty("cooldowns", "(in ticks) defaults and range are skewed ;-;")
+    @ConfigProperty("cooldowns", "ManaSteal cooldown in ticks")
     var manaStealCD = 100
         internal set
 
     @ConfigIntRange(0, Int.MAX_VALUE)
-    @ConfigProperty("cooldowns", "(in ticks) defaults and range are skewed ;-;")
+    @ConfigProperty("cooldowns", "Root cooldown in ticks")
     var rootCD = 100
         internal set
 
     @ConfigIntRange(0, Int.MAX_VALUE)
-    @ConfigProperty("cooldowns", "(in ticks) defaults and range are skewed ;-;")
+    @ConfigProperty("cooldowns", "Slow cooldown in ticks")
     var slowCD = 100
         internal set
 

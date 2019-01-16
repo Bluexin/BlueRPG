@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ object FormulaeConfiguration {
 
     private val statFormulae = mutableMapOf<Key, MutableMap<Stat, Range>>()
 
-    @ConfigProperty("general", "(input: current level as ilvl) default is skewed ;-;")
+    @ConfigProperty("general", "Formula for experience to next level. Input: current level as ilvl")
     var expToNextFormula = "50L * pow(ilvl, 2) + 50"
     private lateinit var _expToNext: ExperienceExpressionWrapper
     fun expToNext(currentLevel: Int) = _expToNext(currentLevel)
