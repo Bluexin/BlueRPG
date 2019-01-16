@@ -48,6 +48,7 @@ import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.color.IItemColor
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer
+import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.item.EntityPainting
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.ContainerChest
@@ -395,9 +396,9 @@ object CommonEventHandler {
     @SubscribeEvent
     @JvmStatic
     fun spawnPainting(event: EntityJoinWorldEvent) {
-        if (protectPaintings && event.entity is EntityPainting) {
-            event.entity.setEntityInvulnerable(true)
-        }
+        val e = event.entity
+        if (e is EntityLivingBase) e.maxHurtResistantTime = 0
+        if (protectPaintings && e is EntityPainting) e.setEntityInvulnerable(true)
     }
 }
 
