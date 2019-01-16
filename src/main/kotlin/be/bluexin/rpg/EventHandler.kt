@@ -48,6 +48,7 @@ import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.color.IItemColor
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer
+import net.minecraft.entity.item.EntityPainting
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.ContainerChest
 import net.minecraft.inventory.ContainerPlayer
@@ -64,6 +65,7 @@ import net.minecraftforge.common.util.FakePlayer
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.event.ServerChatEvent
 import net.minecraftforge.event.entity.EntityEvent
+import net.minecraftforge.event.entity.EntityJoinWorldEvent
 import net.minecraftforge.event.entity.living.*
 import net.minecraftforge.event.entity.player.CriticalHitEvent
 import net.minecraftforge.event.entity.player.PlayerContainerEvent
@@ -384,6 +386,17 @@ object CommonEventHandler {
                     GuiHandler.open(RPGEnderChestContainer.NAME, event.entityPlayer, BlockPos.ORIGIN)
                 }
             }
+        }
+    }
+
+    @ConfigProperty("security", "Whether to protect paintings from breaking")
+    var protectPaintings = false
+
+    @SubscribeEvent
+    @JvmStatic
+    fun spawnPainting(event: EntityJoinWorldEvent) {
+        if (protectPaintings && event.entity is EntityPainting) {
+            event.entity.setEntityInvulnerable(true)
         }
     }
 }
