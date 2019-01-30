@@ -30,6 +30,7 @@ buildscript {
     }
 }
 
+apply plugin: 'maven-publish'
 apply plugin: 'kotlin'
 apply plugin: 'kotlinx-serialization'
 apply plugin: 'net.minecraftforge.gradle.forge'
@@ -42,6 +43,26 @@ minecraft {
     version = project.forgeVersion
     runDir = 'run'
     mappings = project.mcpVersion
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = archivesBaseName
+
+            afterEvaluate {
+                artifact(reobfBundleJar.jar) {
+                    builtBy reobfBundleJar
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url = "file://$buildDir/repo"
+        }
+    }
 }
 
 reobf {
