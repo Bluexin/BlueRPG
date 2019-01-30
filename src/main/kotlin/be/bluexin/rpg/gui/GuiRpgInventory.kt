@@ -156,7 +156,7 @@ class PlayerLayout(player: RPGContainer.InventoryWrapperPlayer) {
     val bags = ComponentVoid(180, 92).apply {
         player.bags.forEachIndexed { index, slot ->
             add(ComponentSlot(slot, index * 18, 0).apply {
-                background.add(ComponentSprite(Textures.BAG_BG, 0, -1))
+                background.add(ComponentSprite(Textures.BAG_BG, -1, -1))
             })
         }
     }

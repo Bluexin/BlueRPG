@@ -23,6 +23,7 @@ import be.bluexin.rpg.blocks.BlockCaster
 import be.bluexin.rpg.blocks.BlockEditor
 import be.bluexin.rpg.blocks.BlockGatheringNode
 import be.bluexin.rpg.containers.ContainerEditor
+import be.bluexin.rpg.containers.RPGEnderChestContainer
 import be.bluexin.rpg.entities.*
 import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.items.DebugExpItem
@@ -133,6 +134,7 @@ open class CommonProxy : CoroutineScope {
         EggItem
 
         EntitySkillProjectile.Companion // This is needed for it's custom serializer
+        RPGEnderChestContainer.Companion // Classloading FTW
     }
 
     private fun registerEntities() {
