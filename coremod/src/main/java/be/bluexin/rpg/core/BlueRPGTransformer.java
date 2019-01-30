@@ -49,6 +49,7 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
     static {
         transformers.put("net.minecraft.entity.player.EntityPlayer", BlueRPGTransformer::transformPlayer);
         transformers.put("net.minecraft.entity.EntityLivingBase", BlueRPGTransformer::transformELB);
+        transformers.put("net.minecraft.block.BlockEnderChest", BlueRPGTransformer::transformBEC);
     }
 
     private static byte[] transformPlayer(byte[] basicClass) {
@@ -139,6 +140,26 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
                         }
                         next = next.getNext();
                     }
+
+                    return true;
+                }
+        ));
+    }
+
+    private static byte[] transformBEC(byte[] basicClass) {
+        // func_180639_a(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/EnumHand;Lnet/minecraft/util/EnumFacing;FFF)Z
+        final MethodSignature onBlockActivated = new MethodSignature("onBlockActivated", "func_180639_a", "(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/EnumHand;Lnet/minecraft/util/EnumFacing;FFF)Z");
+        final MethodSignature displayGUIChest = new MethodSignature("displayGUIChest", "func_71007_a", "(Lnet/minecraft/inventory/IInventory;)V");
+
+        return transform(basicClass, onBlockActivated, "BlockEnderChest openGUI", combine(
+                (node) -> node.getOpcode() == INVOKEVIRTUAL && displayGUIChest.matches((MethodInsnNode) node),
+                (method, node) -> {
+                    InsnList l = new InsnList();
+                    l.add(new MethodInsnNode(INVOKESTATIC, ASM_HOOKS, "openEnderChestGui",
+                            "(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/inventory/IInventory;)V", false));
+
+                    method.instructions.insertBefore(node, l);
+                    method.instructions.remove(node);
 
                     return true;
                 }

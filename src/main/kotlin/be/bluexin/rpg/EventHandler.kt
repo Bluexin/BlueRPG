@@ -24,6 +24,7 @@ import be.bluexin.rpg.containers.RPGEnderChestContainer
 import be.bluexin.rpg.events.CreatePlayerContainerEvent
 import be.bluexin.rpg.events.CreatePlayerInventoryEvent
 import be.bluexin.rpg.events.LivingEquipmentPostChangeEvent
+import be.bluexin.rpg.events.OpenEnderChestEvent
 import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.gear.WeaponType
@@ -51,10 +52,8 @@ import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.item.EntityPainting
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.ContainerChest
 import net.minecraft.inventory.ContainerPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.inventory.InventoryEnderChest
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.ResourceLocation
@@ -69,7 +68,6 @@ import net.minecraftforge.event.entity.EntityEvent
 import net.minecraftforge.event.entity.EntityJoinWorldEvent
 import net.minecraftforge.event.entity.living.*
 import net.minecraftforge.event.entity.player.CriticalHitEvent
-import net.minecraftforge.event.entity.player.PlayerContainerEvent
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.event.entity.player.PlayerPickupXpEvent
 import net.minecraftforge.event.world.BlockEvent
@@ -379,15 +377,9 @@ object CommonEventHandler {
 
     @SubscribeEvent
     @JvmStatic
-    fun openContainer(event: PlayerContainerEvent.Open) {
-        val c = event.container
-        when (c) {
-            is ContainerChest -> {
-                if (c.lowerChestInventory is InventoryEnderChest) {
-                    GuiHandler.open(RPGEnderChestContainer.NAME, event.entityPlayer, BlockPos.ORIGIN)
-                }
-            }
-        }
+    fun openEnderchest(event: OpenEnderChestEvent) {
+        event.isCanceled = true
+        GuiHandler.open(RPGEnderChestContainer.NAME, event.entityPlayer, BlockPos.ORIGIN)
     }
 
     @ConfigProperty("security", "Whether to protect paintings from breaking")
@@ -448,7 +440,6 @@ object ClientEventHandler {
         when (g) {
             is GuiInventory -> event.gui =
                     GuiRpgInventory((g.inventorySlots as ContainerImpl).container as RPGContainer)
-//            is GuiChest -> event.gui = GuiRpgEnderInventory(RPGEnderChestContainer(Minecraft().player))
         }
     }
 

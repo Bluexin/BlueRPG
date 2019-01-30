@@ -20,12 +20,14 @@ package be.bluexin.rpg.core;
 import be.bluexin.rpg.events.CreatePlayerContainerEvent;
 import be.bluexin.rpg.events.CreatePlayerInventoryEvent;
 import be.bluexin.rpg.events.LivingEquipmentPostChangeEvent;
+import be.bluexin.rpg.events.OpenEnderChestEvent;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.inventory.IInventory;
 import net.minecraftforge.common.MinecraftForge;
 
 @SuppressWarnings("unused")
@@ -48,5 +50,11 @@ public class BlueRPGHooks {
 
     public static void equipmentPostChangeHook(EntityLivingBase entity, EntityEquipmentSlot slot) {
         MinecraftForge.EVENT_BUS.post(new LivingEquipmentPostChangeEvent(entity, slot));
+    }
+
+    public static void openEnderChestGui(EntityPlayer player, IInventory chest) {
+        OpenEnderChestEvent evt = new OpenEnderChestEvent(player, chest);
+        MinecraftForge.EVENT_BUS.post(evt);
+        if (!evt.isCanceled()) player.displayGUIChest(chest);
     }
 }
