@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,6 @@ import java.awt.Color
 import kotlin.collections.set
 import kotlin.random.Random
 
-@SideOnly(Side.CLIENT)
 interface TrailSystem {
     fun spawn(lifetime: Int, position: Vec3d, velocity: Vec3d, color1: Color, color2: Color, size: Double)
 
@@ -63,6 +62,7 @@ interface TrailSystem {
             Embers
         }
 
+        @SideOnly(Side.CLIENT)
         object None : TrailSystem {
 
             init {
@@ -80,6 +80,7 @@ interface TrailSystem {
                 Unit
         }
 
+        @SideOnly(Side.CLIENT)
         object Ice : ParticleSystem(), TrailSystem {
 
             init {
@@ -208,6 +209,7 @@ interface TrailSystem {
             }
         }
 
+        @SideOnly(Side.CLIENT)
         object Embers : ParticleSystem(), TrailSystem {
 
             init {
