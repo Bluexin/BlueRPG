@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import com.teamwizardry.librarianlib.features.kotlin.managedValue
 import com.teamwizardry.librarianlib.features.saving.Save
 import moe.plushie.armourers_workshop.client.config.ConfigHandlerClient
 import moe.plushie.armourers_workshop.client.render.SkinPartRenderer
+import moe.plushie.armourers_workshop.client.render.SkinRenderData
 import moe.plushie.armourers_workshop.client.skin.cache.ClientSkinCache
 import moe.plushie.armourers_workshop.common.skin.data.SkinDescriptor
 import net.minecraft.client.Minecraft
@@ -41,6 +42,7 @@ import net.minecraft.entity.ai.EntityAIWatchClosest
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.ResourceLocation
+import net.minecraft.util.math.MathHelper
 import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
@@ -162,12 +164,12 @@ class ModelPet : ModelBase() {
 
         Minecraft().profile("Render BlueRPG AW Pet") {
             val skinPointer = (entityIn as? EntityPet)?.skinPointer ?: return
-            val distance = Minecraft.getMinecraft().player.getDistance(
+            val distanceSquared = Minecraft.getMinecraft().player.getDistanceSq(
                 entityIn.posX,
                 entityIn.posY,
                 entityIn.posZ
             )
-            if (distance > ConfigHandlerClient.renderDistanceSkin) return
+            if (distanceSquared > Math.pow(ConfigHandlerClient.renderDistanceSkin.toDouble(), 2.0)) return
 
             val data = ClientSkinCache.INSTANCE.getSkin(skinPointer) ?: return
             val skinDye = skinPointer.skinDye
@@ -186,7 +188,17 @@ class ModelPet : ModelBase() {
                     -offset.y.toDouble() + 1.45,
                     offset.z.toDouble()
                 ) // y + 1.45 for current head skins to be floor-aligned
-                SkinPartRenderer.INSTANCE.renderPart(partData, scale, skinDye, null, distance, true)
+                SkinPartRenderer.INSTANCE.renderPart(
+                    SkinRenderData(
+                        partData,
+                        scale,
+                        skinDye,
+                        null,
+                        MathHelper.sqrt(distanceSquared).toInt(),
+                        true,
+                        null
+                    )
+                )
                 GlStateManager.resetColor()
                 GlStateManager.color(1f, 1f, 1f, 1f)
                 GL11.glDisable(GL11.GL_CULL_FACE)
