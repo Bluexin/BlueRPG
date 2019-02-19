@@ -146,6 +146,38 @@ rpg.slow.short=SL
 rpg.cooldown_reduction.short=CDR
 rpg.mana_reduction.short=MCR
 
+rpg.strength.tooltip=This scales the effectiveness of STR-based skills.
+rpg.constitution.tooltip=This scales the effectiveness of CON-based skills.
+rpg.dexterity.tooltip=This scales the effectiveness of DEX-based skills.
+rpg.intelligence.tooltip=This scales the effectiveness of INT-based skills.
+rpg.wisdom.tooltip=This scales the effectiveness of WIS-based skills.
+rpg.charisma.tooltip=This scales the effectiveness of WIS-based skills.
+
+rpg.health.tooltip=This is your life force. When it hits zero, you fall unconcious.
+rpg.armor.tooltip=This reduces your incoming damage.
+
+rpg.psyche.tooltip=This is your skill force. It is depleted when you cast skills.
+rpg.regen.tooltip=This value refills your Health every 5 seconds. In combat, it is only 25% as effective.
+rpg.spirit.tooltip=This value refills your Psyche every 5 seconds. In combat, it is only 25% as effective.
+rpg.reflect.tooltip=A chance to reflect all of the damage back to the damage dealer.
+rpg.block.tooltip=A chance to avoid all damage, but causes a slow on yourself.
+rpg.dodge.tooltip=A chance to dodge an attack, avoiding all damage.
+rpg.parry.tooltip=A chance to parry an attack, reducing its damage by 75%.
+rpg.speed.tooltip=A multiplier for how fast you move while walking and running.
+rpg.life_steal_chance.tooltip=The chance you have of leeching mana from your target.
+rpg.life_steal.tooltip=The percent of your damage converted to your mana pool, when Life Leech is triggered.
+rpg.mana_leech_chance.tooltip=The chance you have of leeching mana from your target.
+rpg.mana_leech.tooltip=The percent of your damage converted to your mana pool, when Mana Leech is triggered.
+rpg.crit_chance.tooltip=This is the Chance you have to Crit, adding your Crit Damage multiplier.
+rpg.crit_damage.tooltip=This multiplier is applied to your damage when you Critically hit.
+rpg.bonus_damage.tooltip=Adds a flat bonus to the end of your damage after Increased Damage is applied.
+rpg.increased_damage.tooltip=Multiplier on your damage, before Bonus Damage is applied.
+rpg.resistance.tooltip=This reduces your incoming damage from another player.
+rpg.root.tooltip=A chance to cause your target to lock in place for 3 seconds.
+rpg.slow.tooltip=A chance to cause your target to slow down for 5 seconds.
+rpg.cooldown_reduction.tooltip=Reduces the length of time your skills remain on cooldown.
+rpg.mana_reduction.tooltip=Reduces the Psyche cost of your skills.
+
 # Items
 item.bluerpg:debug_stats.name=Debug Player Stats
 item.bluerpg:debug_exp.name=Debug Player Exp
