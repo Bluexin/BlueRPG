@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@ import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.gui.Textures.BG
 import be.bluexin.rpg.gui.Textures.PROGRESS_FG
 import be.bluexin.rpg.gui.Textures.SLOT
+import be.bluexin.rpg.items.DynItem
+import be.bluexin.rpg.items.DynamicData
 import be.bluexin.rpg.pets.EggData
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.PetMovementType
@@ -107,6 +109,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
         bg.add(editToken())
         bg.add(editGear())
         bg.add(editEgg())
+        bg.add(editDyn())
     }
 
     private fun editToken(): GuiComponent {
@@ -602,7 +605,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     })
                     add(ComponentRect(0, -1, 129, 10).apply {
                         color(Color(0, 0, 0, 0))
-                        render.tooltip(listOf("rpg.display.cyclepetcolor".localize()))
+                        render.tooltip(listOf("rpg.display.cyclecolor".localize()))
                         BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
                             val stats = eggStats
                             stats.primaryColor = if (it.button == EnumMouseButton.RIGHT) 0 else return@hook
@@ -626,7 +629,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                                 ?: return@f null
                             return@f it
                         }
-                        render.tooltip(listOf("rpg.display.apply".localize(), "rpg.display.petcolortooltip".localize()))
+                        render.tooltip(listOf("rpg.display.apply".localize(), "rpg.display.colortooltip".localize()))
                         BUS.hook(ComponentTextField.TextSentEvent::class.java) {
                             val stats = eggStats
                             stats.primaryColor =
@@ -644,7 +647,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     })
                     add(ComponentRect(0, -1, 129, 10).apply {
                         color(Color(0, 0, 0, 0))
-                        render.tooltip(listOf("rpg.display.cyclepetcolor".localize()))
+                        render.tooltip(listOf("rpg.display.cyclecolor".localize()))
                         BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
                             val stats = eggStats
                             stats.secondaryColor = if (it.button == EnumMouseButton.RIGHT) 0 else return@hook
@@ -668,7 +671,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                                 ?: return@f null
                             return@f it
                         }
-                        render.tooltip(listOf("rpg.display.apply".localize(), "rpg.display.petcolortooltip".localize()))
+                        render.tooltip(listOf("rpg.display.apply".localize(), "rpg.display.colortooltip".localize()))
                         BUS.hook(ComponentTextField.TextSentEvent::class.java) {
                             val stats = eggStats
                             stats.secondaryColor =
@@ -712,6 +715,128 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
         }
     }
 
+    private fun editDyn(): GuiComponent {
+        fun GuiComponent.fillDyn() {
+            val pos = ct.te.pos
+            val scrollList = ComponentScrollList(0, 0, 10, 6).apply {
+                // TODO: color picker
+
+                _add(ComponentVoid(0, 0).apply {
+                    add(ComponentText(0, 0).apply {
+                        text { "rpg.display.primarycolor".localize(dynStats.primaryColor) }
+                    })
+                    add(ComponentRect(0, -1, 129, 10).apply {
+                        color(Color(0, 0, 0, 0))
+                        render.tooltip(listOf("rpg.display.cyclecolor".localize()))
+                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                            val stats = dynStats
+                            stats.primaryColor = if (it.button == EnumMouseButton.RIGHT) 0 else return@hook
+                            PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
+                        }
+                    })
+                })
+
+                _add(ComponentVoid(0, 0).apply {
+                    add(ComponentRect(0, -1, 129, 9).apply {
+                        color(Color.LIGHT_GRAY)
+                    })
+                    add(ComponentTextField(3, 0, 126, 8).apply {
+                        text = dynStats.primaryColor.toString()
+                        enabledColor(Color.BLACK)
+                        cursorColor(Color.BLACK)
+                        useShadow(false)
+                        filter = f@{
+                            if (it.isEmpty()) return@f "0"
+                            (if (it.startsWith("0x")) it.substring(2).toIntOrNull(16) else it.toIntOrNull())
+                                ?: return@f null
+                            return@f it
+                        }
+                        render.tooltip(listOf("rpg.display.apply".localize(), "rpg.display.colortooltip".localize()))
+                        BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                            val stats = dynStats
+                            stats.primaryColor =
+                                if (it.content.startsWith("0x"))
+                                    it.content.substring(2).toInt(16)
+                                else it.content.toInt()
+                            PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
+                        }
+                    })
+                })
+
+                _add(ComponentVoid(0, 0).apply {
+                    add(ComponentText(0, 0).apply {
+                        text { "rpg.display.secondarycolor".localize(dynStats.secondaryColor) }
+                    })
+                    add(ComponentRect(0, -1, 129, 10).apply {
+                        color(Color(0, 0, 0, 0))
+                        render.tooltip(listOf("rpg.display.cyclecolor".localize()))
+                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                            val stats = dynStats
+                            stats.secondaryColor = if (it.button == EnumMouseButton.RIGHT) 0 else return@hook
+                            PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
+                        }
+                    })
+                })
+
+                _add(ComponentVoid(0, 0).apply {
+                    add(ComponentRect(0, -1, 129, 9).apply {
+                        color(Color.LIGHT_GRAY)
+                    })
+                    add(ComponentTextField(3, 0, 126, 8).apply {
+                        text = dynStats.secondaryColor.toString()
+                        enabledColor(Color.BLACK)
+                        cursorColor(Color.BLACK)
+                        useShadow(false)
+                        filter = f@{
+                            if (it.isEmpty()) return@f "0"
+                            (if (it.startsWith("0x")) it.substring(2).toIntOrNull(16) else it.toIntOrNull())
+                                ?: return@f null
+                            return@f it
+                        }
+                        render.tooltip(listOf("rpg.display.apply".localize(), "rpg.display.colortooltip".localize()))
+                        BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                            val stats = dynStats
+                            stats.secondaryColor =
+                                if (it.content.startsWith("0x"))
+                                    it.content.substring(2).toInt(16)
+                                else it.content.toInt()
+                            PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
+                        }
+                    })
+                })
+
+                // TODO: sounds
+            }
+            add(scrollList)
+
+            add(ComponentRect(131, 0, 8, 60).apply {
+                color(Color.GRAY)
+                clipping.clipToBounds = true
+                add(ComponentRect(1, 0, 6, 3).apply {
+                    color(Color.BLUE)
+                    clipping.clipToBounds = true
+                    fun maxY() = this.parent!!.height.toDouble() - this.height
+                    scrollList.BUS.hook(ComponentScrollList.ScrollChangeEvent::class.java) { (it, _, new) ->
+                        this.pos = vec(this.pos.x, maxY() * (new / it.maxScroll.toDouble()))
+                    }
+                    /*BUS.hook(GuiComponentEvents.MouseDragEvent::class.java) {
+                        val p = (this.pos.y + it.mousePos.y).clamp(0.0, maxY())
+                        val v = p / maxY()
+                        val step = 1.0 / scrollList.maxScroll
+                        scrollList.scroll = ((v + step / 2.0) * scrollList.maxScroll).toInt()
+                    }*/
+                })
+            })
+        }
+
+        return ComponentCondition(30, 20) { iss.item is DynItem }.apply {
+            visibilityChanged = {
+                if (it) fillDyn()
+                else clear()
+            }
+        }
+    }
+
     override fun keyTyped(typedChar: Char, keyCode: Int) {
         if (!this.mc.gameSettings.keyBindInventory.isActiveAndMatches(keyCode)) super.keyTyped(typedChar, keyCode)
     }
@@ -727,4 +852,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
 
     private val eggStats: EggData
         get() = ct.te.eggStats
+
+    private val dynStats: DynamicData
+        get() = ct.te.dynStats
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 package be.bluexin.rpg.gear
 
 import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.CommonProxy
 import be.bluexin.rpg.stats.stats
 import be.bluexin.rpg.util.random
 import com.google.gson.GsonBuilder
@@ -30,7 +31,6 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.ItemStack
 import net.minecraft.util.text.TextFormatting
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
@@ -306,11 +306,9 @@ object NameGenerator {
         OffHandType.FOCUS to arrayOf("Focus", "Orb", "Globe", "Sphere", "Marble", "Jewel")
     )
 
-    internal fun preInit(event: FMLPreInitializationEvent) {
+    internal fun preInit() {
         try {
-            val dir = File(event.modConfigurationDirectory, BlueRPG.MODID)
-            if (!dir.exists()) dir.mkdir()
-            if (!dir.isDirectory) throw IllegalStateException("$dir exists and is not a directory")
+            val dir = CommonProxy.customConfDir
 
             val gson = GsonBuilder()
                 .setPrettyPrinting()

@@ -28,6 +28,8 @@ import be.bluexin.rpg.entities.*
 import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.items.DebugExpItem
 import be.bluexin.rpg.items.DebugStatsItem
+import be.bluexin.rpg.items.DynItem
+import be.bluexin.rpg.items.DynamicData
 import be.bluexin.rpg.jobs.GatheringCapability
 import be.bluexin.rpg.jobs.GatheringRegistry
 import be.bluexin.rpg.pets.*
@@ -66,8 +68,11 @@ open class CommonProxy : CoroutineScope {
     override val coroutineContext = Dispatchers.IO + job
 
     open fun preInit(event: FMLPreInitializationEvent) {
-        launch { NameGenerator.preInit(event) }
-        launch { FormulaeConfiguration.preInit(event) }
+        customConfDir = File(event.suggestedConfigurationFile.parentFile, BlueRPG.MODID)
+        if (!customConfDir.exists()) customConfDir.mkdir()
+        if (!customConfDir.isDirectory) throw IllegalStateException("$customConfDir exists and is not a directory")
+        launch { NameGenerator.preInit() }
+        launch { FormulaeConfiguration.preInit() }
         launch {
             GatheringRegistry.setupDataDir(
                 File(
@@ -125,6 +130,7 @@ open class CommonProxy : CoroutineScope {
         ItemRangedWeapon
         ItemOffHand
         SkillItem
+        DynItem.Companion
 
         BlockEditor
         ContainerEditor
@@ -200,6 +206,7 @@ open class CommonProxy : CoroutineScope {
         AbstractSaveHandler.writeAutoNBT(T(GearStats(ItemStack.EMPTY)), false)
         AbstractSaveHandler.writeAutoNBT(T(TokenStats(ItemStack.EMPTY)), false)
         AbstractSaveHandler.writeAutoNBT(T(EggData()), false)
+        AbstractSaveHandler.writeAutoNBT(T(DynamicData()), false)
         AbstractSaveHandler.writeAutoNBT(T(PlayerStats().apply {
             baseStats = StatsCollection(WeakReference(Unit))
             level = Level(WeakReference<EntityPlayer>(null))
@@ -211,6 +218,10 @@ open class CommonProxy : CoroutineScope {
 
     fun postInit(event: FMLPostInitializationEvent) {
         runBlocking { job.children.forEach { it.join() } }
+    }
+
+    companion object {
+        internal lateinit var customConfDir: File
     }
 }
 

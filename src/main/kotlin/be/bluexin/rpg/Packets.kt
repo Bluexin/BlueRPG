@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ package be.bluexin.rpg
 
 import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.gear.WeaponAttribute
+import be.bluexin.rpg.items.DynamicData
 import be.bluexin.rpg.pets.EggData
 import be.bluexin.rpg.skills.glitter.AoE
 import be.bluexin.rpg.skills.glitter.BeamLightningSystem
@@ -77,6 +78,7 @@ class PacketSetEditorStats(pos: BlockPos, stats: StatCapability?) : PacketBase()
                 is TokenStats -> te.tokenStats = stats as TokenStats
                 is GearStats -> te.gearStats = stats as GearStats
                 is EggData -> te.eggStats = stats as EggData
+                is DynamicData -> te.dynStats = stats as DynamicData
             }
         }
     }

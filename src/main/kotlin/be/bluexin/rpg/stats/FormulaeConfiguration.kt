@@ -18,6 +18,7 @@
 package be.bluexin.rpg.stats
 
 import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.CommonProxy
 import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.util.Roll
 import com.google.gson.GsonBuilder
@@ -30,7 +31,6 @@ import gnu.jel.CompilationException
 import gnu.jel.Evaluator
 import gnu.jel.Library
 import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import java.io.*
 import java.lang.reflect.Type
 
@@ -62,11 +62,8 @@ object FormulaeConfiguration {
 
     private lateinit var f: File
 
-    internal fun preInit(event: FMLPreInitializationEvent) = try {
-        val dir = File(event.modConfigurationDirectory, BlueRPG.MODID)
-        if (!dir.exists()) dir.mkdir()
-        if (!dir.isDirectory) throw IllegalStateException("$dir exists and is not a directory")
-        f = File(dir, "stat_formulae.json")
+    internal fun preInit() = try {
+        f = File(CommonProxy.customConfDir, "stat_formulae.json")
         reload()
     } catch (e: Exception) {
         BlueRPG.LOGGER.warn("Unable to load formulae file", e)

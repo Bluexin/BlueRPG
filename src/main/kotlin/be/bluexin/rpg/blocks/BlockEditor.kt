@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,9 @@ import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.gear.IRPGGear
 import be.bluexin.rpg.gear.ItemGearToken
+import be.bluexin.rpg.items.DynItem
+import be.bluexin.rpg.items.DynamicData
+import be.bluexin.rpg.items.dynamicData
 import be.bluexin.rpg.pets.EggData
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.eggData
@@ -96,12 +99,21 @@ class TileEditor : TileModInventory(ModuleInventory(EditorInventory())) {
             world?.onServer(this@TileEditor::markDirty)
         }
 
+    @Save
+    var dynStats: DynamicData = DynamicData()
+        get() = field.copy()
+        set(value) {
+            field = value.copy()
+            world?.onServer(this@TileEditor::markDirty)
+        }
+
     fun saveStats() {
         val i = module.handler.getStackInSlot(0)
         if (i.isNotEmpty) {
             i.tokenStats?.loadFrom(tokenStats)
             i.stats?.loadFrom(gearStats)
             i.eggData?.loadFrom(i, eggStats)
+            i.dynamicData?.loadFrom(i, dynStats)
         }
     }
 
@@ -115,6 +127,10 @@ class TileEditor : TileModInventory(ModuleInventory(EditorInventory())) {
             else {
                 val estats = i.eggData
                 if (estats != null) this.eggStats = estats
+                else {
+                    val dsyats = i.dynamicData
+                    if (dsyats != null) this.dynStats = dsyats
+                }
             }
         }
     }
@@ -122,7 +138,7 @@ class TileEditor : TileModInventory(ModuleInventory(EditorInventory())) {
     private class EditorInventory : ItemStackHandler(1) {
         override fun isItemValid(slot: Int, stack: ItemStack): Boolean {
             val item = stack.item
-            return item is IRPGGear || item is ItemGearToken || item === EggItem
+            return item is IRPGGear || item is ItemGearToken || item === EggItem || item is DynItem
         }
 
         override fun insertItem(slot: Int, stack: ItemStack, simulate: Boolean) =

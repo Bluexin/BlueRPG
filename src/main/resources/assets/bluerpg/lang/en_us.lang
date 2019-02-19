@@ -29,7 +29,7 @@ rpg.display.hatchtime=Hatch (s): %d
 rpg.display.secondslived=Age (s): %d
 rpg.display.primarycolor=Primary Color: %d
 rpg.display.secondarycolor=Secondary Color: %d
-rpg.display.petcolortooltip=Can be entered as hexadecimal by prexifing with '0x'
+rpg.display.colortooltip=Can be entered as hexadecimal by prexifing with '0x'
 
 rpg.display.cyclerarity=Click to cycle trough the possible rarity values
 rpg.display.cyclebind=Click to cycle trough the possible binding values
@@ -37,7 +37,7 @@ rpg.display.cyclegenerator=Click to cycle trough the possible generator values
 rpg.display.cyclegenerated=Click to toggle generated status
 rpg.display.cyclename=Left click to generate a new random name, right click to unset (will be generated upon identifying)
 rpg.display.cyclepetname=Right click to clear name
-rpg.display.cyclepetcolor=Right click to clear color
+rpg.display.cyclecolor=Right click to clear color
 rpg.display.cyclemovementtype=Click to cycle trough the possible movmeent types
 
 rpg.display.debug_exp=Use to gain 20 XP

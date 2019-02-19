@@ -30,6 +30,8 @@ import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.gear.WeaponType
 import be.bluexin.rpg.gui.GuiRpgInventory
 import be.bluexin.rpg.inventory.RPGInventory
+import be.bluexin.rpg.items.DynItem
+import be.bluexin.rpg.items.dynamicData
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.RenderEggItem
 import be.bluexin.rpg.pets.eggData
@@ -345,7 +347,7 @@ object CommonEventHandler {
         if (!limitIsWhitelist) s = s.substring(1)
         interactionLimitBlocks = s.split(',')
             .mapNotNull {
-                if (it.isNotBlank()) Block.getBlockFromName(it)
+                if (it.isNotBlank()) Block.getBlockFromName(it.trim())
                     ?: null.apply { BlueRPG.LOGGER.warn("Invalid ID: `$it`") } else null
             }
     }
@@ -416,6 +418,12 @@ object ClientEventHandler {
                 val eggData = stack.eggData ?: return@IItemColor -1
                 if (tintIndex == 0) eggData.primaryColor else eggData.secondaryColor
             }, EggItem
+        )
+        for (it in DynItem) event.itemColors.registerItemColorHandler(
+            IItemColor { stack, tintIndex ->
+                val dynamicData = stack.dynamicData ?: return@IItemColor -1
+                if (tintIndex == 0) dynamicData.primaryColor else dynamicData.secondaryColor
+            }, it
         )
     }
 
