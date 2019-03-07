@@ -285,3 +285,9 @@ bluerpg:skill_1.name=Fire Bomb
 bluerpg:skill_2.name=Heal
 bluerpg:skill_3.name=Leap
 bluerpg:skill_4.name=Lightning Arc
+
+# Death
+rpg.death.free=The Raven Queen brought %s back to life for free.
+rpg.death.notfree=The Raven Queen brought %s back to life in exchange for %s.
+rpg.death.single=Your death caused you to drop a single item into the world.
+rpg.death.many=Your death caused you to drop %d items into the world.

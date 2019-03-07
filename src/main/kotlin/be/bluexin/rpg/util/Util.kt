@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,8 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
+import net.minecraft.inventory.IInventory
+import net.minecraft.item.ItemStack
 import net.minecraft.network.PacketBuffer
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.util.IThreadListener
@@ -109,6 +111,9 @@ fun <T> SendChannel<T>.offerOrSendAndClose(it: T) {
         close()
     }
 }
+
+operator fun IInventory.get(i: Int): ItemStack = this.getStackInSlot(i)
+operator fun IInventory.set(i: Int, it: ItemStack) = this.setInventorySlotContents(i, it)
 
 class BoundPropertyDelegateReadOnly<in R, out T>(val prop: () -> T) : ReadOnlyProperty<R, T> {
     override operator fun getValue(thisRef: R, property: KProperty<*>) = prop()

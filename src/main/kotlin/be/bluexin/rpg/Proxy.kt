@@ -194,6 +194,7 @@ open class CommonProxy : CoroutineScope {
         trickLiblib()
         registerDataSerializer<PetMovementType>()
         CommonEventHandler.loadInteractionLimit()
+        DeathHandler.loadDropRestriction()
     }
 
     private fun trickLiblib() { // FIXME: remove once TeamWizardry/LibrarianLib#57 is fixed

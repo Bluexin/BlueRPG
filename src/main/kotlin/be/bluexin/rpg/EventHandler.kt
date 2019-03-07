@@ -363,7 +363,7 @@ object CommonEventHandler {
     @SubscribeEvent
     @JvmStatic
     fun playerInteractWithBlock(event: PlayerInteractEvent.RightClickBlock) {
-        if (!event.entityPlayer.isCreative && (limitIsWhitelist xor (event.entityPlayer.world.getBlockState(event.pos).block in interactionLimitBlocks))) {
+        if (!event.entityPlayer.isCreative && limitIsWhitelist != event.entityPlayer.world.getBlockState(event.pos).block in interactionLimitBlocks) {
             event.useBlock = Event.Result.DENY
         }
     }

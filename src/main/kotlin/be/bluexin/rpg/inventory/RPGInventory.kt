@@ -64,6 +64,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
         eggSlot,
         bagSlots
     ).flatten()
+    val destroyableIndices = armorIndices + eggIndex
 
     val skills = MutableList(5) {
         ItemStack(SkillItem).apply { setNBTString("skill", "${BlueRPG.MODID}:skill_$it") }
@@ -88,7 +89,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
     }
 
     override fun getSizeInventory(): Int {
-        return bagIndices.endInclusive + 1
+        return allIndices.endInclusive + 1
     }
 
     override fun getCurrentItem() = this.mainInventory[currentItem]
