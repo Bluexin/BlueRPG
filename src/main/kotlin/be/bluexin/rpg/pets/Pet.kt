@@ -25,6 +25,7 @@ import com.teamwizardry.librarianlib.features.kotlin.createCompoundKey
 import com.teamwizardry.librarianlib.features.kotlin.managedValue
 import com.teamwizardry.librarianlib.features.saving.Save
 import moe.plushie.armourers_workshop.client.config.ConfigHandlerClient
+import moe.plushie.armourers_workshop.client.render.SkinPartRenderData
 import moe.plushie.armourers_workshop.client.render.SkinPartRenderer
 import moe.plushie.armourers_workshop.client.render.SkinRenderData
 import moe.plushie.armourers_workshop.client.skin.cache.ClientSkinCache
@@ -136,7 +137,7 @@ class EntityPet(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
 }
 
 @SideOnly(Side.CLIENT)
-class RenderPet(renderManager: RenderManager) : RenderLiving<EntityPet>(renderManager, ModelPet(), .8f) {
+class RenderPet(renderManager: RenderManager) : RenderLiving<EntityPet>(renderManager, ModelPet(), .4f) {
     override fun getEntityTexture(entity: EntityPet): ResourceLocation? = null
 
     override fun bindEntityTexture(entity: EntityPet) = true
@@ -189,14 +190,17 @@ class ModelPet : ModelBase() {
                     offset.z.toDouble()
                 ) // y + 1.45 for current head skins to be floor-aligned
                 SkinPartRenderer.INSTANCE.renderPart(
-                    SkinRenderData(
-                        partData,
-                        scale,
-                        skinDye,
-                        null,
-                        MathHelper.sqrt(distanceSquared).toInt(),
-                        true,
-                        null
+                    SkinPartRenderData(
+                        partData, SkinRenderData(
+                            scale,
+                            skinDye,
+                            null,
+                            MathHelper.sqrt(distanceSquared).toDouble(),
+                            true,
+                            false,
+                            true,
+                            null
+                        )
                     )
                 )
                 GlStateManager.resetColor()
