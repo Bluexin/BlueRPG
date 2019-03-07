@@ -18,6 +18,7 @@
 package be.bluexin.rpg.pets
 
 import be.bluexin.rpg.util.createEnumKey
+import be.bluexin.saomclib.onServer
 import be.bluexin.saomclib.profile
 import com.teamwizardry.librarianlib.features.base.entity.LivingEntityMod
 import com.teamwizardry.librarianlib.features.kotlin.Minecraft
@@ -113,6 +114,11 @@ class EntityPet(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
     }
 
     override fun onLivingUpdate() {
+        this.world onServer {
+            val owner = this.owner
+            if (owner == null || owner.petStorage.petEntity != this) this.setDead()
+        }
+
         super.onLivingUpdate()
 
         this.movementHandler.onLivingUpdate()
