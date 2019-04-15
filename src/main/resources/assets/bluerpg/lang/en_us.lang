@@ -43,7 +43,7 @@ rpg.display.cyclemovementtype=Click to cycle trough the possible movmeent types
 rpg.display.debug_exp=Use to gain 20 XP
 rpg.display.debug_exp.shift=Use while shifting to gain 100 XP
 
-rpg.display.item=%s %s
+rpg.display.item=%1$s %2$s
 item_group.bluerpg=Blue RPG
 
 # Broadcast
@@ -151,7 +151,7 @@ rpg.constitution.tooltip=This scales the effectiveness of CON-based skills.
 rpg.dexterity.tooltip=This scales the effectiveness of DEX-based skills.
 rpg.intelligence.tooltip=This scales the effectiveness of INT-based skills.
 rpg.wisdom.tooltip=This scales the effectiveness of WIS-based skills.
-rpg.charisma.tooltip=This scales the effectiveness of WIS-based skills.
+rpg.charisma.tooltip=This scales the effectiveness of CHA-based skills.
 
 rpg.health.tooltip=This is your life force. When it hits zero, you fall unconcious.
 rpg.armor.tooltip=This reduces your incoming damage.
