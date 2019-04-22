@@ -22,6 +22,7 @@ package be.bluexin.rpg
 import be.bluexin.rpg.blocks.BlockCaster
 import be.bluexin.rpg.blocks.BlockEditor
 import be.bluexin.rpg.blocks.BlockGatheringNode
+import be.bluexin.rpg.classes.PlayerClassCollection
 import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.containers.RPGEnderChestContainer
 import be.bluexin.rpg.entities.*
@@ -36,9 +37,12 @@ import be.bluexin.rpg.pets.*
 import be.bluexin.rpg.skills.SkillItem
 import be.bluexin.rpg.skills.glitter.TrailSystem
 import be.bluexin.rpg.stats.*
+import be.bluexin.rpg.util.AutoCapabilityStorage
+import be.bluexin.rpg.util.BlueRPGDataFixer
 import be.bluexin.rpg.util.registerDataSerializer
 import be.bluexin.saomclib.capabilities.CapabilitiesHandler
 import com.teamwizardry.librarianlib.features.base.ModCreativeTab
+import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
@@ -88,19 +92,24 @@ open class CommonProxy : CoroutineScope {
 
         CapabilitiesHandler.registerEntityCapability(
             PlayerStats::class.java,
-            PlayerStats.Storage
+            AutoCapabilityStorage()
         ) { it is EntityPlayer && it !is FakePlayer }
-        // Not using SAOMCLib for this one because we don't want it autoregistered
+        CapabilitiesHandler.registerEntityCapability(
+            PlayerClassCollection::class.java,
+            AutoCapabilityStorage()
+        ) { it is EntityPlayer && it !is FakePlayer }
+        CapabilitiesHandler.registerEntityCapability(
+            PetStorage::class.java,
+            AutoCapabilityStorage()
+        ) { it is EntityPlayer && it !is FakePlayer }
+
+        // Not using SAOMCLib for these because we don't want them autoregistered
         CapabilityManager.INSTANCE.register(GearStats::class.java, GearStats.Storage) { GearStats(ItemStack.EMPTY) }
         CapabilityManager.INSTANCE.register(TokenStats::class.java, TokenStats.Storage) { TokenStats(ItemStack.EMPTY) }
         CapabilityManager.INSTANCE.register(
             GatheringCapability::class.java,
             GatheringCapability.Storage
         ) { GatheringCapability() }
-        CapabilitiesHandler.registerEntityCapability(
-            PetStorage::class.java,
-            PetStorage.Storage
-        ) { it is EntityPlayer && it !is FakePlayer }
     }
 
     private fun vanillaHax() {
@@ -229,6 +238,7 @@ open class CommonProxy : CoroutineScope {
 @SideOnly(Side.CLIENT)
 class ClientProxy : CommonProxy() {
     override fun preInit(event: FMLPreInitializationEvent) {
+        BlueRPGDataFixer.setup(Minecraft().dataFixer)
         super.preInit(event)
 
         TrailSystem.load()

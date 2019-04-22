@@ -31,10 +31,9 @@ object SkillRegistry : IForgeRegistryModifiable<SkillData> by buildRegistry("ski
 
 data class SkillData(
     val key: ResourceLocation,
-    val icon: ResourceLocation,
-    val description: String,
     val mana: Int,
     val cooldown: Int,
+    val magic: Boolean,
     val levelTransformer: Placeholder,
     val processor: Processor
 ) : IForgeRegistryEntry.Impl<SkillData>() {

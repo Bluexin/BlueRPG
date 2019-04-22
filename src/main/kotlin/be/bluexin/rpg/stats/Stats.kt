@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,10 @@ import java.text.DecimalFormat
 import java.util.*
 
 @SaveInPlace
-class StatsCollection(private val reference: WeakReference<out Any>, @Save internal var collection: HashMap<Stat, Int> = HashMap()) {
+class StatsCollection(
+    private val reference: WeakReference<out Any>,
+    @Save internal var collection: MutableMap<Stat, Int> = HashMap()
+) {
     // TODO: move collection to `val` and `withDefault` (instead of getOrDefault) once liblib updates
 
     operator fun get(stat: Stat): Int = collection.getOrDefault(stat, 0)
@@ -54,9 +57,7 @@ class StatsCollection(private val reference: WeakReference<out Any>, @Save inter
         return if (evt == null || (fire(evt) && evt.result != Event.Result.DENY)) {
             if (evt?.newValue ?: value != 0) collection[stat] = evt?.newValue ?: value
             else collection.remove(stat)
-            if (r is EntityPlayer) {
-                r.getEntityAttribute(stat.attribute).baseValue = evt!!.newValue.toDouble()
-            }
+            if (r is EntityPlayer) r.getEntityAttribute(stat.attribute).baseValue = evt!!.newValue.toDouble()
             dirty()
             true
         } else false
@@ -64,7 +65,7 @@ class StatsCollection(private val reference: WeakReference<out Any>, @Save inter
 
     operator fun invoke() = collection.asSequence()
 
-    operator fun iterator() = (collection as Map<Stat, Int>).iterator()
+    operator fun iterator(): Iterator<Map.Entry<Stat, Int>> = collection.iterator()
 
     fun copy() = StatsCollection(WeakReference<Any>(null), HashMap(collection))
 

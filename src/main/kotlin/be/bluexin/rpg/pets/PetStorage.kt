@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,9 @@ package be.bluexin.rpg.pets
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.saomclib.capabilities.AbstractEntityCapability
 import be.bluexin.saomclib.capabilities.Key
-import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.nbt.NBTBase
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.capabilities.Capability
@@ -65,27 +61,6 @@ class PetStorage : AbstractEntityCapability() {
     fun killPet() {
         petEntity?.setDead()
         petEntity = null
-    }
-
-    internal object Storage : Capability.IStorage<PetStorage> {
-        override fun readNBT(
-            capability: Capability<PetStorage>,
-            instance: PetStorage,
-            side: EnumFacing?,
-            nbt: NBTBase
-        ) {
-            val nbtTagCompound = nbt as? NBTTagCompound ?: return
-            AbstractSaveHandler.readAutoNBT(instance, nbtTagCompound.getTag(KEY.toString()), false)
-        }
-
-        override fun writeNBT(capability: Capability<PetStorage>, instance: PetStorage, side: EnumFacing?): NBTBase {
-            return NBTTagCompound().also {
-                it.setTag(
-                    KEY.toString(),
-                    AbstractSaveHandler.writeAutoNBT(instance, false)
-                )
-            }
-        }
     }
 
     companion object {

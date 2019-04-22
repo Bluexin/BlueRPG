@@ -27,14 +27,10 @@ import be.bluexin.saomclib.capabilities.Key
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.config.ConfigIntRange
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
-import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.nbt.NBTBase
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
@@ -100,27 +96,6 @@ class PlayerStats : AbstractEntityCapability(), StatCapability {
     override fun sync() {
         super.sync()
         clean()
-    }
-
-    internal object Storage : Capability.IStorage<PlayerStats> {
-        override fun readNBT(
-            capability: Capability<PlayerStats>,
-            instance: PlayerStats,
-            side: EnumFacing?,
-            nbt: NBTBase
-        ) {
-            val nbtTagCompound = nbt as? NBTTagCompound ?: return
-            AbstractSaveHandler.readAutoNBT(instance, nbtTagCompound.getTag(KEY.toString()), false)
-        }
-
-        override fun writeNBT(capability: Capability<PlayerStats>, instance: PlayerStats, side: EnumFacing?): NBTBase {
-            return NBTTagCompound().also {
-                it.setTag(
-                    KEY.toString(),
-                    AbstractSaveHandler.writeAutoNBT(instance, false)
-                )
-            }
-        }
     }
 
     companion object {

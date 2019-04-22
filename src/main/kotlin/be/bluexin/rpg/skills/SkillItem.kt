@@ -48,11 +48,11 @@ object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
     override val extraVariants by lazy { arrayOf("unknown_skill", *SkillRegistry.allSkillStrings) }
 
     override val meshDefinition: ((stack: ItemStack) -> ModelResourceLocation)? =
-        { ModelResourceLocation(it.skill?.icon ?: ResourceLocation(BlueRPG.MODID, "unknown_skill"), "inventory") }
+        { ModelResourceLocation(it.skillName, "inventory") }
 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
         stack.skill?.apply {
-            tooltip += description
+            tooltip += "rpg.tooltip.${stack.skillName}"
             tooltip += "rpg.tooltip.manacost".localize(mana)
             tooltip += "rpg.tooltip.cooldown".localize(cooldown)
         }

@@ -92,7 +92,7 @@ configurations {
 dependencies {
     compile project(':coremod')
     contained project(':coremod')
-    compile('com.saomc:saoui:1.12.2-2.0.0.12-SNAPSHOT:deobf') {
+    compile('com.saomc:saoui:1.12.2-2.0.0.13-SNAPSHOT:deobf') {
         exclude group: 'com.teamwizardry.librarianlib'
     }
 //    compile 'org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.9.1'

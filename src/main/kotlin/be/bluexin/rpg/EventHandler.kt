@@ -37,6 +37,7 @@ import be.bluexin.rpg.pets.RenderEggItem
 import be.bluexin.rpg.pets.eggData
 import be.bluexin.rpg.skills.*
 import be.bluexin.rpg.stats.*
+import be.bluexin.rpg.util.BlueRPGDataFixer
 import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
@@ -75,6 +76,7 @@ import net.minecraftforge.event.entity.player.PlayerPickupXpEvent
 import net.minecraftforge.event.world.BlockEvent
 import net.minecraftforge.fml.client.config.GuiUtils.drawTexturedModalRect
 import net.minecraftforge.fml.common.Mod
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent
 import net.minecraftforge.fml.common.eventhandler.Event
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
@@ -209,10 +211,9 @@ object CommonEventHandler {
         event.registry.registerAll(
             SkillData(
                 ResourceLocation(BlueRPG.MODID, "skill_0"),
-                ResourceLocation(BlueRPG.MODID, "skill_0"),
-                "I don't really have a description yet",
                 mana = 10,
                 cooldown = 60,
+                magic = true,
                 levelTransformer = Placeholder(2),
                 processor = Processor(
                     Use(10),
@@ -231,10 +232,9 @@ object CommonEventHandler {
             ),
             SkillData(
                 ResourceLocation(BlueRPG.MODID, "skill_1"),
-                ResourceLocation(BlueRPG.MODID, "skill_1"),
-                "I don't really have a description yet",
                 mana = 10,
                 cooldown = 60,
+                magic = true,
                 levelTransformer = Placeholder(2),
                 processor = Processor(
                     Use(20),
@@ -259,10 +259,9 @@ object CommonEventHandler {
             ),
             SkillData(
                 ResourceLocation(BlueRPG.MODID, "skill_2"),
-                ResourceLocation(BlueRPG.MODID, "skill_2"),
-                "I don't really have a description yet",
                 mana = 10,
                 cooldown = 60,
+                magic = true,
                 levelTransformer = Placeholder(2),
                 processor = Processor(
                     Use(10),
@@ -280,10 +279,9 @@ object CommonEventHandler {
             ),
             SkillData(
                 ResourceLocation(BlueRPG.MODID, "skill_3"),
-                ResourceLocation(BlueRPG.MODID, "skill_3"),
-                "I don't really have a description yet",
                 mana = 10,
                 cooldown = 60,
+                magic = true,
                 levelTransformer = Placeholder(2),
                 processor = Processor(
                     Use(15),
@@ -301,10 +299,9 @@ object CommonEventHandler {
             ),
             SkillData(
                 ResourceLocation(BlueRPG.MODID, "skill_4"),
-                ResourceLocation(BlueRPG.MODID, "skill_4"),
-                "I don't really have a description yet",
                 mana = 10,
                 cooldown = 60,
+                magic = true,
                 levelTransformer = Placeholder(2),
                 processor = Processor(
                     Use(10),
@@ -338,7 +335,7 @@ object CommonEventHandler {
     @JvmStatic
     fun playerContainerCreated(event: CreatePlayerContainerEvent) {
         if (event.player !is FakePlayer) event.container =
-                RPGContainer(event.player, event.container as ContainerPlayer).impl
+            RPGContainer(event.player, event.container as ContainerPlayer).impl
     }
 
     fun loadInteractionLimit() {
@@ -447,7 +444,7 @@ object ClientEventHandler {
         val g = event.gui
         when (g) {
             is GuiInventory -> event.gui =
-                    GuiRpgInventory((g.inventorySlots as ContainerImpl).container as RPGContainer)
+                GuiRpgInventory((g.inventorySlots as ContainerImpl).container as RPGContainer)
         }
     }
 
@@ -505,4 +502,8 @@ object ServerEventHandler {
             event.component = component
         }
     }
+
+    @SubscribeEvent
+    @JvmStatic
+    fun serverStarting(event: FMLServerStartingEvent) = BlueRPGDataFixer.setup(event.server.dataFixer)
 }

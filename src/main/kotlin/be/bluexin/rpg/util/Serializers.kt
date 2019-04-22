@@ -17,12 +17,17 @@
 
 package be.bluexin.rpg.util
 
+import be.bluexin.saomclib.capabilities.AbstractCapability
 import com.teamwizardry.librarianlib.features.autoregister.SerializerRegister
+import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.FieldType
 import com.teamwizardry.librarianlib.features.saving.serializers.Serializer
 import io.netty.buffer.ByteBuf
 import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagByte
+import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.EnumFacing
+import net.minecraftforge.common.capabilities.Capability
 
 @SerializerRegister(Unit::class)
 object SerializeUnit : Serializer<Unit>(FieldType.create(Boolean::class.javaPrimitiveType!!)) {
@@ -31,4 +36,19 @@ object SerializeUnit : Serializer<Unit>(FieldType.create(Boolean::class.javaPrim
     override fun writeBytes(buf: ByteBuf, value: Unit, syncing: Boolean) = Unit
     override fun readNBT(nbt: NBTBase, existing: Unit?, syncing: Boolean) = Unit
     override fun writeNBT(value: Unit, syncing: Boolean): NBTBase = NBTTagByte(0)
+}
+
+class AutoCapabilityStorage<T : AbstractCapability> : Capability.IStorage<T> {
+    override fun readNBT(
+        capability: Capability<T>,
+        instance: T,
+        side: EnumFacing?,
+        nbt: NBTBase
+    ) {
+        val nbtTagCompound = nbt as? NBTTagCompound ?: return
+        AbstractSaveHandler.readAutoNBT(instance, nbtTagCompound, false)
+    }
+
+    override fun writeNBT(capability: Capability<T>, instance: T, side: EnumFacing?) =
+        AbstractSaveHandler.writeAutoNBT(instance, false)
 }
