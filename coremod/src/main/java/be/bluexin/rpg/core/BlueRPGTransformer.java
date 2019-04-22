@@ -50,6 +50,7 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
         transformers.put("net.minecraft.entity.player.EntityPlayer", BlueRPGTransformer::transformPlayer);
         transformers.put("net.minecraft.entity.EntityLivingBase", BlueRPGTransformer::transformELB);
         transformers.put("net.minecraft.block.BlockEnderChest", BlueRPGTransformer::transformBEC);
+        transformers.put("boni.dummy.EntityDummy", BlueRPGTransformer::transformDummy);
     }
 
     private static byte[] transformPlayer(byte[] basicClass) {
@@ -160,6 +161,36 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
 
                     method.instructions.insertBefore(node, l);
                     method.instructions.remove(node);
+
+                    return true;
+                }
+        ));
+    }
+
+    private static byte[] transformDummy(byte[] basicClass) {
+        final MethodSignature damageEntity = new MethodSignature("attackEntityFrom", "func_70097_a", "(Lnet/minecraft/util/DamageSource;F)Z");
+        final FieldSignature hurtResistantTime = new FieldSignature("hurtResistantTime", "hurtResistantTime", "I");
+
+        return transform(basicClass, damageEntity, "Dummy attack hook", combine(
+                (node) -> node.getOpcode() == GETFIELD && hurtResistantTime.matches((FieldInsnNode) node),
+                (method, node) -> {
+                    while (node.getOpcode() != IRETURN) node = node.getPrevious();
+                    node = node.getNext();
+
+                    final InsnList l = new InsnList();
+                    final LabelNode label = new LabelNode();
+
+                    l.add(new VarInsnNode(ALOAD, 0));
+                    l.add(new VarInsnNode(ALOAD, 1));
+                    l.add(new VarInsnNode(FLOAD, 2));
+                    l.add(new MethodInsnNode(INVOKESTATIC, "net/minecraftforge/common/ForgeHooks", "onLivingAttack",
+                            "(Lnet/minecraft/entity/EntityLivingBase;Lnet/minecraft/util/DamageSource;F)Z", false));
+                    l.add(new JumpInsnNode(IFNE, label));
+                    l.add(new InsnNode(ICONST_0));
+                    l.add(new InsnNode(IRETURN));
+                    l.add(label);
+
+                    method.instructions.insert(node, l);
 
                     return true;
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -112,6 +112,7 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) :
     }
 
     override fun onLeftClickEntity(stack: ItemStack, player: EntityPlayer, entity: Entity): Boolean {
+        println("Hit $entity")
         return if (player.world.isRemote) {
             DamageHandler.handleAoe(player)
             return true
