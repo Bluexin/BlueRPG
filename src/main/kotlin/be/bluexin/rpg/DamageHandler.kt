@@ -26,9 +26,9 @@ import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.allowBlock
 import be.bluexin.rpg.util.allowParry
 import be.bluexin.saomclib.capabilities.getPartyCapability
+import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.config.ConfigIntRange
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
-import com.teamwizardry.librarianlib.features.network.PacketHandler
 import com.teamwizardry.librarianlib.features.utilities.RaycastUtils
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
@@ -42,9 +42,6 @@ import net.minecraft.util.text.ITextComponent
 import net.minecraftforge.event.entity.living.LivingAttackEvent
 import net.minecraftforge.event.entity.living.LivingDamageEvent
 import net.minecraftforge.event.entity.living.LivingHurtEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
-import java.util.*
 import kotlin.math.max
 
 object DamageHandler {
@@ -89,32 +86,29 @@ object DamageHandler {
     var slowCD = 100
         internal set
 
-    @SideOnly(Side.CLIENT)
-    fun handleRange(player: EntityPlayer) { // TODO: optimize this (see info in liblib with `azerty` marker)
-        val reach = player[WeaponAttribute.RANGE]
-        val target = RaycastUtils.getEntityLookedAt(player, reach)
-        if (target != null) PacketHandler.NETWORK.sendToServer(PacketAttack(target.entityId))
-        else handleAoe(player)
-    }
-
-    @SideOnly(Side.CLIENT)
-    fun handleAoe(player: EntityPlayer) {
-        val aoeRadius = player[WeaponAttribute.ANGLE].toInt()
-        val ents = LinkedList<Entity>()
-        if (aoeRadius > 0) {
+    fun handleCustomAttack(player: EntityPlayer) { // TODO: optimize this (see info in liblib with `azerty` marker)
+        player.world onServer {
+            val t = player.entityData
+            t.setBoolean("bluerpg:customAttackProcessing", true)
+            val aoeRadius = player[WeaponAttribute.ANGLE].toInt()
+            val targets: MutableSet<Entity> = LinkedHashSet()
             val reach = player[WeaponAttribute.RANGE]
-            val yaw = player.rotationYaw
-            for (i in (yaw.toInt() - aoeRadius / 2)..(yaw.toInt() + aoeRadius / 2) step 15) {
-                player.rotationYaw = i.toFloat()
-                val t = RaycastUtils.getEntityLookedAt(player, reach)
-                if (t != null) {
-                    ents += t
+            if (aoeRadius > 0) {
+                val yaw = player.rotationYaw
+                for (i in (yaw.toInt() - aoeRadius / 2)..(yaw.toInt() + aoeRadius / 2) step 15) {
+                    player.rotationYaw = i.toFloat()
+                    val target = RaycastUtils.getEntityLookedAt(player, reach)
+                    if (target != null) targets += target
                 }
+                player.rotationYaw = yaw
+            } else {
+                val target = RaycastUtils.getEntityLookedAt(player, reach)
+                if (target != null && player.positionVector.squareDistanceTo(target.positionVector) <= reach * reach) targets += target
             }
-            player.rotationYaw = yaw
-        }
-        ents.forEach {
-            PacketHandler.NETWORK.sendToServer(PacketAttack(it.entityId))
+            targets.forEach {
+                player.attackTargetEntityWithCurrentItem(it)
+            }
+            t.setBoolean("bluerpg:customAttackProcessing", false)
         }
     }
 

@@ -22,8 +22,10 @@ import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.GearStats
 import be.bluexin.rpg.stats.stats
 import be.bluexin.rpg.util.set
+import be.bluexin.saomclib.onServer
 import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.base.item.ItemModSword
+import com.teamwizardry.librarianlib.features.helpers.getBoolean
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.Entity
@@ -112,19 +114,18 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) :
     }
 
     override fun onLeftClickEntity(stack: ItemStack, player: EntityPlayer, entity: Entity): Boolean {
-        println("Hit $entity")
-        return if (player.world.isRemote) {
-            DamageHandler.handleAoe(player)
-            return true
-        } else {
+        player.world.onServer {
             val t = player.entityData
-            val lastTime = t.getLong("bluerpg:weapontime")
-            if (lastTime != player.world.totalWorldTime) {
-                t.setLong("bluerpg:weapontime", player.world.totalWorldTime)
-                t.setFloat("bluerpg:lastweaponcd", player.getCooledAttackStrength(0f))
-            }
-            super.onLeftClickEntity(stack, player, entity)
+            if (t.getBoolean("bluerpg:customAttackProcessing", false)) {
+                val lastTime = t.getLong("bluerpg:weapontime")
+                if (lastTime != player.world.totalWorldTime) {
+                    t.setLong("bluerpg:weapontime", player.world.totalWorldTime)
+                    t.setFloat("bluerpg:lastweaponcd", player.getCooledAttackStrength(0f))
+                }
+                return super.onLeftClickEntity(stack, player, entity)
+            } else DamageHandler.handleCustomAttack(player)
         }
+        return true
     }
 
     override val item: Item

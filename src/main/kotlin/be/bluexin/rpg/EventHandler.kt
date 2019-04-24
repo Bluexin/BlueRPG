@@ -45,6 +45,7 @@ import com.teamwizardry.librarianlib.features.config.ConfigProperty
 import com.teamwizardry.librarianlib.features.container.GuiHandler
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
 import com.teamwizardry.librarianlib.features.kotlin.Minecraft
+import com.teamwizardry.librarianlib.features.network.PacketHandler
 import net.minecraft.block.Block
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.ScaledResolution
@@ -399,7 +400,7 @@ object ClientEventHandler {
 
     @SubscribeEvent
     @JvmStatic
-    fun hitEmpty(event: PlayerInteractEvent.LeftClickEmpty) = DamageHandler.handleRange(event.entityPlayer)
+    fun hitEmpty(event: PlayerInteractEvent.LeftClickEmpty) = PacketHandler.NETWORK.sendToServer(PacketAttack())
 
     @SubscribeEvent
     @JvmStatic

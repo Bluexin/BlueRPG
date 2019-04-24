@@ -18,7 +18,6 @@
 package be.bluexin.rpg
 
 import be.bluexin.rpg.containers.ContainerEditor
-import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.items.DynamicData
 import be.bluexin.rpg.pets.EggData
 import be.bluexin.rpg.skills.glitter.AoE
@@ -109,21 +108,8 @@ class PacketSaveLoadEditorItem(pos: BlockPos, saving: Boolean) : PacketBase() {
 }
 
 @PacketRegister(Side.SERVER)
-class PacketAttack(entityID: Int) : PacketBase() {
-    @Save
-    var entityID = entityID
-        internal set
-
-    @Suppress("unused")
-    internal constructor() : this(0)
-
-    override fun handle(ctx: MessageContext) {
-        val player = ctx.serverHandler.player
-        val target = player.world.getEntityByID(entityID) ?: return
-        val reach = player[WeaponAttribute.RANGE]
-        if (player.positionVector.squareDistanceTo(target.positionVector) > reach * reach) return
-        player.attackTargetEntityWithCurrentItem(target)
-    }
+class PacketAttack : PacketBase() {
+    override fun handle(ctx: MessageContext) = DamageHandler.handleCustomAttack(ctx.serverHandler.player)
 }
 
 @PacketRegister(Side.CLIENT)
