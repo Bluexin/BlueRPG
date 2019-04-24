@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,12 +62,12 @@ enum class Rarity(
 
     fun rollStats(): Array<Stat> {
         val primaries = LinkedList(PrimaryStat.values().toList())
-        val secondarySize = SecondaryStat.values().size
+        val secondaries = LinkedList(SecondaryStat.values().toList())
         val p = Array<Stat>(primaryRolls) {
             primaries.removeAt(RNG.nextInt(primaries.size))
         }
         val s = Array<Stat>(secondaryRolls) {
-            SecondaryStat.values()[RNG.nextInt(secondarySize)]
+            secondaries.removeAt(RNG.nextInt(secondaries.size))
         }
 
         return p + s
