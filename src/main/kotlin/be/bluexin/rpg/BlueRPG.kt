@@ -20,6 +20,7 @@ package be.bluexin.rpg
 import be.bluexin.rpg.modplugins.CNPCEventHandler
 import be.bluexin.rpg.modplugins.SAOUIEventHandler
 import be.bluexin.rpg.pets.AWIntegration
+import be.bluexin.rpg.util.BlueRPGDataFixer
 import com.saomc.saoui.SAOCore
 import moe.plushie.armourers_workshop.common.lib.LibModInfo
 import net.minecraftforge.fml.common.Loader
@@ -83,5 +84,6 @@ object BlueRPG {
     @Mod.EventHandler
     fun serverStart(event: FMLServerStartingEvent) {
         event.registerServerCommand(Command)
+        if (event.server.isDedicatedServer) BlueRPGDataFixer.setup(event.server.dataFixer)
     }
 }

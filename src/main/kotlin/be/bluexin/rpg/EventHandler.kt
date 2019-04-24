@@ -25,9 +25,7 @@ import be.bluexin.rpg.events.CreatePlayerContainerEvent
 import be.bluexin.rpg.events.CreatePlayerInventoryEvent
 import be.bluexin.rpg.events.LivingEquipmentPostChangeEvent
 import be.bluexin.rpg.events.OpenEnderChestEvent
-import be.bluexin.rpg.gear.IRPGGear
-import be.bluexin.rpg.gear.WeaponAttribute
-import be.bluexin.rpg.gear.WeaponType
+import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.gui.GuiRpgInventory
 import be.bluexin.rpg.inventory.RPGInventory
 import be.bluexin.rpg.items.DynItem
@@ -37,7 +35,6 @@ import be.bluexin.rpg.pets.RenderEggItem
 import be.bluexin.rpg.pets.eggData
 import be.bluexin.rpg.skills.*
 import be.bluexin.rpg.stats.*
-import be.bluexin.rpg.util.BlueRPGDataFixer
 import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
@@ -63,7 +60,7 @@ import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
-import net.minecraft.util.text.TextComponentTranslation
+import net.minecraft.util.text.TextComponentString
 import net.minecraftforge.client.event.*
 import net.minecraftforge.common.util.FakePlayer
 import net.minecraftforge.event.RegistryEvent
@@ -72,14 +69,15 @@ import net.minecraftforge.event.entity.EntityEvent
 import net.minecraftforge.event.entity.EntityJoinWorldEvent
 import net.minecraftforge.event.entity.living.*
 import net.minecraftforge.event.entity.player.CriticalHitEvent
+import net.minecraftforge.event.entity.player.EntityItemPickupEvent
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.event.entity.player.PlayerPickupXpEvent
 import net.minecraftforge.event.world.BlockEvent
 import net.minecraftforge.fml.client.config.GuiUtils.drawTexturedModalRect
 import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent
 import net.minecraftforge.fml.common.eventhandler.Event
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.gameevent.PlayerEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
@@ -503,8 +501,4 @@ object ServerEventHandler {
             event.component = component
         }
     }
-
-    @SubscribeEvent
-    @JvmStatic
-    fun serverStarting(event: FMLServerStartingEvent) = BlueRPGDataFixer.setup(event.server.dataFixer)
 }
