@@ -22,6 +22,7 @@ import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.random
 import be.bluexin.saomclib.capabilities.Key
+import be.bluexin.saomclib.message
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.helpers.getNBTByte
 import com.teamwizardry.librarianlib.features.helpers.removeNBTEntry
@@ -59,10 +60,15 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
     var rarity: Rarity? = null
 
     @Save
-    var binding = Binding.BOE // TODO
+    var binding = Binding.BOE
 
     @Save
     var bound: UUID? = null
+        internal set
+
+    @Save
+    var boundUsername: String? = null
+        internal set
 
     @Save
     var ilvl = 1
@@ -172,6 +178,12 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
 
     operator fun get(stat: Stat) = stats[stat]
 
+    fun bindTo(player: EntityPlayer) {
+        this.bound = player.persistentID
+        this.boundUsername = player.displayNameString
+        player.message("rpg.notification.bound", this.itemStackIn.textComponent)
+    }
+
     fun loadFrom(other: GearStats) {
         generated = other.generated
         generator = other.generator
@@ -224,8 +236,10 @@ val ItemStack.stats get() = this.getCapability(GearStats.Capability, null)
 
 fun ItemStack.requirementMet(player: EntityPlayer): Boolean {
     val s = stats ?: return false
-    return s.levelReqMet(player) && statsReqMet(player)
+    return s.checkBinding(player) && s.levelReqMet(player) && statsReqMet(player)
 }
+
+fun GearStats.checkBinding(player: EntityPlayer) = this.bound == null || this.bound == player.persistentID
 
 fun GearStats.levelReqMet(player: EntityPlayer) = levelReq <= player.stats.level.level_a
 

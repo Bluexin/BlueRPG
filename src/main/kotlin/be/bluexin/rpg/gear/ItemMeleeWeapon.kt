@@ -115,15 +115,19 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) :
 
     override fun onLeftClickEntity(stack: ItemStack, player: EntityPlayer, entity: Entity): Boolean {
         player.world.onServer {
-            val t = player.entityData
-            if (t.getBoolean("bluerpg:customAttackProcessing", false)) {
-                val lastTime = t.getLong("bluerpg:weapontime")
-                if (lastTime != player.world.totalWorldTime) {
-                    t.setLong("bluerpg:weapontime", player.world.totalWorldTime)
-                    t.setFloat("bluerpg:lastweaponcd", player.getCooledAttackStrength(0f))
-                }
-                return super.onLeftClickEntity(stack, player, entity)
-            } else DamageHandler.handleCustomAttack(player)
+            val stats = stack.stats!!
+            if (stats.generated) {
+                if (stats.bound == null && stats.binding == Binding.BOE) stats.bindTo(player)
+                val t = player.entityData
+                if (t.getBoolean("bluerpg:customAttackProcessing", false)) {
+                    val lastTime = t.getLong("bluerpg:weapontime")
+                    if (lastTime != player.world.totalWorldTime) {
+                        t.setLong("bluerpg:weapontime", player.world.totalWorldTime)
+                        t.setFloat("bluerpg:lastweaponcd", player.getCooledAttackStrength(0f))
+                    }
+                    return super.onLeftClickEntity(stack, player, entity)
+                } else DamageHandler.handleCustomAttack(player)
+            }
         }
         return true
     }

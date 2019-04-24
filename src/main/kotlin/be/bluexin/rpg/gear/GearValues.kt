@@ -293,6 +293,5 @@ enum class WeaponAttribute(uuid: String, attribute: IAttribute? = null) : Stat {
 enum class Binding : Localizable {
     BOE,
     BOP,
-    BOU,
     BOT;
 }

@@ -141,7 +141,13 @@ object CommonEventHandler {
     fun postChangeGear(event: LivingEquipmentPostChangeEvent) {
         (event.entityLiving as? EntityPlayer)?.apply {
             equipmentAndArmor.forEach {
-                if (it.item is IRPGGear) it.enabled = it.requirementMet(this)
+                if (it.item is IRPGGear) {
+                    if (it.item is ItemArmor || it.item is ItemOffHand) {
+                        val stats = it.stats!!
+                        if (stats.bound == null && stats.binding == Binding.BOE) it.stats!!.bindTo(this)
+                    }
+                    it.enabled = it.requirementMet(this)
+                }
             }
         }
     }
@@ -390,6 +396,20 @@ object CommonEventHandler {
         if (e is EntityLivingBase) e.maxHurtResistantTime = 0
         if (protectPaintings && e is EntityPainting) e.setEntityInvulnerable(true)
     }
+
+    @SubscribeEvent
+    @JvmStatic
+    fun itemPickup(event: EntityItemPickupEvent) {
+        val stats = event.item.item.stats ?: return
+        if (!stats.checkBinding(event.entityPlayer)) event.isCanceled = true
+    }
+
+    @SubscribeEvent
+    @JvmStatic
+    fun itemPickupPost(event: PlayerEvent.ItemPickupEvent) {
+        val stats = event.stack.stats ?: return
+        if (stats.bound == null && stats.binding == Binding.BOP) stats.bindTo(event.player)
+    }
 }
 
 @SideOnly(Side.CLIENT)
@@ -495,7 +515,7 @@ object ServerEventHandler {
         // [i],(i),[item] and (item)
         if (event.message.contains(regex)) {
             val s = event.component.formattedText.split(regex, 2)
-            val component = TextComponentTranslation(s[0])
+            val component = TextComponentString(s[0])
             component.appendSibling(event.player.heldItemMainhand.textComponent)
             s.asSequence().drop(1).forEach { component.appendText(it) }
             event.component = component

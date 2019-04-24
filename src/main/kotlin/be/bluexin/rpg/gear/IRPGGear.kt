@@ -78,7 +78,7 @@ interface IRPGGear : IUsable<ItemStack> { // TODO: use ISpecialArmor
                 )
             }
             tooltip += spacer
-            tooltip += if (stats.bound != null) "rpg.tooltip.bound".localize()
+            tooltip += if (stats.bound != null) "rpg.tooltip.bound".localize(stats.boundUsername!!)
             else "rpg.tooltip.binding".localize(stats.binding.localized)
             val d = if (stack.maxDamage > 0) ((stack.maxDamage - stack.itemDamage) / stack.maxDamage.toFloat()) else 0f
             tooltip += "rpg.tooltip.durability.${

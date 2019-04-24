@@ -48,6 +48,7 @@ item_group.bluerpg=Blue RPG
 
 # Broadcast
 rpg.broadcast.item=Congratulations! %1$s obtained %2$s
+rpg.notification.bound=Your %s has been bound to you
 
 # Item Tooltip
 rpg.tooltip.spacer=§7§r
@@ -61,7 +62,7 @@ rpg.tooltip.pstat=§a+%1$s %2$s§r
 rpg.tooltip.sstat=§a+%1$s §7%2$s§r
 rpg.tooltip.flatstat=%d
 rpg.tooltip.pctstat=%d%%
-rpg.tooltip.bound=§cSoulbound§r
+rpg.tooltip.bound=§cSoulbound to %s§r
 rpg.tooltip.binding=§c%s§r
 rpg.tooltip.durability.high=§7Durability §a%1$d/%2$d§r
 rpg.tooltip.durability.medium=§7Durability §e%1$d/%2$d§r
@@ -225,9 +226,8 @@ rpg.godlike.name=Godlike
 rpg.random.name=Random
 
 # Binding
-rpg.boe.name=Bound on Equip
+rpg.boe.name=Bound on Use
 rpg.bop.name=Bound on Pickup
-rpg.bou.name=Bound on Use
 rpg.bot.name=Bound on Trade
 
 # Generator/token
