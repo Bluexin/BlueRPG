@@ -132,7 +132,7 @@ interface IRPGGear : IUsable<ItemStack> { // TODO: use ISpecialArmor
     fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand) =
         this(playerIn.getHeldItem(handIn), worldIn, playerIn)
 
-    override fun invoke(stack: ItemStack, world: World, player: EntityPlayer?): ActionResult<ItemStack> {
+    override fun invoke(stack: ItemStack, world: World, player: EntityPlayer): ActionResult<ItemStack> {
         val stats = stack.stats
             ?: throw IllegalStateException("Missing capability!")
         return if (!stats.generated) {
@@ -144,7 +144,7 @@ interface IRPGGear : IUsable<ItemStack> { // TODO: use ISpecialArmor
     fun createEntity(world: World, location: Entity, itemstack: ItemStack): Entity? {
         // checking config is done trough #hasCustomEntity
         val stats = itemstack.stats!!
-        if (!stats.generated) stats.generate(world, null)
+        if (!stats.generated) stats.generate(world, null, location.positionVector)
         return null
     }
 

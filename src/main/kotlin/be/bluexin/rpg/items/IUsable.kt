@@ -22,5 +22,5 @@ import net.minecraft.util.ActionResult
 import net.minecraft.world.World
 
 interface IUsable<T : Any> {
-    operator fun invoke(stack: T, world: World, player: EntityPlayer?): ActionResult<T>
+    operator fun invoke(stack: T, world: World, player: EntityPlayer): ActionResult<T>
 }

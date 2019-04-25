@@ -33,6 +33,7 @@ import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.ResourceLocation
+import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
@@ -55,7 +56,7 @@ class TokenStats(val itemStackIn: ItemStack) : StatCapability {
     @Save
     var levelReq = 1
 
-    fun open(world: World, player: EntityPlayer?): ItemStack {
+    fun open(world: World, player: EntityPlayer?, pos: Vec3d = player!!.positionVector): ItemStack {
         val token = itemStackIn.item as? ItemGearToken ?: return itemStackIn
         val rarity = this.rarity ?: token.type.generateRarity()
         val iss = ItemStack(GearTypeGenerator().item)
@@ -64,7 +65,7 @@ class TokenStats(val itemStackIn: ItemStack) : StatCapability {
         stats.ilvl = this.ilvl
         stats.levelReq = this.levelReq
         stats.binding = this.binding
-        stats.generate(world, player)
+        stats.generate(world, player, pos)
 
         if (player?.isCreative != true) itemStackIn.shrink(1)
         return iss

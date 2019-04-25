@@ -42,17 +42,19 @@ import java.util.*
 
 enum class Rarity(
     private val color: TextFormatting,
-    private val primaryRolls: Int
+    private val primaryRolls: Int,
+    val colorRGB: Int
 ) : Localizable {
-    COMMON(WHITE, 1),
-    UNCOMMON(GREEN, 1),
-    RARE(AQUA, 2),
-    EPIC(LIGHT_PURPLE, 2),
-    LEGENDARY(YELLOW, 3),
-    MYTHIC(RED, 3),
-    GODLIKE(WHITE, 3);
+    COMMON(WHITE, 1, 0xFFFFFF),
+    UNCOMMON(GREEN, 1, 0x55FF55),
+    RARE(AQUA, 2, 0x55FFFF),
+    EPIC(LIGHT_PURPLE, 2, 0xFF55FF),
+    LEGENDARY(YELLOW, 3, 0xFFFF55),
+    MYTHIC(RED, 3, 0xFF5555),
+    GODLIKE(WHITE, 3, 0xFFFFFF);
 
     val shouldNotify by lazy { ordinal >= LEGENDARY.ordinal }
+    val shouldGlitter by lazy { ordinal >= RARE.ordinal }
 
     val secondaryRolls by lazy { ordinal + 1 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -108,7 +108,7 @@ object AoE : ParticleSystem() {
     }
 }
 
-object Heal : ParticleSystem() {
+class Self(val texture: String) : ParticleSystem() {
     private val rng = Random(RNG.nextLong())
 
     override fun configure() {
@@ -166,7 +166,7 @@ object Heal : ParticleSystem() {
             }
         }
         renderModules += SpriteRenderModule(
-            sprite = ResourceLocation(BlueRPG.MODID, "textures/particles/health_normal.png"),
+            sprite = ResourceLocation(BlueRPG.MODID, texture),
             blendMode = BlendMode.NORMAL,
             previousPosition = previousPosition,
             position = position,
@@ -238,3 +238,6 @@ object Heal : ParticleSystem() {
         }
     }
 }
+
+val Heal = Self("textures/particles/health_normal.png")
+val Rarity = Self("textures/particles/snowflake_2.png")

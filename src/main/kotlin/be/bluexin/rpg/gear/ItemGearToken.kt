@@ -52,10 +52,10 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand) =
         this(playerIn.getHeldItem(handIn), worldIn, playerIn)
 
-    override fun invoke(stack: ItemStack, world: World, player: EntityPlayer?): ActionResult<ItemStack> {
+    override fun invoke(stack: ItemStack, world: World, player: EntityPlayer): ActionResult<ItemStack> {
         val iss = if (world.isRemote) stack else {
             val r = stack.tokenStats!!.open(world, player)
-            if (stack.isEmpty || player == null) r else {
+            if (stack.isEmpty) r else {
                 ItemHandlerHelper.giveItemToPlayer(player, r)
                 stack
             }
@@ -69,7 +69,13 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
         // checking config is done trough #hasCustomEntity
         val stats = itemstack.tokenStats ?: return super.createEntity(world, location, itemstack)
         fun makeEntity() =
-            EntityItem(world, location.posX, location.posY, location.posZ, stats.open(world, null)).apply {
+            EntityItem(
+                world,
+                location.posX,
+                location.posY,
+                location.posZ,
+                stats.open(world, null, location.positionVector)
+            ).apply {
                 motionX = location.motionX
                 motionY = location.motionY
                 motionZ = location.motionZ

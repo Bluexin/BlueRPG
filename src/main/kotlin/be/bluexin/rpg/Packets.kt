@@ -23,6 +23,7 @@ import be.bluexin.rpg.pets.EggData
 import be.bluexin.rpg.skills.glitter.AoE
 import be.bluexin.rpg.skills.glitter.BeamLightningSystem
 import be.bluexin.rpg.skills.glitter.Heal
+import be.bluexin.rpg.skills.glitter.Rarity
 import be.bluexin.rpg.stats.*
 import com.teamwizardry.librarianlib.features.autoregister.PacketRegister
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
@@ -147,13 +148,15 @@ class PacketGlitter(type: Type, pos: Vec3d, color1: Int, color2: Int, spread: Do
 
     enum class Type {
         AOE,
-        HEAL
+        HEAL,
+        RARITY
     }
 
     override fun handle(ctx: MessageContext) {
         when (type) {
-            Type.AOE -> AoE.burst(pos, Color(color1), Color(color2), spread)
-            Type.HEAL -> Heal.burst(pos, Color(color1), Color(color2), spread)
+            Type.AOE -> AoE.burst(pos, Color(color1, true), Color(color2, true), spread)
+            Type.HEAL -> Heal.burst(pos, Color(color1, true), Color(color2, true), spread)
+            Type.RARITY -> Rarity.burst(pos, Color(color1, true), Color(color2, true), spread)
         }
     }
 }

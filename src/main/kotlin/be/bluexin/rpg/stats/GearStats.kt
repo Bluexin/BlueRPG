@@ -18,6 +18,7 @@
 package be.bluexin.rpg.stats
 
 import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.PacketGlitter
 import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.random
@@ -27,6 +28,9 @@ import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.helpers.getNBTByte
 import com.teamwizardry.librarianlib.features.helpers.removeNBTEntry
 import com.teamwizardry.librarianlib.features.helpers.setNBTByte
+import com.teamwizardry.librarianlib.features.network.PacketHandler
+import com.teamwizardry.librarianlib.features.network.sendToAllAround
+import com.teamwizardry.librarianlib.features.particle.functions.InterpColorHSV
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable
@@ -38,10 +42,12 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagInt
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.ResourceLocation
+import net.minecraft.util.math.Vec3d
 import net.minecraft.util.text.TextComponentTranslation
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
+import java.awt.Color
 import java.lang.ref.WeakReference
 import java.util.*
 
@@ -93,7 +99,7 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
     @Save
     var requiredValue: Int = 0
 
-    fun generate(world: World, player: EntityPlayer?) {
+    fun generate(world: World, player: EntityPlayer?, pos: Vec3d = player?.positionVector!!) {
         world onServer {
             val gear = itemStackIn.item as? IRPGGear ?: return
             this.stats.clear()
@@ -165,7 +171,15 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
             generated = true
             itemStackIn.setTagInfo("HideFlags", NBTTagInt(2))
             if (player != null) this.generateNameIfNeeded(player)
-            // TODO: particles !
+            if (rarity!!.shouldGlitter) PacketHandler.NETWORK.sendToAllAround(
+                PacketGlitter(
+                    PacketGlitter.Type.RARITY,
+                    pos,
+                    rarity!!.colorRGB,
+                    InterpColorHSV(Color(rarity!!.colorRGB), Color(0, 0, 0, 0)).get(.5f).rgb,
+                    .6
+                ), world, pos, 64.0
+            )
         }
     }
 
