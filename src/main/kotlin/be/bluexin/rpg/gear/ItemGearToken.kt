@@ -79,10 +79,11 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
                 motionX = location.motionX
                 motionY = location.motionY
                 motionZ = location.motionZ
+                pickupDelay = (location as EntityItem).pickupDelay
             }
         while (itemstack.count > 1) world.spawnEntity(makeEntity())
         return makeEntity()
-    }
+    } // FIXME: this also picks up `/give`, ID'ing a single token from the stack as result (but still giving the tokens, too)
 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
         val stats = stack.tokenStats ?: return
