@@ -76,8 +76,8 @@ import net.minecraftforge.event.world.BlockEvent
 import net.minecraftforge.fml.client.config.GuiUtils.drawTexturedModalRect
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.eventhandler.Event
+import net.minecraftforge.fml.common.eventhandler.EventPriority
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.PlayerEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
@@ -397,7 +397,7 @@ object CommonEventHandler {
         if (protectPaintings && e is EntityPainting) e.setEntityInvulnerable(true)
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     @JvmStatic
     fun itemPickup(event: EntityItemPickupEvent) {
         val stats = event.item.item.stats ?: return
@@ -413,14 +413,14 @@ object CommonEventHandler {
     @ConfigProperty("general", "Whether to automatically identify gear when dropped")
     var autoIdentifyDrop = false
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     @JvmStatic
-    fun itemPickupPost(event: PlayerEvent.ItemPickupEvent) {
-        val item = event.stack.item
-        if (autoIdentifyPickup && item is IRPGGear) item(event.stack, event.player.world, event.player)
-        val stats = event.stack.stats ?: return
-        stats.generateNameIfNeeded(event.player)
-        if (stats.bound == null && stats.binding == Binding.BOP) stats.bindTo(event.player)
+    fun itemPickupPost(event: EntityItemPickupEvent) {
+        val item = event.item.item.item
+        if (autoIdentifyPickup && item is IRPGGear) item(event.item.item, event.entityPlayer.world, event.entityPlayer)
+        val stats = event.item.item.stats ?: return
+        stats.generateNameIfNeeded(event.entityPlayer)
+        if (stats.bound == null && stats.binding == Binding.BOP) stats.bindTo(event.entityPlayer)
     }
 }
 
