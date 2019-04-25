@@ -141,8 +141,9 @@ object CommonEventHandler {
     fun postChangeGear(event: LivingEquipmentPostChangeEvent) {
         (event.entityLiving as? EntityPlayer)?.apply {
             equipmentAndArmor.forEach {
-                if (it.item is IRPGGear) {
-                    if (it.item is ItemArmor || it.item is ItemOffHand) {
+                val item = it.item
+                if (item is IRPGGear) {
+                    if (item.gearSlot == event.slot && (item is ItemArmor || item is ItemOffHand)) {
                         val stats = it.stats!!
                         if (stats.bound == null && stats.binding == Binding.BOE) it.stats!!.bindTo(this)
                     }
