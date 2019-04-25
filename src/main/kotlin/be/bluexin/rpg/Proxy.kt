@@ -46,6 +46,7 @@ import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
 import kotlinx.coroutines.*
+import net.minecraft.client.renderer.entity.RenderEntityItem
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.attributes.BaseAttribute
 import net.minecraft.entity.ai.attributes.RangedAttribute
@@ -194,6 +195,16 @@ open class CommonProxy : CoroutineScope {
             1,
             true
         )
+        EntityRegistry.registerModEntity(
+            ResourceLocation(BlueRPG.MODID, "entity_rpg_item"),
+            RPGItemEntity::class.java,
+            "entity_rpg_item",
+            ++id,
+            BlueRPG,
+            128,
+            1,
+            true
+        )
     }
 
     open fun init(event: FMLInitializationEvent) {
@@ -251,6 +262,12 @@ class ClientProxy : CommonProxy() {
         RenderingRegistry.registerEntityRenderingHandler(EntityWandProjectile::class.java, ::RenderWandProjectile)
         RenderingRegistry.registerEntityRenderingHandler(EntitySkillProjectile::class.java, ::RenderSkillProjectile)
         RenderingRegistry.registerEntityRenderingHandler(EntityPet::class.java, ::RenderPet)
+        RenderingRegistry.registerEntityRenderingHandler(RPGItemEntity::class.java) {
+            RenderEntityItem(
+                it,
+                Minecraft().renderItem
+            )
+        }
     }
 }
 

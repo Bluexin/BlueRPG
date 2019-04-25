@@ -152,6 +152,23 @@ fun randomNormal(): Vec3d {
     return vec(MathHelper.sin(yaw) * multiplier, MathHelper.cos(yaw) * multiplier, MathHelper.sin(pitch))
 }
 
+fun randomNormalWithOutgoingSpeed(pitchDistribution: Float): Pair<Vec3d, Vec3d> {
+    val yaw = RNG.nextFloat() * 2 * fpi
+    val ppi = fpi * pitchDistribution
+    val pitchRng = RNG.nextFloat()
+    val pitch = pitchRng * fpi - fpi / 2
+    val speedPitch = pitchRng * ppi - ppi / 2
+    val multiplier = MathHelper.cos(pitch)
+    val speedMultiplier = MathHelper.cos(speedPitch)
+
+    return vec(MathHelper.sin(yaw) * multiplier, MathHelper.cos(yaw) * multiplier, MathHelper.sin(pitch)) to
+            vec(
+                MathHelper.sin(yaw) * speedMultiplier,
+                MathHelper.cos(yaw) * speedMultiplier,
+                MathHelper.sin(speedPitch)
+            )
+}
+
 fun getEntityLookedAt(
     from: TargetWithPosition,
     world: World,

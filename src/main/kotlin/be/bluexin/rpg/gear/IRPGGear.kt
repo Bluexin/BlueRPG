@@ -142,13 +142,14 @@ interface IRPGGear : IUsable<ItemStack> { // TODO: use ISpecialArmor
     }
 
     fun createEntity(world: World, location: Entity, itemstack: ItemStack): Entity? {
-        // checking config is done trough #hasCustomEntity
-        val stats = itemstack.stats!!
-        if (!stats.generated) stats.generate(world, null, location.positionVector)
-        return null
+        if (CommonEventHandler.autoIdentifyDrop) {
+            val stats = itemstack.stats!!
+            if (!stats.generated) stats.generate(world, null, location.positionVector)
+        }
+        return RPGItemEntity(world, location, itemstack)
     }
 
-    fun hasCustomEntity(stack: ItemStack) = CommonEventHandler.autoIdentifyDrop
+    fun hasCustomEntity(stack: ItemStack) = true
 
     fun getItemStackDisplayName(stack: ItemStack): String {
         val stats = stack.stats

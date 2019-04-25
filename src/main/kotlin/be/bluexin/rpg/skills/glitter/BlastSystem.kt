@@ -240,4 +240,3 @@ class Self(val texture: String) : ParticleSystem() {
 }
 
 val Heal = Self("textures/particles/health_normal.png")
-val Rarity = Self("textures/particles/snowflake_2.png")

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ object ProjectileCore : ParticleSystem() {
         val color1 = Color(this.color1)
         val color2 = Color(this.color2)
         repeat(6) {
-            store += ProjectileCore.spawn(
+            store += spawn(
                 rng.nextInt(5, 20),
                 pos - motionPartial * it,
                 motionVec,
