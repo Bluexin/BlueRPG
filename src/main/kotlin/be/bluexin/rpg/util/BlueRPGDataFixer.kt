@@ -43,7 +43,8 @@ object BlueRPGDataFixer {
             return compound
         }
 
-        private fun convertCaps(caps: NBTTagCompound, vararg keys: String) = keys.forEach { convertCap(caps, it) }
+        private fun convertCaps(caps: NBTTagCompound, vararg keys: String) =
+            keys.forEach { convertCap(caps, "${BlueRPG.MODID}:$it") }
 
         private fun convertCap(caps: NBTTagCompound, key: String) {
             val cap = caps[key] as? NBTTagCompound
