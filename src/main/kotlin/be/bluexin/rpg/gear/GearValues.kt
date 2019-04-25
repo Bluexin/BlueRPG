@@ -75,7 +75,7 @@ enum class Rarity(
 }
 
 enum class TokenType(
-    private val rarityWeights: Map<Rarity, Int>
+    rarityWeights: Map<Rarity, Int>
 ) : Localizable {
     TOKEN(
         mapOf(
@@ -116,7 +116,13 @@ enum class TokenType(
         )
     );
 
-    private val totalWeight by lazy { rarityWeights.values.sum() }
+    var rarityWeights = rarityWeights.withDefault { 0 }
+        set(value) {
+            field = value
+            totalWeight = value.values.sum()
+        }
+
+    private var totalWeight = rarityWeights.values.sum()
 
     fun generateRarity(): Rarity {
         var r = RNG.nextInt(totalWeight)

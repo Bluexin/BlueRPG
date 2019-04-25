@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
 
 package be.bluexin.rpg
 
+import be.bluexin.rpg.gear.RarityConfiguration
+import be.bluexin.rpg.stats.FormulaeConfiguration
 import net.minecraft.command.CommandBase
 import net.minecraft.command.ICommandSender
 import net.minecraft.command.WrongUsageException
@@ -27,7 +29,8 @@ import net.minecraft.util.math.BlockPos
 object Command : CommandBase() {
     enum class Commands(private val handle: (server: MinecraftServer, sender: ICommandSender, args: List<String>) -> Unit) {
         RELOAD({ _, sender, _ ->
-            be.bluexin.rpg.stats.FormulaeConfiguration.reload()
+            FormulaeConfiguration.reload()
+            RarityConfiguration.reload()
             sender.sendMessage(net.minecraft.util.text.TextComponentTranslation("bluerpg.command.reload.success"))
         });
 
