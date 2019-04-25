@@ -404,10 +404,22 @@ object CommonEventHandler {
         if (!stats.checkBinding(event.entityPlayer)) event.isCanceled = true
     }
 
+    @ConfigProperty("general", "Whether to automatically open gear tokens when dropped")
+    var autoOpen = false
+
+    @ConfigProperty("general", "Whether to automatically identify gear when picked up")
+    var autoIdentifyPickup = false
+
+    @ConfigProperty("general", "Whether to automatically identify gear when dropped")
+    var autoIdentifyDrop = false
+
     @SubscribeEvent
     @JvmStatic
     fun itemPickupPost(event: PlayerEvent.ItemPickupEvent) {
+        val item = event.stack.item
+        if (autoIdentifyPickup && item is IRPGGear) item(event.stack, event.player.world, event.player)
         val stats = event.stack.stats ?: return
+        stats.generateNameIfNeeded(event.player)
         if (stats.bound == null && stats.binding == Binding.BOP) stats.bindTo(event.player)
     }
 }

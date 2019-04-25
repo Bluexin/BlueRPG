@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg.gear
 
+import be.bluexin.rpg.CommonEventHandler
 import be.bluexin.rpg.items.IUsable
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.ItemCapabilityWrapper
@@ -28,6 +29,7 @@ import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.Minecraft
 import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.entity.Entity
 import net.minecraft.entity.ai.attributes.AttributeModifier
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
@@ -130,14 +132,23 @@ interface IRPGGear : IUsable<ItemStack> { // TODO: use ISpecialArmor
     fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand) =
         this(playerIn.getHeldItem(handIn), worldIn, playerIn)
 
-    override fun invoke(stack: ItemStack, worldIn: World, playerIn: EntityPlayer): ActionResult<ItemStack> {
+    override fun invoke(stack: ItemStack, world: World, player: EntityPlayer?): ActionResult<ItemStack> {
         val stats = stack.stats
             ?: throw IllegalStateException("Missing capability!")
         return if (!stats.generated) {
-            worldIn onServer { stats.generate(playerIn) }
+            world onServer { stats.generate(world, player) }
             ActionResult.newResult(EnumActionResult.SUCCESS, stack)
         } else ActionResult.newResult(EnumActionResult.PASS, stack)
     }
+
+    fun createEntity(world: World, location: Entity, itemstack: ItemStack): Entity? {
+        // checking config is done trough #hasCustomEntity
+        val stats = itemstack.stats!!
+        if (!stats.generated) stats.generate(world, null)
+        return null
+    }
+
+    fun hasCustomEntity(stack: ItemStack) = CommonEventHandler.autoIdentifyDrop
 
     fun getItemStackDisplayName(stack: ItemStack): String {
         val stats = stack.stats

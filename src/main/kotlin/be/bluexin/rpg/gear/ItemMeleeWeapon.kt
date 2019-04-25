@@ -137,4 +137,9 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) :
 
     override val gearSlot: EntityEquipmentSlot
         get() = EntityEquipmentSlot.MAINHAND
+
+    override fun createEntity(world: World, location: Entity, itemstack: ItemStack) =
+        super<IRPGGear>.createEntity(world, location, itemstack)
+
+    override fun hasCustomEntity(stack: ItemStack) = super<IRPGGear>.hasCustomEntity(stack)
 }

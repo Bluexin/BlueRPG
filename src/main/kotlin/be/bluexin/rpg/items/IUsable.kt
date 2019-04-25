@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,5 +22,5 @@ import net.minecraft.util.ActionResult
 import net.minecraft.world.World
 
 interface IUsable<T : Any> {
-    operator fun invoke(stack: T, worldIn: World, playerIn: EntityPlayer): ActionResult<T>
+    operator fun invoke(stack: T, world: World, player: EntityPlayer?): ActionResult<T>
 }

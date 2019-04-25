@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ import be.bluexin.rpg.gear.GearTypeGenerator
 import be.bluexin.rpg.gear.ItemGearToken
 import be.bluexin.rpg.gear.Rarity
 import be.bluexin.saomclib.capabilities.Key
-import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable
@@ -34,9 +33,9 @@ import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.ResourceLocation
+import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
-import net.minecraftforge.items.ItemHandlerHelper
 
 @Savable
 @NamedDynamic(resourceLocation = "b:ts")
@@ -56,23 +55,19 @@ class TokenStats(val itemStackIn: ItemStack) : StatCapability {
     @Save
     var levelReq = 1
 
-    fun open(playerIn: EntityPlayer): ItemStack {
-        playerIn.world onServer {
-            val token = itemStackIn.item as? ItemGearToken ?: return itemStackIn
-            val rarity = this.rarity ?: token.type.generateRarity()
-            val iss = ItemStack(GearTypeGenerator().item)
-            val stats = iss.stats ?: throw IllegalStateException("Missing capability!")
-            stats.rarity = rarity
-            stats.ilvl = this.ilvl
-            stats.levelReq = this.levelReq
-            stats.binding = this.binding
-            stats.generate(playerIn)
+    fun open(world: World, player: EntityPlayer?): ItemStack {
+        val token = itemStackIn.item as? ItemGearToken ?: return itemStackIn
+        val rarity = this.rarity ?: token.type.generateRarity()
+        val iss = ItemStack(GearTypeGenerator().item)
+        val stats = iss.stats ?: throw IllegalStateException("Missing capability!")
+        stats.rarity = rarity
+        stats.ilvl = this.ilvl
+        stats.levelReq = this.levelReq
+        stats.binding = this.binding
+        stats.generate(world, player)
 
-            if (!playerIn.isCreative) itemStackIn.shrink(1)
-            if (itemStackIn.isEmpty) return iss
-            else ItemHandlerHelper.giveItemToPlayer(playerIn, iss)
-        }
-        return itemStackIn
+        if (player?.isCreative != true) itemStackIn.shrink(1)
+        return iss
     }
 
     fun loadFrom(other: TokenStats) {

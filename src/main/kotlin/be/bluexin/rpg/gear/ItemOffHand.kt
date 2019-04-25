@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLiving
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.ai.attributes.AttributeModifier
@@ -120,4 +121,9 @@ class ItemOffHand private constructor(override val type: OffHandType) : ItemMod(
         get() = this
 
     override fun isShield(stack: ItemStack, entity: EntityLivingBase?) = entity == null
+
+    override fun createEntity(world: World, location: Entity, itemstack: ItemStack) =
+        super<IRPGGear>.createEntity(world, location, itemstack)
+
+    override fun hasCustomEntity(stack: ItemStack) = super<IRPGGear>.hasCustomEntity(stack)
 }

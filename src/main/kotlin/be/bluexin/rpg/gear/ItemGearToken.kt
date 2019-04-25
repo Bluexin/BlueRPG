@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,15 +17,17 @@
 
 package be.bluexin.rpg.gear
 
+import be.bluexin.rpg.CommonEventHandler
 import be.bluexin.rpg.items.IUsable
 import be.bluexin.rpg.stats.TokenStats
 import be.bluexin.rpg.stats.tokenStats
 import be.bluexin.rpg.util.ItemCapabilityWrapper
-import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.entity.Entity
+import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -34,6 +36,7 @@ import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.ICapabilityProvider
+import net.minecraftforge.items.ItemHandlerHelper
 
 class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_token_${type.key}"), IUsable<ItemStack> {
 
@@ -49,10 +52,30 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand) =
         this(playerIn.getHeldItem(handIn), worldIn, playerIn)
 
-    override fun invoke(stack: ItemStack, worldIn: World, playerIn: EntityPlayer): ActionResult<ItemStack> {
-        var iss = stack
-        worldIn onServer { iss = stack.tokenStats?.open(playerIn) ?: stack }
+    override fun invoke(stack: ItemStack, world: World, player: EntityPlayer?): ActionResult<ItemStack> {
+        val iss = if (world.isRemote) stack else {
+            val r = stack.tokenStats!!.open(world, player)
+            if (stack.isEmpty || player == null) r else {
+                ItemHandlerHelper.giveItemToPlayer(player, r)
+                stack
+            }
+        }
         return ActionResult.newResult(EnumActionResult.SUCCESS, iss)
+    }
+
+    override fun hasCustomEntity(stack: ItemStack) = CommonEventHandler.autoOpen
+
+    override fun createEntity(world: World, location: Entity, itemstack: ItemStack): Entity? {
+        // checking config is done trough #hasCustomEntity
+        val stats = itemstack.tokenStats ?: return super.createEntity(world, location, itemstack)
+        fun makeEntity() =
+            EntityItem(world, location.posX, location.posY, location.posZ, stats.open(world, null)).apply {
+                motionX = location.motionX
+                motionY = location.motionY
+                motionZ = location.motionZ
+            }
+        while (itemstack.count > 1) world.spawnEntity(makeEntity())
+        return makeEntity()
     }
 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -153,4 +153,9 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
             }
         }
     }
+
+    override fun createEntity(world: World, location: Entity, itemstack: ItemStack) =
+        super<IRPGGear>.createEntity(world, location, itemstack)
+
+    override fun hasCustomEntity(stack: ItemStack) = super<IRPGGear>.hasCustomEntity(stack)
 }

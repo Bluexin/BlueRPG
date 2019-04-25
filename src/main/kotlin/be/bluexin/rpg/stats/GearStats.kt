@@ -39,6 +39,7 @@ import net.minecraft.nbt.NBTTagInt
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.text.TextComponentTranslation
+import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
 import java.lang.ref.WeakReference
@@ -92,8 +93,8 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
     @Save
     var requiredValue: Int = 0
 
-    fun generate(playerIn: EntityPlayer) {
-        playerIn.world onServer {
+    fun generate(world: World, player: EntityPlayer?) {
+        world onServer {
             val gear = itemStackIn.item as? IRPGGear ?: return
             this.stats.clear()
             if (rarity == null) rarity = generator.generateRarity()
@@ -162,13 +163,20 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
                 ) / 100.0).toInt()
             } else requiredValue = -1
             generated = true
-            if (name == null) name = NameGenerator(itemStackIn, playerIn)
             itemStackIn.setTagInfo("HideFlags", NBTTagInt(2))
-            if (rarity!!.shouldNotify) playerIn.world.minecraftServer?.playerList?.players?.forEach {
+            if (player != null) this.generateNameIfNeeded(player)
+            // TODO: particles !
+        }
+    }
+
+    fun generateNameIfNeeded(player: EntityPlayer) {
+        if (name == null) {
+            name = NameGenerator(itemStackIn, player)
+            if (rarity!!.shouldNotify) player.world.minecraftServer?.playerList?.players?.forEach {
                 it.sendMessage(
                     TextComponentTranslation(
                         "rpg.broadcast.item",
-                        playerIn.displayName,
+                        player.displayName,
                         itemStackIn.textComponent
                     )
                 )

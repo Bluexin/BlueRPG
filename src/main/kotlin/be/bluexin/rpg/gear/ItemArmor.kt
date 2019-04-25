@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import be.bluexin.rpg.stats.stats
 import com.teamwizardry.librarianlib.features.base.item.ItemModArmor
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.Item
@@ -108,4 +109,9 @@ class ItemArmor private constructor(override val type: ArmorType, material: Armo
 
     override val item: Item
         get() = this
+
+    override fun createEntity(world: World, location: Entity, itemstack: ItemStack) =
+        super<IRPGGear>.createEntity(world, location, itemstack)
+
+    override fun hasCustomEntity(stack: ItemStack) = super<IRPGGear>.hasCustomEntity(stack)
 }
