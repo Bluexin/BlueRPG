@@ -54,7 +54,6 @@ enum class Rarity(
     GODLIKE(WHITE, 3, 0xFFFFFF);
 
     val shouldNotify by lazy { ordinal >= LEGENDARY.ordinal }
-    val shouldGlitter by lazy { ordinal >= RARE.ordinal }
 
     val secondaryRolls by lazy { ordinal + 1 }
 

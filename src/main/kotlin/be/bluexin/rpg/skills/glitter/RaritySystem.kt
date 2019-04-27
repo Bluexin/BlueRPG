@@ -43,14 +43,15 @@ object RaritySystem : ParticleSystem() {
 
     fun RPGItemEntity.renderParticles() {
         val stats = this.item.stats ?: return
-        if (stats.rarity?.shouldGlitter != true) return
+        val rarity = stats.rarity ?: return
         val pos = positionVector + vec(0, height * 1.5, 0)
         val motionVec = motionVec + vec(0, .03, 0)
-        val color = Color(stats.rarity!!.colorRGB)
-        repeat(6) {
+        val color = Color(rarity.colorRGB)
+        val maxTime = 30 + rarity.ordinal * 4
+        repeat(4 + rarity.ordinal) {
             val (posNormal, speedNormal) = randomNormalWithOutgoingSpeed(.8f)
             spawn(
-                rng.nextInt(5, 45),
+                rng.nextInt(5, maxTime),
                 pos + posNormal * .15,
                 motionVec + speedNormal * rng.nextDouble(.01, .03),
                 color,
