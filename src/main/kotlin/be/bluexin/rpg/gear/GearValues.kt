@@ -196,27 +196,27 @@ enum class MeleeWeaponType(
         attributes = arrayOf(
             WeaponAttribute.KNOCKBACK to 0.4,
             WeaponAttribute.ATTACK_SPEED to -2.4,
-            WeaponAttribute.RANGE to 3.0
+            WeaponAttribute.RANGE to 4.0
         )
     ),
     SWORD(
         allowParry = true, attributes = arrayOf(
             WeaponAttribute.ATTACK_SPEED to -2.4,
-            WeaponAttribute.RANGE to 3.0
+            WeaponAttribute.RANGE to 4.0
         )
     ),
     AXE(
         attributes = arrayOf(
             WeaponAttribute.ANGLE to 120.0,
             WeaponAttribute.ATTACK_SPEED to -3.2,
-            WeaponAttribute.RANGE to 3.0
+            WeaponAttribute.RANGE to 4.0
         )
     ),
     SWORD_2H(
         twoHander = true, allowBlock = true, attributes = arrayOf(
             WeaponAttribute.ANGLE to 90.0,
             WeaponAttribute.ATTACK_SPEED to -3.2,
-            WeaponAttribute.RANGE to 5.0
+            WeaponAttribute.RANGE to 5.5
         )
     ),
     SPEAR(
@@ -228,7 +228,7 @@ enum class MeleeWeaponType(
     BO(
         twoHander = true, allowParry = true, attributes = arrayOf(
             WeaponAttribute.ATTACK_SPEED to -1.6,
-            WeaponAttribute.RANGE to 7.0
+            WeaponAttribute.RANGE to 6.5
         )
     );
 

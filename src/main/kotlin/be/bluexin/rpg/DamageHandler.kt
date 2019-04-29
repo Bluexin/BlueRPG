@@ -103,7 +103,7 @@ object DamageHandler {
                 player.rotationYaw = yaw
             } else {
                 val target = RaycastUtils.getEntityLookedAt(player, reach)
-                if (target != null && player.positionVector.squareDistanceTo(target.positionVector) <= reach * reach) targets += target
+                if (target != null) targets += target
             }
             targets.forEach {
                 player.attackTargetEntityWithCurrentItem(it)
