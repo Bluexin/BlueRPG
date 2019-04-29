@@ -72,6 +72,8 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
         val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
         return if (r.type == EnumActionResult.PASS) {
             val itemstack = playerIn.getHeldItem(handIn)
+            val stats = itemstack.stats!!
+            if (!stats.generated) return r
             val ret = net.minecraftforge.event.ForgeEventFactory.onArrowNock(itemstack, worldIn, playerIn, handIn, true)
             if (ret != null) return ret
             playerIn.activeHand = handIn
@@ -112,6 +114,11 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
 
     override fun onPlayerStoppedUsing(stack: ItemStack, worldIn: World, entityLiving: EntityLivingBase, timeLeft: Int) {
         if (entityLiving is EntityPlayer) {
+            val stats = stack.stats!!
+            if (!stats.generated) return
+            worldIn onServer {
+                if (stats.bound == null && stats.binding == Binding.BOE) stats.bindTo(entityLiving)
+            }
             var i = this.getMaxItemUseDuration(stack) - timeLeft
             i = net.minecraftforge.event.ForgeEventFactory.onArrowLoose(stack, worldIn, entityLiving, i, true)
             if (i < 0) return
