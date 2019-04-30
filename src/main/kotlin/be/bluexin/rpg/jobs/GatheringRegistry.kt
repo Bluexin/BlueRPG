@@ -122,8 +122,9 @@ object GatheringRegistry : IForgeRegistryModifiable<GatheringData> by buildRegis
         savefileBackup = File(dir, "gatheringregistryBackup.dat")
     }
 
-    suspend fun load() {
+    suspend fun load() { // TODO: this should be changed to registry event
         try {
+            if (!savefile.exists() && savefileBackup.exists()) savefileBackup.copyTo(savefile)
             if (savefile.exists()) savefile.inputStream().use {
                 CompressedStreamTools.readCompressed(it)
             }["root"]?.fromNBT<List<GatheringData>>()?.forEach(::register)
@@ -144,7 +145,7 @@ object GatheringRegistry : IForgeRegistryModifiable<GatheringData> by buildRegis
         if (savefile.exists()) savefile.copyTo(savefileBackup, true)
         val nbt = tagCompound {
             "root" to try {
-                valuesCollection.toNBT()
+                valuesCollection.toList().toNBT()
             } catch (e: Exception) {
                 val wrappedException = Exception(e)
                 BlueRPG.LOGGER.error("Couldn't save Gathering registry", wrappedException)

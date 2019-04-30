@@ -23,6 +23,7 @@ import be.bluexin.rpg.blocks.BlockCaster
 import be.bluexin.rpg.blocks.BlockEditor
 import be.bluexin.rpg.blocks.BlockGatheringNode
 import be.bluexin.rpg.classes.PlayerClassCollection
+import be.bluexin.rpg.classes.PlayerClassRegistry
 import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.containers.RPGEnderChestContainer
 import be.bluexin.rpg.entities.*
@@ -31,8 +32,6 @@ import be.bluexin.rpg.items.DebugExpItem
 import be.bluexin.rpg.items.DebugStatsItem
 import be.bluexin.rpg.items.DynItem
 import be.bluexin.rpg.items.DynamicData
-import be.bluexin.rpg.jobs.GatheringCapability
-import be.bluexin.rpg.jobs.GatheringRegistry
 import be.bluexin.rpg.pets.*
 import be.bluexin.rpg.skills.SkillItem
 import be.bluexin.rpg.skills.glitter.TrailSystem
@@ -79,14 +78,12 @@ open class CommonProxy : CoroutineScope {
         launch { NameGenerator.preInit() }
         launch { FormulaeConfiguration.preInit() }
         launch { RarityConfiguration.preInit() }
-        launch {
-            GatheringRegistry.setupDataDir(
-                File(
-                    event.suggestedConfigurationFile.parentFile.parentFile,
-                    BlueRPG.MODID
-                )
-            )
-        }
+        /*val localDir = File(
+            event.suggestedConfigurationFile.parentFile.parentFile,
+            BlueRPG.MODID
+        )
+        launch { GatheringRegistry.setupDataDir(localDir) }*/
+        launch { PlayerClassRegistry.setupDataDir(customConfDir /*TODO: use localDir when server autosync is in place*/) }
 
         classLoadItems()
         vanillaHax()
@@ -108,10 +105,10 @@ open class CommonProxy : CoroutineScope {
         // Not using SAOMCLib for these because we don't want them autoregistered
         CapabilityManager.INSTANCE.register(GearStats::class.java, GearStats.Storage) { GearStats(ItemStack.EMPTY) }
         CapabilityManager.INSTANCE.register(TokenStats::class.java, TokenStats.Storage) { TokenStats(ItemStack.EMPTY) }
-        CapabilityManager.INSTANCE.register(
+        /*CapabilityManager.INSTANCE.register(
             GatheringCapability::class.java,
             GatheringCapability.Storage
-        ) { GatheringCapability() }
+        ) { GatheringCapability() }*/
     }
 
     private fun vanillaHax() {
@@ -210,7 +207,8 @@ open class CommonProxy : CoroutineScope {
 
     open fun init(event: FMLInitializationEvent) {
         runBlocking { job.children.forEach { it.join() } }
-        launch { GatheringRegistry.load() }
+//        launch { GatheringRegistry.load() }
+        launch { PlayerClassRegistry.load() }
         launch { FormulaeConfiguration.init() }
         trickLiblib()
         registerDataSerializer<PetMovementType>()

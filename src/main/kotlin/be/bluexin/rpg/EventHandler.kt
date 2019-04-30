@@ -19,6 +19,8 @@
 
 package be.bluexin.rpg
 
+import be.bluexin.rpg.classes.PlayerClass
+import be.bluexin.rpg.classes.PlayerClassRegistry
 import be.bluexin.rpg.containers.RPGContainer
 import be.bluexin.rpg.containers.RPGEnderChestContainer
 import be.bluexin.rpg.events.CreatePlayerContainerEvent
@@ -209,6 +211,8 @@ object CommonEventHandler {
     @JvmStatic
     fun newRegistry(event: RegistryEvent.NewRegistry) {
         SkillRegistry
+        PlayerClassRegistry
+//        GatheringRegistry
     }
 
     @SubscribeEvent
@@ -326,6 +330,46 @@ object CommonEventHandler {
                                 }
                             ))
                     )
+                )
+            )
+        )
+    }
+
+    @SubscribeEvent
+    @JvmStatic
+    fun registerPlayerClasses(event: RegistryEvent.Register<PlayerClass>) {
+        event.registry.registerAll(
+            PlayerClass(
+                ResourceLocation(BlueRPG.MODID, "class_0"),
+                skills = listOf(
+                    ResourceLocation(BlueRPG.MODID, "skill_3"),
+                    ResourceLocation(BlueRPG.MODID, "skill_4")
+                ),
+                baseStats = mapOf(
+                    PrimaryStat.CONSTITUTION to 5,
+                    PrimaryStat.STRENGTH to 5
+                )
+            ),
+            PlayerClass(
+                ResourceLocation(BlueRPG.MODID, "class_1"),
+                skills = listOf(
+                    ResourceLocation(BlueRPG.MODID, "skill_1"),
+                    ResourceLocation(BlueRPG.MODID, "skill_2")
+                ),
+                baseStats = mapOf(
+                    PrimaryStat.INTELLIGENCE to 5,
+                    PrimaryStat.WISDOM to 5
+                )
+            ),
+            PlayerClass(
+                ResourceLocation(BlueRPG.MODID, "class_2"),
+                skills = listOf(
+                    ResourceLocation(BlueRPG.MODID, "skill_2"),
+                    ResourceLocation(BlueRPG.MODID, "skill_3")
+                ),
+                baseStats = mapOf(
+                    PrimaryStat.CHARISMA to 5,
+                    PrimaryStat.DEXTERITY to 5
                 )
             )
         )

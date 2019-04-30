@@ -51,7 +51,7 @@ class StatsCollection(
     operator fun set(stat: Stat, value: Int): Boolean {
         val r = reference.get()
         val evt = if (r is EntityPlayer) {
-            StatChangeEvent(r, stat, collection.getOrDefault(stat, 0), value)
+            StatChangeEvent(r, stat, this[stat], value)
         } else null
 
         return if (evt == null || (fire(evt) && evt.result != Event.Result.DENY)) {

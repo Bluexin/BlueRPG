@@ -18,29 +18,75 @@
 package be.bluexin.rpg.classes
 
 import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.events.SkillChangeEvent
 import be.bluexin.rpg.stats.Stat
+import be.bluexin.rpg.util.ResourceLocationSerde
+import be.bluexin.rpg.util.StatDeserializer
 import be.bluexin.rpg.util.buildRegistry
+import be.bluexin.rpg.util.fire
 import be.bluexin.saomclib.capabilities.AbstractEntityCapability
 import be.bluexin.saomclib.capabilities.Key
+import com.google.gson.GsonBuilder
+import com.google.gson.annotations.Expose
+import com.google.gson.reflect.TypeToken
 import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.saving.SaveInPlace
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
+import net.minecraftforge.fml.common.eventhandler.Event
 import net.minecraftforge.registries.IForgeRegistryEntry
 import net.minecraftforge.registries.IForgeRegistryModifiable
+import java.io.File
 import java.util.*
+import kotlin.collections.set
 
 object PlayerClassRegistry : IForgeRegistryModifiable<PlayerClass> by buildRegistry("player_classes") {
     // TODO: set missing callback to return dummy value to be replaced by network loading
 
+    private lateinit var savefile: File
+
+    private val gson = GsonBuilder()
+        .setPrettyPrinting()
+        .registerTypeAdapter(Stat::class.java, StatDeserializer)
+        .registerTypeAdapter(ResourceLocation::class.java, ResourceLocationSerde)
+        .excludeFieldsWithoutExposeAnnotation()
+        .create()
+
     val allClassesStrings by lazy { keys.map(ResourceLocation::toString).toTypedArray() }
+
+    fun setupDataDir(dir: File) {
+        this.loadDirectoryLayout(dir)
+    }
+
+    private fun loadDirectoryLayout(dir: File) {
+        if ((!dir.exists() && !dir.mkdirs()) || !dir.isDirectory) throw IllegalStateException("$dir exists but is not a directory")
+        savefile = File(dir, "playerclassregistry.json")
+    }
+
+    fun load() { // TODO: this should be changed to registry event
+        try {
+            if (savefile.exists()) savefile.reader().use {
+                this.clear()
+                gson.fromJson<List<PlayerClass>>(
+                    it,
+                    object : TypeToken<List<PlayerClass>>() {}.type
+                )
+            }.forEach(::register)
+            else savefile.writer().use {
+                gson.toJson(valuesCollection, it)
+            }
+        } catch (e: Exception) {
+            BlueRPG.LOGGER.error("Couldn't read Player Class registry", Exception(e))
+        }
+    }
 }
 
 data class PlayerClass(
-    val key: ResourceLocation,
-    val skills: List<ResourceLocation>,
-    val baseStats: Map<Stat, Int>
+    @Expose val key: ResourceLocation,
+    @Expose val skills: List<ResourceLocation>,
+    @Expose val baseStats: Map<Stat, Int>
 ) : IForgeRegistryEntry.Impl<PlayerClass>() {
     init {
         this.registryName = key
@@ -55,19 +101,17 @@ class PlayerClassCollection(
     internal var _playerClass = ResourceLocation(BlueRPG.MODID, "unknown_class")
     // TODO: actual playerClass var
 
-    operator fun get(stat: ResourceLocation): Int = skills.getOrDefault(stat, 0)
-    operator fun set(stat: ResourceLocation, value: Int): Boolean {
+    operator fun get(skill: ResourceLocation): Int = skills.getOrDefault(skill, 0)
+    operator fun set(skill: ResourceLocation, value: Int): Boolean {
         val r = reference.get()
-        val evt = if (r != null) {
-            // fire event
+        val evt = if (r is EntityPlayer) {
+            SkillChangeEvent(r, skill, this[skill], value)
         } else null
 
-        return if (evt == null || evt == Unit/*(fire(evt) && evt.result != Event.Result.DENY)*/) {
-            if (/*evt?.newValue ?: */value != 0) skills[stat] = /*evt?.newValue ?:*/ value
-            else skills.remove(stat)
-            /*if (r is EntityPlayer) {
-                r.getEntityAttribute(stat.attribute).baseValue = evt!!.newValue.toDouble()
-            }*/
+        return if (evt == null || (fire(evt) && evt.result != Event.Result.DENY)) {
+            if (evt?.newValue ?: value != 0) skills[skill] = evt?.newValue ?: value
+            else skills.remove(skill)
+            // TODO: refresh passive
             dirty()
             true
         } else false

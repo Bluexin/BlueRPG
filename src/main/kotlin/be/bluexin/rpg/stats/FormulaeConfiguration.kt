@@ -20,7 +20,9 @@ package be.bluexin.rpg.stats
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.CommonProxy
 import be.bluexin.rpg.gear.*
+import be.bluexin.rpg.util.GearTypeDeserializer
 import be.bluexin.rpg.util.Roll
+import be.bluexin.rpg.util.StatDeserializer
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
@@ -31,7 +33,9 @@ import gnu.jel.CompilationException
 import gnu.jel.Evaluator
 import gnu.jel.Library
 import net.minecraft.inventory.EntityEquipmentSlot
-import java.io.*
+import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.lang.reflect.Type
 
 object FormulaeConfiguration {
@@ -99,9 +103,9 @@ object FormulaeConfiguration {
                     FixedStat.values().asSequence() +
                     TrickStat.values().asSequence()).map { it to r }.toMap()
             val a = s.map { TrickingDumbGsonWrite(it, m) }
-            FileWriter(f).use { gson.toJson(a.toList(), it) }
+            f.writer().use { gson.toJson(a.toList(), it) }
         }
-        val read = FileReader(f).use {
+        val read = f.reader().use {
             gson.fromJson<List<TrickingDumbGsonRead>>(
                 it,
                 object : TypeToken<List<TrickingDumbGsonRead>>() {}.type
@@ -114,54 +118,6 @@ object FormulaeConfiguration {
         }
     } catch (e: Exception) {
         BlueRPG.LOGGER.warn("Unable to load formulae file", e)
-    }
-
-    private object StatDeserializer : JsonDeserializer<Stat> {
-        override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Stat? {
-            val s = json.asString
-            try {
-                return PrimaryStat.valueOf(s)
-            } catch (_: Exception) {
-            }
-            try {
-                return SecondaryStat.valueOf(s)
-            } catch (_: Exception) {
-            }
-            try {
-                return FixedStat.valueOf(s)
-            } catch (_: Exception) {
-            }
-            try {
-                return TrickStat.valueOf(s)
-            } catch (_: Exception) {
-            }
-            BlueRPG.LOGGER.warn("Invalid Stat: $s")
-            return null
-        }
-    }
-
-    private object GearTypeDeserializer : JsonDeserializer<GearType> {
-        override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): GearType? {
-            val s = json.asString
-            try {
-                return MeleeWeaponType.valueOf(s)
-            } catch (_: Exception) {
-            }
-            try {
-                return RangedWeaponType.valueOf(s)
-            } catch (_: Exception) {
-            }
-            try {
-                return OffHandType.valueOf(s)
-            } catch (_: Exception) {
-            }
-            try {
-                return ArmorType.valueOf(s)
-            } catch (_: Exception) {
-            }
-            BlueRPG.LOGGER.warn("Invalid GearType: $s")
-            return null
-        }
     }
 
     private object ExpressionDeserializer : JsonDeserializer<ExpressionWrapper> {
