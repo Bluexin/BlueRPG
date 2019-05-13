@@ -224,7 +224,7 @@ object CommonEventHandler {
                 mana = 10,
                 cooldown = 60,
                 magic = true,
-                levelTransformer = Placeholder(2),
+                levelTransformer = LevelModifier(0f, 0f),
                 processor = Processor(
                     Use(10),
                     Projectile(
@@ -238,14 +238,15 @@ object CommonEventHandler {
                         caster[PrimaryStat.INTELLIGENCE] * 2f *
                                 RNG.nextDouble(.95, 1.05) + RNG.nextInt(3)
                     }
-                )
+                ),
+                uuid = arrayOf()
             ),
             SkillData(
                 ResourceLocation(BlueRPG.MODID, "skill_1"),
                 mana = 10,
                 cooldown = 60,
                 magic = true,
-                levelTransformer = Placeholder(2),
+                levelTransformer = LevelModifier(0f, 0f),
                 processor = Processor(
                     Use(20),
                     Projectile(
@@ -264,15 +265,15 @@ object CommonEventHandler {
                                     RNG.nextDouble(1.05, 1.15) + RNG.nextInt(6)
                         }
                     )
-
-                )
+                ),
+                uuid = arrayOf()
             ),
             SkillData(
                 ResourceLocation(BlueRPG.MODID, "skill_2"),
                 mana = 10,
                 cooldown = 60,
                 magic = true,
-                levelTransformer = Placeholder(2),
+                levelTransformer = LevelModifier(0f, 0f),
                 processor = Processor(
                     Use(10),
                     Self(
@@ -285,14 +286,15 @@ object CommonEventHandler {
                         -(caster[PrimaryStat.WISDOM] * 2f *
                                 RNG.nextDouble(.95, 1.05) + RNG.nextInt(3))
                     }
-                )
+                ),
+                uuid = arrayOf()
             ),
             SkillData(
                 ResourceLocation(BlueRPG.MODID, "skill_3"),
                 mana = 10,
                 cooldown = 60,
                 magic = true,
-                levelTransformer = Placeholder(2),
+                levelTransformer = LevelModifier(0f, 0f),
                 processor = Processor(
                     Use(15),
                     Self(
@@ -305,14 +307,15 @@ object CommonEventHandler {
                         if (target is TargetWithLookVec) target.lookVec
                         else Vec3d.ZERO
                     }
-                )
+                ),
+                uuid = arrayOf()
             ),
             SkillData(
                 ResourceLocation(BlueRPG.MODID, "skill_4"),
                 mana = 10,
                 cooldown = 60,
                 magic = true,
-                levelTransformer = Placeholder(2),
+                levelTransformer = LevelModifier(0f, 0f),
                 processor = Processor(
                     Use(10),
                     Raycast(range = 15.0),
@@ -330,7 +333,8 @@ object CommonEventHandler {
                                 }
                             ))
                     )
-                )
+                ),
+                uuid = arrayOf()
             )
         )
     }

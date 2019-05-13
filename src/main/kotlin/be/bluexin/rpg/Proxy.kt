@@ -34,6 +34,7 @@ import be.bluexin.rpg.items.DynItem
 import be.bluexin.rpg.items.DynamicData
 import be.bluexin.rpg.pets.*
 import be.bluexin.rpg.skills.SkillItem
+import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.skills.glitter.TrailSystem
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.AutoCapabilityStorage
@@ -84,6 +85,7 @@ open class CommonProxy : CoroutineScope {
         )
         launch { GatheringRegistry.setupDataDir(localDir) }*/
         launch { PlayerClassRegistry.setupDataDir(customConfDir /*TODO: use localDir when server autosync is in place*/) }
+        launch { SkillRegistry.setupDataDir(customConfDir /*TODO: use localDir when server autosync is in place*/) }
 
         classLoadItems()
         vanillaHax()
@@ -209,6 +211,7 @@ open class CommonProxy : CoroutineScope {
         runBlocking { job.children.forEach { it.join() } }
 //        launch { GatheringRegistry.load() }
         launch { PlayerClassRegistry.load() }
+        launch { SkillRegistry.load() }
         launch { FormulaeConfiguration.init() }
         trickLiblib()
         registerDataSerializer<PetMovementType>()

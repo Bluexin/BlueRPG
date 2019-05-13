@@ -43,7 +43,7 @@ object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
         )
     private val ItemStack.skill get() = SkillRegistry[this.skillName]
 
-    override fun getTranslationKey(stack: ItemStack) = stack.skill?.key?.toString() ?: "${BlueRPG.MODID}:unknown_skill"
+    override fun getTranslationKey(stack: ItemStack) = stack.skill?.name ?: "${BlueRPG.MODID}:unknown_skill"
 
     override val extraVariants by lazy { arrayOf("unknown_skill", *SkillRegistry.allSkillStrings) }
 

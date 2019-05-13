@@ -622,7 +622,7 @@ interface StatCapability {
 /**
  * Generates us some UUIDs
  */
-fun main(args: Array<String>) {
+fun main() {
     println(PrimaryStat.values().joinToString(separator = ",\n", postfix = ";") {
         """$it(arrayOf(
         |"${UUID.randomUUID()}",
