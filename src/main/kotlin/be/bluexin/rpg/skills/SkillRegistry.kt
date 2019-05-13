@@ -21,13 +21,13 @@ import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.gear.GearType
 import be.bluexin.rpg.gear.Rarity
 import be.bluexin.rpg.stats.Stat
+import be.bluexin.rpg.util.DynamicTypeAdapterFactory
 import be.bluexin.rpg.util.ResourceLocationSerde
 import be.bluexin.rpg.util.StatDeserializer
 import be.bluexin.rpg.util.buildRegistry
 import com.google.gson.GsonBuilder
-import com.google.gson.annotations.Expose
 import com.google.gson.reflect.TypeToken
-import com.teamwizardry.librarianlib.features.saving.NamedDynamic
+import com.teamwizardry.librarianlib.features.saving.Savable
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.ai.attributes.IAttribute
 import net.minecraft.entity.ai.attributes.RangedAttribute
@@ -50,7 +50,7 @@ object SkillRegistry : IForgeRegistryModifiable<SkillData> by buildRegistry("ski
         .setPrettyPrinting()
         .registerTypeAdapter(Stat::class.java, StatDeserializer)
         .registerTypeAdapter(ResourceLocation::class.java, ResourceLocationSerde)
-        .excludeFieldsWithoutExposeAnnotation()
+        .registerTypeAdapterFactory(DynamicTypeAdapterFactory())
         .create()
 
     fun setupDataDir(dir: File) {
@@ -66,13 +66,13 @@ object SkillRegistry : IForgeRegistryModifiable<SkillData> by buildRegistry("ski
         try {
             if (savefile.exists()) savefile.reader().use {
                 this.clear()
-                gson.fromJson<List<SkillData>>(
+                gson.fromJson<List<SkillData.SerData>>(
                     it,
-                    object : TypeToken<List<SkillData>>() {}.type
+                    object : TypeToken<List<SkillData.SerData>>() {}.type
                 )
-            }.forEach(::register)
+            }.map(SkillData.SerData::mapped).forEach(::register)
             else savefile.writer().use {
-                gson.toJson(valuesCollection, it)
+                gson.toJson(valuesCollection.map(SkillData::mapped), it)
             }
         } catch (e: Exception) {
             BlueRPG.LOGGER.error("Couldn't read Skill registry", Exception(e))
@@ -80,15 +80,15 @@ object SkillRegistry : IForgeRegistryModifiable<SkillData> by buildRegistry("ski
     }
 }
 
-@NamedDynamic(resourceLocation = "b:sk")
+@Savable
 data class SkillData(
-    @Expose val key: ResourceLocation,
-    @Expose val mana: Int,
-    @Expose val cooldown: Int,
-    @Expose val magic: Boolean,
-    @Expose val levelTransformer: LevelModifier,
-    @Expose val processor: Processor,
-    @Expose override val uuid: Array<UUID>
+    val key: ResourceLocation,
+    val mana: Int,
+    val cooldown: Int,
+    val magic: Boolean,
+    val levelTransformer: LevelModifier,
+    val processor: Processor,
+    override val uuid: Array<UUID>
 ) : IForgeRegistryEntry.Impl<SkillData>(), Stat {
     init {
         this.registryName = key
@@ -127,9 +127,36 @@ data class SkillData(
     override fun hashCode(): Int {
         return key.hashCode()
     }
+
+    val mapped get() = SerData(key, mana, cooldown, magic, levelTransformer, processor, uuid)
+
+    data class SerData(
+        val key: ResourceLocation,
+        val mana: Int,
+        val cooldown: Int,
+        val magic: Boolean,
+        val levelTransformer: LevelModifier,
+        val processor: Processor,
+        val uuid: Array<UUID>
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is SkillData) return false
+
+            if (key != other.key) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            return key.hashCode()
+        }
+
+        val mapped get() = SkillData(key, mana, cooldown, magic, levelTransformer, processor, uuid)
+    }
 }
 
 data class LevelModifier(
-    @Expose val manaMod: Float,
-    @Expose val cooldownMod: Float
+    val manaMod: Float,
+    val cooldownMod: Float
 )

@@ -21,6 +21,13 @@ import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.stats.*
 import com.google.gson.*
+import com.google.gson.reflect.TypeToken
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonToken
+import com.google.gson.stream.JsonWriter
+import com.teamwizardry.librarianlib.features.saving.Dyn
+import com.teamwizardry.librarianlib.features.saving.NamedDynamic
+import com.teamwizardry.librarianlib.features.saving.serializers.builtin.core.NamedDynamicRegistryManager
 import net.minecraft.util.ResourceLocation
 import java.lang.reflect.Type
 
@@ -81,4 +88,75 @@ object ResourceLocationSerde : JsonSerializer<ResourceLocation>, JsonDeserialize
         typeOfT: Type,
         context: JsonDeserializationContext
     ) = ResourceLocation(json.asString)
+}
+
+class DynamicTypeAdapterFactory(private val exclude: TypeToken<*>? = null) : TypeAdapterFactory {
+    override fun <T : Any?> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? {
+        if (type == exclude) return null
+        val clazz = type.rawType
+        val nd = clazz.getAnnotation(NamedDynamic::class.java)
+        val (key, resolver) = when {
+            nd != null -> {
+                val regs = NamedDynamicRegistryManager.getRegistries(clazz)
+                nd.resourceLocation to { key: String ->
+                    @Suppress("UNCHECKED_CAST")
+                    gson.getDelegateAdapter<T>(
+                        this,
+                        TypeToken.get(regs.asSequence().mapNotNull { it.get(key) }.single()) as TypeToken<T>
+                    )
+                }
+            }
+            clazz.isAnnotationPresent(Dyn::class.java) -> {
+                clazz.canonicalName to { key: String ->
+                    @Suppress("UNCHECKED_CAST")
+                    gson.getDelegateAdapter<T>(
+                        this,
+                        TypeToken.get(Class.forName(key)) as TypeToken<T>?
+                    )
+                }
+            }
+            else -> return null
+        }
+
+        return DynamicTypeAdapter(gson, gson.getDelegateAdapter(this, type), key, resolver)
+    }
+
+    private class DynamicTypeAdapter<T : Any?>(
+        private val gson: Gson,
+        private val writeAdapter: TypeAdapter<T>,
+        private val key: String,
+        private val readAdapter: (String) -> TypeAdapter<T>
+    ) : TypeAdapter<T>() {
+        override fun write(out: JsonWriter, value: T?) {
+            if (value == null) {
+                out.nullValue()
+                return
+            }
+            out.beginObject()
+                .name("dynamic_key")
+                .value(key)
+                .name("dynamic_value")
+            writeAdapter.write(out, value)
+            out.endObject()
+        }
+
+        override fun read(reader: JsonReader): T? {
+            if (reader.peek() == JsonToken.NULL) {
+                reader.nextNull()
+                return null
+            }
+            reader.beginObject()
+            var key: String? = null
+            var value: JsonElement? = null
+            repeat(2) {
+                when (reader.nextName()) {
+                    "dynamic_key" -> key = reader.nextString()
+                    "dynamic_value" -> value = gson.getAdapter(JsonElement::class.java).read(reader)
+                }
+            }
+            reader.endObject()
+            return readAdapter(key!!).fromJsonTree(value)
+        }
+    }
+
 }
