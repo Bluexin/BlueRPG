@@ -27,7 +27,6 @@ import be.bluexin.rpg.util.fire
 import be.bluexin.saomclib.capabilities.AbstractEntityCapability
 import be.bluexin.saomclib.capabilities.Key
 import com.google.gson.GsonBuilder
-import com.google.gson.annotations.Expose
 import com.google.gson.reflect.TypeToken
 import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.saving.SaveInPlace
@@ -51,7 +50,6 @@ object PlayerClassRegistry : IForgeRegistryModifiable<PlayerClass> by buildRegis
         .setPrettyPrinting()
         .registerTypeAdapter(Stat::class.java, StatDeserializer)
         .registerTypeAdapter(ResourceLocation::class.java, ResourceLocationSerde)
-        .excludeFieldsWithoutExposeAnnotation()
         .create()
 
     val allClassesStrings by lazy { keys.map(ResourceLocation::toString).toTypedArray() }
@@ -69,13 +67,13 @@ object PlayerClassRegistry : IForgeRegistryModifiable<PlayerClass> by buildRegis
         try {
             if (savefile.exists()) savefile.reader().use {
                 this.clear()
-                gson.fromJson<List<PlayerClass>>(
+                gson.fromJson<List<PlayerClass.SerData>>(
                     it,
-                    object : TypeToken<List<PlayerClass>>() {}.type
+                    object : TypeToken<List<PlayerClass.SerData>>() {}.type
                 )
-            }.forEach(::register)
+            }.map(PlayerClass.SerData::mapped).forEach(::register)
             else savefile.writer().use {
-                gson.toJson(valuesCollection, it)
+                gson.toJson(valuesCollection.map(PlayerClass::mapped), it)
             }
         } catch (e: Exception) {
             BlueRPG.LOGGER.error("Couldn't read Player Class registry", Exception(e))
@@ -84,12 +82,22 @@ object PlayerClassRegistry : IForgeRegistryModifiable<PlayerClass> by buildRegis
 }
 
 data class PlayerClass(
-    @Expose val key: ResourceLocation,
-    @Expose val skills: List<ResourceLocation>,
-    @Expose val baseStats: Map<Stat, Int>
+    val key: ResourceLocation,
+    val skills: List<ResourceLocation>,
+    val baseStats: Map<Stat, Int>
 ) : IForgeRegistryEntry.Impl<PlayerClass>() {
     init {
         this.registryName = key
+    }
+
+    val mapped get() = SerData(key, skills, baseStats)
+
+    data class SerData(
+        val key: ResourceLocation,
+        val skills: List<ResourceLocation>,
+        val baseStats: Map<Stat, Int>
+    ) {
+        val mapped get() = PlayerClass(key, skills, baseStats)
     }
 }
 
