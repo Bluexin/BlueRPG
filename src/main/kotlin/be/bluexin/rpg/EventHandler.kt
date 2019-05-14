@@ -96,14 +96,15 @@ object CommonEventHandler {
             val stats = event.player.stats
             if (stats.dirty) stats.sync()
             if (event.player.health > event.player.maxHealth) event.player.health = event.player.maxHealth
+            if (event.player.mana > event.player.maxMana) event.player.mana = event.player.maxMana
             var regenTick = event.player.entityData.getInteger("bluerpg:regen")
             if (--regenTick <= 0) {
                 regenTick = 100
                 val combat = event.player.combatTracker.inCombat
                 event.player.heal((event.player[SecondaryStat.REGEN] * if (combat) 0.2 else 1.0).toFloat())
+                event.player.mana += ((event.player[SecondaryStat.SPIRIT] * if (combat) 0.2 else 1.0).toFloat()) // TODO: event
             }
             event.player.entityData.setInteger("bluerpg:regen", regenTick)
-            // TODO: same for mana
         }
     }
 
@@ -172,6 +173,7 @@ object CommonEventHandler {
             WeaponAttribute.values().forEach {
                 if (it.shouldRegister) m.registerAttribute(it.attribute)
             }
+            e.dataManager.register(PlayerStats.MANA, 1f)
         }
     }
 

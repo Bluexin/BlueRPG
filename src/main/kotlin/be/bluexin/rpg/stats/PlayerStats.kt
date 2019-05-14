@@ -27,11 +27,14 @@ import be.bluexin.saomclib.capabilities.Key
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.config.ConfigIntRange
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
+import com.teamwizardry.librarianlib.features.kotlin.createFloatKey
+import com.teamwizardry.librarianlib.features.kotlin.managedValue
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.ResourceLocation
+import net.minecraft.util.math.MathHelper
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
 import net.minecraftforge.fml.common.eventhandler.Event
@@ -107,8 +110,19 @@ class PlayerStats : AbstractEntityCapability(), StatCapability {
             internal set
 
         const val LEVELUP_ATTRIBUTES = 2
+        internal val MANA = EntityPlayer::class.createFloatKey()
     }
 }
+
+private var EntityPlayer._mana by managedValue(PlayerStats.MANA)
+var EntityPlayer.mana
+    get() = _mana
+    set(value) {
+        val realMana = MathHelper.clamp(value, 0.0f, this.maxMana)
+        println("New mana value: $realMana/$maxMana")
+        _mana = realMana
+    }
+val EntityPlayer.maxMana get() = this.getEntityAttribute(FixedStat.PSYCHE.attribute).attributeValue.toFloat()
 
 @SaveInPlace
 class Level(private val player: WeakReference<EntityPlayer>) {

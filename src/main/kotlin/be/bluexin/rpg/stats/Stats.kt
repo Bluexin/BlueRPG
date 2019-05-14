@@ -57,7 +57,7 @@ class StatsCollection(
         return if (evt == null || (fire(evt) && evt.result != Event.Result.DENY)) {
             if (evt?.newValue ?: value != 0) collection[stat] = evt?.newValue ?: value
             else collection.remove(stat)
-            if (r is EntityPlayer) r.getEntityAttribute(stat.attribute).baseValue = evt!!.newValue.toDouble()
+            if (r is EntityLivingBase) r.getEntityAttribute(stat.attribute).baseValue = evt!!.newValue.toDouble()
             dirty()
             true
         } else false

@@ -100,7 +100,6 @@ class GuiRpgInventory(private val ct: RPGContainer) : GuiContainerBase(ct, 258, 
                 })
             })
         }
-        sequenceOf("").toSortedSet()
         arrayOf(
             FixedStat.HEALTH,
             FixedStat.PSYCHE,

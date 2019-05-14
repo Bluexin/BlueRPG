@@ -65,7 +65,7 @@ object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
         val skill = stack.skill ?: return ActionResult(EnumActionResult.FAIL, stack)
 
         if (!skill.startUsing(playerIn)) playerIn.activeHand = handIn
-        return ActionResult(EnumActionResult.SUCCESS, stack)
+        return ActionResult(EnumActionResult.PASS, stack)
     }
 
     override fun onItemUseFinish(stack: ItemStack, worldIn: World, entityLiving: EntityLivingBase): ItemStack {

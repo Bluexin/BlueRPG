@@ -21,16 +21,19 @@ import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.gear.GearType
 import be.bluexin.rpg.gear.Rarity
 import be.bluexin.rpg.stats.Stat
+import be.bluexin.rpg.stats.mana
 import be.bluexin.rpg.util.DynamicTypeAdapterFactory
 import be.bluexin.rpg.util.ResourceLocationSerde
 import be.bluexin.rpg.util.StatDeserializer
 import be.bluexin.rpg.util.buildRegistry
+import be.bluexin.saomclib.onServer
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.teamwizardry.librarianlib.features.saving.Savable
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.ai.attributes.IAttribute
 import net.minecraft.entity.ai.attributes.RangedAttribute
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.registries.IForgeRegistryEntry
@@ -95,11 +98,20 @@ data class SkillData(
         this.registryName = key
     }
 
+    /**
+     * Returns false if the skill is still casting
+     */
     fun startUsing(caster: EntityLivingBase): Boolean =
-        processor.startUsing(caster)
+        caster is EntityPlayer && caster.mana < this.mana || processor.startUsing(caster)
 
-    fun stopUsing(caster: EntityLivingBase, timeChanneled: Int) =
-        processor.stopUsing(caster, timeChanneled)
+    fun stopUsing(caster: EntityLivingBase, timeChanneled: Int): Boolean = if (caster is EntityPlayer) {
+        if (caster.mana >= this.mana && processor.stopUsing(caster, timeChanneled)) {
+            caster.world onServer {
+                caster.mana -= this.mana
+            }
+            true
+        } else false
+    } else processor.stopUsing(caster, timeChanneled)
 
     override val name: String = key.toString()
 

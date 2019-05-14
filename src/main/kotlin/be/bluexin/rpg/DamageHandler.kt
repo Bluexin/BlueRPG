@@ -22,6 +22,7 @@ import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.SecondaryStat
 import be.bluexin.rpg.stats.get
+import be.bluexin.rpg.stats.mana
 import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.allowBlock
 import be.bluexin.rpg.util.allowParry
@@ -228,7 +229,7 @@ object DamageHandler {
             }
 
             if (atags.getLong("bluerpg:manastealcd") <= time - manaStealCD && RNG.nextDouble() <= attacker[SecondaryStat.MANA_LEECH_CHANCE]) {
-                // TODO: steal mana
+                attacker.mana += (damage * attacker[SecondaryStat.MANA_LEECH]).toFloat()
                 atags.setLong("bluerpg:manastealcd", time)
             }
 
