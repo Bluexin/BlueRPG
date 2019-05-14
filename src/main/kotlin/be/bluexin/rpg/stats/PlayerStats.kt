@@ -118,9 +118,7 @@ private var EntityPlayer._mana by managedValue(PlayerStats.MANA)
 var EntityPlayer.mana
     get() = _mana
     set(value) {
-        val realMana = MathHelper.clamp(value, 0.0f, this.maxMana)
-        println("New mana value: $realMana/$maxMana")
-        _mana = realMana
+        _mana = MathHelper.clamp(value, 0.0f, this.maxMana)
     }
 val EntityPlayer.maxMana get() = this.getEntityAttribute(FixedStat.PSYCHE.attribute).attributeValue.toFloat()
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,4 +56,6 @@ object Textures {
     val BAG_BG = NEW_INVENTORY.getSprite("bag_bg", 18, 18)
     val COG_BG = NEW_INVENTORY.getSprite("cog_bg", 18, 18)
     val SLOT_BG = NEW_INVENTORY.getSprite("slot_bg", 18, 18)
+
+    val MANA_BAR = ResourceLocation(BlueRPG.MODID, "textures/hud/mana_bar.png")
 }

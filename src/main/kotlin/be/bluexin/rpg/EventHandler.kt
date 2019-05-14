@@ -29,6 +29,7 @@ import be.bluexin.rpg.events.LivingEquipmentPostChangeEvent
 import be.bluexin.rpg.events.OpenEnderChestEvent
 import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.gui.GuiRpgInventory
+import be.bluexin.rpg.gui.Textures
 import be.bluexin.rpg.inventory.RPGInventory
 import be.bluexin.rpg.items.DynItem
 import be.bluexin.rpg.items.dynamicData
@@ -39,6 +40,7 @@ import be.bluexin.rpg.skills.*
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
+import com.saomc.saoui.GLCore
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
 import com.teamwizardry.librarianlib.features.container.GuiHandler
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
@@ -380,7 +382,8 @@ object CommonEventHandler {
                                         )
                                     )
                                 )
-                            ))
+                            )
+                        )
                     )
                 ),
                 uuid = arrayOf()
@@ -577,33 +580,84 @@ object ClientEventHandler {
         }
     }
 
+    private fun renderCastBar() {
+        val mc = Minecraft()
+        val iss = mc.player.activeItemStack
+        if (iss.item == SkillItem && iss.maxItemUseDuration > 0) {
+            GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
+            GlStateManager.disableBlend()
+
+            mc.profiler.startSection("castBar")
+            val charge = min(1 - mc.player.itemInUseCount / iss.maxItemUseDuration.toFloat(), 1f)
+            val barWidth = 182
+            val res = ScaledResolution(mc)
+            val x = res.scaledWidth / 2 - barWidth / 2
+            val filled = (charge * barWidth).toInt()
+            val top = res.scaledHeight - 80
+
+            mc.textureManager.bindTexture(Gui.ICONS)
+
+            drawTexturedModalRect(x, top, 0, 84, barWidth, 5, 1f)
+            if (filled > 0) drawTexturedModalRect(x, top, 0, 89, filled, 5, 1f)
+
+            GlStateManager.enableBlend()
+            mc.profiler.endSection()
+        }
+    }
+
+    private fun renderManaBar() {
+        val mc = Minecraft()
+        val mana = mc.player.mana
+        val maxMana = mc.player.maxMana
+        GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
+
+        mc.profiler.startSection("manaBar")
+        val charge = min(mana / maxMana, 1f)
+        val barWidth = 128.0
+        val x = 2.0
+        val filled = charge * barWidth
+        val top = 20.0
+
+        mc.textureManager.bindTexture(Textures.MANA_BAR)
+
+        GLCore.glTexturedRectV2(
+            x = x,
+            y = top,
+            width = barWidth,
+            height = barWidth / 4,
+            srcX = .0,
+            srcY = .0,
+            srcWidth = 256.0,
+            srcHeight = 64.0,
+            textureW = 256,
+            textureH = 128
+        )
+        if (filled > 0) {
+            GLCore.color(0x089fe5ff)
+            GLCore.glTexturedRectV2(
+                x = x,
+                y = top,
+                width = filled,
+                height = barWidth / 4,
+                srcX = .0,
+                srcY = 64.0,
+                srcWidth = 256.0,
+                srcHeight = 64.0,
+                textureW = 256,
+                textureH = 128
+            )
+        }
+
+        mc.profiler.endSection()
+        GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
+    }
+
     @SubscribeEvent
     @JvmStatic
-    fun renderCastBar(event: RenderGameOverlayEvent.Post) { // TODO: Skin with SAOUI
+    fun renderHuds(event: RenderGameOverlayEvent.Post) { // TODO: Skin with SAOUI
         if (event.type == RenderGameOverlayEvent.ElementType.HOTBAR) {
-            val mc = Minecraft()
-            val iss = mc.player.activeItemStack
-            if (iss.item == SkillItem && iss.maxItemUseDuration > 0) {
-                GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
-                GlStateManager.disableBlend()
-
-                mc.profiler.startSection("castBar")
-                val charge = min(1 - mc.player.itemInUseCount / iss.maxItemUseDuration.toFloat(), 1f)
-                val barWidth = 182
-                val res = ScaledResolution(mc)
-                val x = res.scaledWidth / 2 - barWidth / 2
-                val filled = (charge * barWidth).toInt()
-                val top = res.scaledHeight - 80
-
-                mc.textureManager.bindTexture(Gui.ICONS)
-
-                drawTexturedModalRect(x, top, 0, 84, barWidth, 5, 1f)
-                if (filled > 0) drawTexturedModalRect(x, top, 0, 89, filled, 5, 1f)
-
-                GlStateManager.enableBlend()
-                mc.profiler.endSection()
-                GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
-            }
+            renderCastBar()
+            renderManaBar()
         }
     }
 
