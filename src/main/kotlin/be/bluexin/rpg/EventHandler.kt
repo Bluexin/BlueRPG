@@ -60,6 +60,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Vec3d
 import net.minecraft.util.text.TextComponentString
 import net.minecraftforge.client.event.*
 import net.minecraftforge.common.util.FakePlayer
@@ -325,18 +326,18 @@ object CommonEventHandler {
                         glitter = PacketGlitter.Type.AOE
                     ),
                     null,
-                    Damage(
-                        LibHelper.compileDouble(
-                            ExpressionData(
-                                CacheType.NONE,
-                                "caster.stat(DEXTERITY) * rng.nextDouble(1.9, 2.1) + rng.nextInt(3)"
-                            )
-                        )
-                    )
                     /*Velocity { _, target ->
                         if (target is TargetWithLookVec) target.lookVec
                         else Vec3d.ZERO
                     }*/
+                    Velocity(
+                        LibHelper.compileObject(
+                            ExpressionData(
+                                CacheType.NONE,
+                                "((TargetWithLookVec) target).getLookVec"
+                            ), Vec3d::class.java
+                        )
+                    )
                 ),
                 uuid = arrayOf()
             ),

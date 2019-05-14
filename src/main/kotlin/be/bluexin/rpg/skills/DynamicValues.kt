@@ -21,7 +21,6 @@ import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.PrimaryStat
 import be.bluexin.rpg.stats.SecondaryStat
-import be.bluexin.rpg.stats.Stat
 import be.bluexin.rpg.util.RNG
 import com.google.gson.Gson
 import com.google.gson.TypeAdapter
@@ -34,22 +33,31 @@ import gnu.jel.CompilationException
 import gnu.jel.CompiledExpression
 import gnu.jel.Evaluator
 import gnu.jel.Library
+import net.minecraft.util.math.Vec3d
 import java.io.PrintWriter
 import java.io.StringWriter
-import kotlin.random.Random
+import java.lang.reflect.ParameterizedType
 
 data class ExpressionData(
     val cacheType: CacheType,
     val expression: String
 )
 
+@Suppress("unused")
 data class Holder<T : Target>(
     @get:JvmName("caster")
     val caster: LivingHolder<*>,
     @get:JvmName("target")
     val target: T
 ) {
-    val rng @JvmName("rng") get() = RNG
+    companion object {
+        @JvmStatic
+        val rng
+            @JvmName("rng") get() = RNG
+        @JvmStatic
+        val zeroVec: Vec3d
+            @JvmName("zeroVec") get() = Vec3d.ZERO
+    }
 }
 
 abstract class Expression<T : Target>(protected val expression: CompiledExpression, val text: String) {
@@ -57,9 +65,26 @@ abstract class Expression<T : Target>(protected val expression: CompiledExpressi
     abstract val cacheType: CacheType
 }
 
-abstract class ObjectExpression<T : Target, Result>(expression: CompiledExpression, text: String) :
+open class ObjectExpression<T : Target, Result>(expression: CompiledExpression, text: String) :
     Expression<T>(expression, text) {
-    abstract operator fun invoke(holder: Holder<Target>): Result
+    override fun updateCache(holder: Holder<T>) = Unit
+    @Suppress("UNCHECKED_CAST")
+    open operator fun invoke(holder: Holder<T>): Result = expression.evaluate(arrayOf(holder)) as Result
+
+    override val cacheType get() = CacheType.NONE
+}
+
+class StaticObjectExpression<T : Target, Result : Any>(expression: CompiledExpression, text: String) :
+    ObjectExpression<T, Result>(expression, text) {
+    private lateinit var cache: Result
+
+    @Suppress("UNCHECKED_CAST")
+    override fun updateCache(holder: Holder<T>) {
+        this.cache = expression.evaluate(arrayOf(holder)) as Result
+    }
+
+    override fun invoke(holder: Holder<T>): Result = this.cache
+    override val cacheType get() = CacheType.STATIC
 }
 
 open class DoubleExpression<T : Target>(expression: CompiledExpression, text: String) :
@@ -82,25 +107,25 @@ class StaticDoubleExpression<T : Target>(expression: CompiledExpression, text: S
 }
 
 enum class CacheType(
-    private val genericProvider: (Class<*>, CompiledExpression, String) -> ObjectExpression<Target, Any>,
+    private val genericProvider: (CompiledExpression, String) -> ObjectExpression<Target, Any>,
     private val doubleProvider: (CompiledExpression, String) -> DoubleExpression<Target>
 ) {
 
     /**
      * Values will be cached whenever they're first queried, and never updated
      */
-    STATIC({ _, _, _ -> TODO("Not implemented") }, ::StaticDoubleExpression),
+    STATIC(::StaticObjectExpression, ::StaticDoubleExpression),
 
     /**
      * Values will not be cached
      */
-    NONE({ _, _, _ -> TODO("Not implemented") }, ::DoubleExpression);
+    NONE(::ObjectExpression, ::DoubleExpression);
 
     // TODO: per cast cache?
 
     @Suppress("UNCHECKED_CAST")
-    fun <T : Target, Result> cacheExpression(expr: CompiledExpression, text: String, clazz: Class<Result>) =
-        genericProvider(clazz, expr, text) as ObjectExpression<T, Result>
+    fun <T : Target, Result> cacheExpression(expr: CompiledExpression, text: String) =
+        genericProvider(expr, text) as ObjectExpression<T, Result>
 
     @Suppress("UNCHECKED_CAST")
     fun <T : Target> cacheDoubleExpression(expr: CompiledExpression, text: String) =
@@ -108,10 +133,16 @@ enum class CacheType(
 }
 
 object LibHelper {
-    fun <T : Target> compileDouble(v: ExpressionData) = try {
-        v.cacheType.cacheDoubleExpression<T>(
-            Evaluator.compile(v.expression, LIB, java.lang.Double.TYPE), v.expression
-        )
+    fun <T : Target, R> compileObject(v: ExpressionData, clazz: Class<R>) = catch(v) {
+        v.cacheType.cacheExpression<T, R>(Evaluator.compile(v.expression, LIB, clazz), v.expression)
+    }
+
+    fun <T : Target> compileDouble(v: ExpressionData) = catch(v) {
+        v.cacheType.cacheDoubleExpression<T>(Evaluator.compile(v.expression, LIB, java.lang.Double.TYPE), v.expression)
+    }
+
+    private inline fun <T> catch(v: ExpressionData, block: () -> T) = try {
+        block()
     } catch (ce: CompilationException) {
         val sb = StringBuilder("An error occurred during skill loading. See more info below.\n")
             .append("–––COMPILATION ERROR :\n")
@@ -139,34 +170,33 @@ object LibHelper {
             SecondaryStat::class.java,
             FixedStat::class.java,
             MultiCondition.LinkMode::class.java,
-            Status::class.java
+            Status::class.java,
+            Holder::class.java
         )
         val dynLib = arrayOf(Holder::class.java)
-        val dotClasses = arrayOf(
-            String::class.java,
-            Stat::class.java,
-            List::class.java,
-            PlayerHolder::class.java,
-            LivingHolder::class.java,
-            DefaultHolder::class.java,
-            PosHolder::class.java,
-            BlockPosHolder::class.java,
-            WorldPosHolder::class.java,
-            Random::class.java
-        )
-        Library(staticLib, dynLib, dotClasses, null, null)
+        val dotClasses = arrayOf<Class<*>>() // allow everything. Not as safe, but eh
+        Library(staticLib, dynLib, dotClasses, null, object : HashMap<String, Class<*>>() {
+            override fun get(key: String): Class<*>? = try {
+                Class.forName("be.bluexin.rpg.skills.$key")
+            } catch (e: Exception) {
+                null
+            }
+        })
     }
 }
 
 object ExpressionAdapterFactory : TypeAdapterFactory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : Any?> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? =
-        if (DoubleExpression::class.java.isAssignableFrom(type.rawType)) DoubleExpressionAdapter as TypeAdapter<T>
-        else null
+        when {
+            DoubleExpression::class.java.isAssignableFrom(type.rawType) -> DoubleExpressionAdapter as TypeAdapter<T>
+            ObjectExpression::class.java.isAssignableFrom(type.rawType) -> ObjectExpressionAdapter((type.type as ParameterizedType).actualTypeArguments[1] as Class<*>) as TypeAdapter<T>
+            else -> null
+        }
 }
 
-object DoubleExpressionAdapter : TypeAdapter<DoubleExpression<Target>>() {
-    private val dataAdapter by lazy { Gson().getAdapter(ExpressionData::class.java) }
+object DoubleExpressionAdapter : TypeAdapter<DoubleExpression<Target>?>() {
+    val dataAdapter by lazy { Gson().getAdapter(ExpressionData::class.java)!! }
 
     override fun write(out: JsonWriter, value: DoubleExpression<Target>?) {
         if (value == null) {
@@ -182,5 +212,24 @@ object DoubleExpressionAdapter : TypeAdapter<DoubleExpression<Target>>() {
             return null
         }
         return LibHelper.compileDouble(dataAdapter.read(reader))
+    }
+}
+
+class ObjectExpressionAdapter<R>(private val clazz: Class<R>) : TypeAdapter<ObjectExpression<Target, R>>() {
+
+    override fun write(out: JsonWriter, value: ObjectExpression<Target, R>?) {
+        if (value == null) {
+            out.nullValue()
+            return
+        }
+        DoubleExpressionAdapter.dataAdapter.write(out, ExpressionData(value.cacheType, value.text))
+    }
+
+    override fun read(reader: JsonReader): ObjectExpression<Target, R>? {
+        if (reader.peek() == JsonToken.NULL) {
+            reader.nextNull()
+            return null
+        }
+        return LibHelper.compileObject(DoubleExpressionAdapter.dataAdapter.read(reader), clazz)
     }
 }

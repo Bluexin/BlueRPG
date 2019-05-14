@@ -83,14 +83,14 @@ data class Buff(val effect: (caster: EntityLivingBase, target: TargetWithEffects
 
 @Savable
 @NamedDynamic("e:v")
-data class Velocity(val additionalVelocity: (caster: EntityLivingBase, target: TargetWithMovement) -> Vec3d) : Effect {
+data class Velocity(val additionalVelocity: ObjectExpression<TargetWithMovement, Vec3d>) : Effect {
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<Target>) {
         GlobalScope.launch {
             for (e in targets.filter { it is TargetWithMovement && it is TargetWithWorld }) {
                 e as TargetWithWorld
                 e as TargetWithMovement
                 e.world.minecraftServer?.runMainThread {
-                    e.movement += additionalVelocity(caster, e)
+                    e.movement += additionalVelocity(Holder(caster.holder, e))
                 }
             }
         }
