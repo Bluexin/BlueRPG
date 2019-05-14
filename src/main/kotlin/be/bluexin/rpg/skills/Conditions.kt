@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,10 +69,12 @@ data class Inverted(val c1: Condition) : Condition {
 
 @Savable
 @NamedDynamic("t:r")
-data class Random(val chance: () -> Double) : Condition {
+data class Random(val chance: DoubleExpression<Target>) : Condition {
     private val rng = Random(RNG.nextLong())
 
-    override fun invoke(caster: EntityLivingBase, target: Target) = rng.nextDouble() < chance()
+    override fun invoke(caster: EntityLivingBase, target: Target) = rng.nextDouble() < chance(
+        Holder(caster.holder, target)
+    )
 }
 
 @Savable

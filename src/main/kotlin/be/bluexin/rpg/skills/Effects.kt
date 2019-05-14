@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,14 +46,14 @@ interface Effect {
 
 @Savable
 @NamedDynamic("e:d")
-data class Damage(val value: (caster: EntityLivingBase, target: TargetWithHealth) -> Double) : Effect {
+data class Damage(val value: DoubleExpression<TargetWithHealth>) : Effect {
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<Target>) {
         GlobalScope.launch {
             for (e in targets.filter { it is TargetWithHealth && it is TargetWithWorld }) {
                 e as TargetWithWorld
                 e as TargetWithHealth
                 e.world.minecraftServer?.runMainThread {
-                    val value = this@Damage.value(caster, e).toFloat()
+                    val value = this@Damage.value(Holder(caster.holder, e)).toFloat()
                     if (value >= 0) e.attack(
                         DamageHandler.RpgDamageSource(EntityDamageSource("skill.test", caster)),
                         value

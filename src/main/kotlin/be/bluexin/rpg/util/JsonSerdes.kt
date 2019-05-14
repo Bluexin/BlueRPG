@@ -90,9 +90,8 @@ object ResourceLocationSerde : JsonSerializer<ResourceLocation>, JsonDeserialize
     ) = ResourceLocation(json.asString)
 }
 
-class DynamicTypeAdapterFactory(private val exclude: TypeToken<*>? = null) : TypeAdapterFactory {
+object DynamicTypeAdapterFactory : TypeAdapterFactory {
     override fun <T : Any?> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? {
-        if (type == exclude) return null
         val clazz = type.rawType
         val nd = clazz.getAnnotation(NamedDynamic::class.java)
         val (key, resolver) = when {

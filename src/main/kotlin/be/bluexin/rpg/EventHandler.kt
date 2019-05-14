@@ -37,7 +37,6 @@ import be.bluexin.rpg.pets.RenderEggItem
 import be.bluexin.rpg.pets.eggData
 import be.bluexin.rpg.skills.*
 import be.bluexin.rpg.stats.*
-import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
@@ -61,7 +60,6 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
 import net.minecraft.util.text.TextComponentString
 import net.minecraftforge.client.event.*
 import net.minecraftforge.common.util.FakePlayer
@@ -234,10 +232,18 @@ object CommonEventHandler {
                         velocity = 1.5f
                     ),
                     RequireStatus(Status.AGGRESSIVE),
-                    Damage { caster, _ ->
+                    /*Damage { caster, _ ->
                         caster[PrimaryStat.INTELLIGENCE] * 2f *
                                 RNG.nextDouble(.95, 1.05) + RNG.nextInt(3)
-                    }
+                    }*/
+                    Damage(
+                        LibHelper.compileDouble(
+                            ExpressionData(
+                                CacheType.NONE,
+                                "caster.stat(INTELLIGENCE) * rng.nextDouble(1.9, 2.1) + rng.nextInt(3)"
+                            )
+                        )
+                    )
                 ),
                 uuid = arrayOf()
             ),
@@ -260,10 +266,18 @@ object CommonEventHandler {
                     Skill(
                         AoE(color1 = 0xFFDD0B, color2 = 0xFF0000),
                         RequireStatus(Status.AGGRESSIVE),
-                        Damage { caster, _ ->
+                        /*Damage { caster, _ ->
                             caster[PrimaryStat.STRENGTH] * 2f *
                                     RNG.nextDouble(1.05, 1.15) + RNG.nextInt(6)
-                        }
+                        }*/
+                        Damage(
+                            LibHelper.compileDouble(
+                                ExpressionData(
+                                    CacheType.NONE,
+                                    "caster.stat(STRENGTH) * rng.nextDouble(2.1, 2.3) + rng.nextInt(6)"
+                                )
+                            )
+                        )
                     )
                 ),
                 uuid = arrayOf()
@@ -282,10 +296,18 @@ object CommonEventHandler {
                         glitter = PacketGlitter.Type.HEAL
                     ),
                     RequireStatus(Status.FRIENDLY),
-                    Damage { caster, _ ->
+                    /*Damage { caster, _ ->
                         -(caster[PrimaryStat.WISDOM] * 2f *
                                 RNG.nextDouble(.95, 1.05) + RNG.nextInt(3))
-                    }
+                    }*/
+                    Damage(
+                        LibHelper.compileDouble(
+                            ExpressionData(
+                                CacheType.NONE,
+                                "-(caster.stat(WISDOM) * rng.nextDouble(1.9, 2.1) + rng.nextInt(3))"
+                            )
+                        )
+                    )
                 ),
                 uuid = arrayOf()
             ),
@@ -303,10 +325,18 @@ object CommonEventHandler {
                         glitter = PacketGlitter.Type.AOE
                     ),
                     null,
-                    Velocity { _, target ->
+                    Damage(
+                        LibHelper.compileDouble(
+                            ExpressionData(
+                                CacheType.NONE,
+                                "caster.stat(DEXTERITY) * rng.nextDouble(1.9, 2.1) + rng.nextInt(3)"
+                            )
+                        )
+                    )
+                    /*Velocity { _, target ->
                         if (target is TargetWithLookVec) target.lookVec
                         else Vec3d.ZERO
-                    }
+                    }*/
                 ),
                 uuid = arrayOf()
             ),
@@ -322,15 +352,31 @@ object CommonEventHandler {
                     RequireStatus(Status.AGGRESSIVE),
                     MultiEffect(
                         arrayOf(
-                            Damage { caster, _ ->
+                            /*Damage { caster, _ ->
                                 caster[PrimaryStat.DEXTERITY] * 2f * RNG.nextDouble(.95, 1.05) + RNG.nextInt(3)
-                            },
+                            }*/
+                            Damage(
+                                LibHelper.compileDouble(
+                                    ExpressionData(
+                                        CacheType.NONE,
+                                        "caster.stat(DEXTERITY) * rng.nextDouble(1.9, 2.1) + rng.nextInt(3)"
+                                    )
+                                )
+                            ),
                             Skill(
                                 Chain(delayMillis = 100),
                                 RequireStatus(Status.AGGRESSIVE),
-                                Damage { caster, _ ->
+                                /*Damage { caster, _ ->
                                     caster[PrimaryStat.DEXTERITY] * RNG.nextDouble(.95, 1.05) + RNG.nextInt(3)
-                                }
+                                }*/
+                                Damage(
+                                    LibHelper.compileDouble(
+                                        ExpressionData(
+                                            CacheType.NONE,
+                                            "caster.stat(DEXTERITY) * rng.nextDouble(.95, 1.05) + rng.nextInt(3)"
+                                        )
+                                    )
+                                )
                             ))
                     )
                 ),

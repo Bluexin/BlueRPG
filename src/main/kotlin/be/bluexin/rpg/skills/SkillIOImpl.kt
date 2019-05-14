@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +51,8 @@ open class DefaultHolder<T : Any>(override val it: T) : TargetWithStatus {
 
 open class LivingHolder<T : EntityLivingBase>(living: T) :
     DefaultHolder<T>(living), TargetWithEffects, TargetWithLookVec, TargetWithPosition, TargetWithWorld,
-    TargetWithMovement, TargetWithCollision, TargetWithHealth, TargetWithUuid, TargetWithGear, TargetWithBoundingBox {
+    TargetWithMovement, TargetWithCollision, TargetWithHealth, TargetWithUuid, TargetWithGear, TargetWithBoundingBox,
+    TargetWithStats {
     override fun getPotionEffect(effect: Potion) = it.getActivePotionEffect(effect)
     override fun addPotionEffect(effect: PotionEffect) = it.addPotionEffect(effect)
     override val pos: Vec3d get() = it.getPositionEyes(1f)
@@ -97,6 +98,8 @@ open class LivingHolder<T : EntityLivingBase>(living: T) :
             it.motionZ = value
             it.velocityChanged = true
         }
+
+    override fun get(stat: Stat) = .0
 }
 
 class PlayerHolder(player: EntityPlayer) : LivingHolder<EntityPlayer>(player), TargetWithParty, TargetWithStats {

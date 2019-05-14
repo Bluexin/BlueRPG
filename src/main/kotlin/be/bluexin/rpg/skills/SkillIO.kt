@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -124,6 +124,8 @@ interface TargetWithGear : Target {
 
 interface TargetWithStats : Target {
     operator fun get(stat: Stat): Double
+    @JvmDefault
+    fun stat(stat: Stat) = this[stat]
 }
 
 interface TargetWithUuid : Target {

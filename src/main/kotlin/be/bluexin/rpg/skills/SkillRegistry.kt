@@ -50,7 +50,8 @@ object SkillRegistry : IForgeRegistryModifiable<SkillData> by buildRegistry("ski
         .setPrettyPrinting()
         .registerTypeAdapter(Stat::class.java, StatDeserializer)
         .registerTypeAdapter(ResourceLocation::class.java, ResourceLocationSerde)
-        .registerTypeAdapterFactory(DynamicTypeAdapterFactory())
+        .registerTypeAdapterFactory(ExpressionAdapterFactory)
+        .registerTypeAdapterFactory(DynamicTypeAdapterFactory)
         .create()
 
     fun setupDataDir(dir: File) {
