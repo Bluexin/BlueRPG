@@ -129,7 +129,7 @@ data class SkillData(
     }
 
     private fun manaCost(caster: EntityPlayer) =
-        (this.mana * Math.max(.0, 1 - caster[SecondaryStat.MANA_REDUCTION])).roundToInt()
+        (this.mana * Math.max(.0, 1 - caster[SecondaryStat.MANA_REDUCTION])).toFloat()
 
     override val name: String = key.toString()
 
