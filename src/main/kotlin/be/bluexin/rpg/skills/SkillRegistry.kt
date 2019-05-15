@@ -22,26 +22,22 @@ import be.bluexin.rpg.gear.GearType
 import be.bluexin.rpg.gear.Rarity
 import be.bluexin.rpg.stats.Stat
 import be.bluexin.rpg.stats.mana
-import be.bluexin.rpg.util.DynamicTypeAdapterFactory
-import be.bluexin.rpg.util.ResourceLocationSerde
-import be.bluexin.rpg.util.StatDeserializer
-import be.bluexin.rpg.util.buildRegistry
+import be.bluexin.rpg.util.*
 import be.bluexin.saomclib.onServer
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
-import com.teamwizardry.librarianlib.features.saving.Savable
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.ai.attributes.IAttribute
 import net.minecraft.entity.ai.attributes.RangedAttribute
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
+import net.minecraft.util.EnumActionResult
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.registries.IForgeRegistryEntry
-import net.minecraftforge.registries.IForgeRegistryModifiable
 import java.io.File
 import java.util.*
 
-object SkillRegistry : IForgeRegistryModifiable<SkillData> by buildRegistry("skills") {
+object SkillRegistry : IdAwareForgeRegistryModifiable<SkillData> by buildRegistry("skills") {
     // TODO: set missing callback to return dummy value to be replaced by network loading
 
     val allSkillStrings by lazy { keys.map(ResourceLocation::getPath).toTypedArray() }
@@ -84,13 +80,12 @@ object SkillRegistry : IForgeRegistryModifiable<SkillData> by buildRegistry("ski
     }
 }
 
-@Savable
 data class SkillData(
     val key: ResourceLocation,
     val mana: Int,
     val cooldown: Int,
     val magic: Boolean,
-    val levelTransformer: LevelModifier,
+    val levelTransformer: LevelModifier, // TODO: use scaling
     val processor: Processor,
     override val uuid: Array<UUID>
 ) : IForgeRegistryEntry.Impl<SkillData>(), Stat {
@@ -99,19 +94,34 @@ data class SkillData(
     }
 
     /**
-     * Returns false if the skill is still casting
+     * [EnumActionResult.SUCCESS] = casting done (instant)
+     * [EnumActionResult.PASS] = casting ongoing
+     * [EnumActionResult.FAIL] = casting failed
      */
-    fun startUsing(caster: EntityLivingBase): Boolean =
-        caster is EntityPlayer && caster.mana < this.mana || processor.startUsing(caster)
+    fun startUsing(caster: EntityLivingBase): EnumActionResult = if (caster is EntityPlayer) {
+        if (checkRequirement(caster)) {
+            if (processor.startUsing(caster)) {
+                consume(caster)
+                EnumActionResult.SUCCESS
+            } else EnumActionResult.PASS
+        } else EnumActionResult.FAIL
+    } else if (processor.startUsing(caster)) EnumActionResult.SUCCESS else EnumActionResult.PASS
 
     fun stopUsing(caster: EntityLivingBase, timeChanneled: Int): Boolean = if (caster is EntityPlayer) {
-        if (caster.mana >= this.mana && processor.stopUsing(caster, timeChanneled)) {
-            caster.world onServer {
-                caster.mana -= this.mana
-            }
+        if (checkRequirement(caster) && processor.stopUsing(caster, timeChanneled)) {
+            consume(caster)
             true
         } else false
     } else processor.stopUsing(caster, timeChanneled)
+
+    private fun checkRequirement(caster: EntityPlayer) = caster.mana >= this.mana && this !in caster.cooldowns
+
+    private fun consume(caster: EntityPlayer) {
+        caster.world onServer {
+            caster.mana -= this.mana
+            caster.cooldowns[this] = this.cooldown
+        }
+    }
 
     override val name: String = key.toString()
 

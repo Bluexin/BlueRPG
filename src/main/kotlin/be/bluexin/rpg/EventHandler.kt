@@ -94,6 +94,7 @@ object CommonEventHandler {
     @JvmStatic
     fun playerTick(event: TickEvent.PlayerTickEvent) {
         if (event.phase != TickEvent.Phase.END) return
+        event.player.cooldowns.tick()
         event.player.world onServer {
             val stats = event.player.stats
             if (stats.dirty) stats.sync()

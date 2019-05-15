@@ -19,17 +19,30 @@ package be.bluexin.rpg.util
 
 import be.bluexin.rpg.BlueRPG
 import net.minecraft.util.ResourceLocation
-import net.minecraftforge.registries.IForgeRegistry
-import net.minecraftforge.registries.IForgeRegistryEntry
-import net.minecraftforge.registries.IForgeRegistryModifiable
-import net.minecraftforge.registries.RegistryBuilder
+import net.minecraftforge.registries.*
+
+interface IdAwareForgeRegistryModifiable<V : IForgeRegistryEntry<V>> : IForgeRegistryModifiable<V> {
+    fun getId(value: V): Int
+    fun getId(key: ResourceLocation): Int
+    fun getValue(id: Int): V?
+}
+
+/*private*/ class ForgeRegistryWrapper<V : IForgeRegistryEntry<V>>(private val registry: ForgeRegistry<V>) :
+    IdAwareForgeRegistryModifiable<V>, IForgeRegistryModifiable<V> by registry {
+    override fun getId(value: V): Int = registry.getID(value)
+    override fun getId(key: ResourceLocation): Int = registry.getID(key)
+    override fun getValue(id: Int): V? = registry.getValue(id)
+}
 
 // TODO: allow for callbacks
-inline fun <reified V : IForgeRegistryEntry<V>> buildRegistry(name: String) = RegistryBuilder<V>()
-    .setName(ResourceLocation(BlueRPG.MODID, name))
-    .setType(V::class.java)
-    .allowModification()
-    .create() as IForgeRegistryModifiable<V>
+inline fun <reified V : IForgeRegistryEntry<V>> buildRegistry(name: String): IdAwareForgeRegistryModifiable<V> =
+    ForgeRegistryWrapper(
+        RegistryBuilder<V>()
+            .setName(ResourceLocation(BlueRPG.MODID, name))
+            .setType(V::class.java)
+            .allowModification()
+            .create() as ForgeRegistry<V>
+    )
 
 operator fun <V : IForgeRegistryEntry<V>> IForgeRegistry<V>.get(key: ResourceLocation) = this.getValue(key)
 

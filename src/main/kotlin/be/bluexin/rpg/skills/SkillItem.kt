@@ -22,6 +22,7 @@ import be.bluexin.rpg.util.get
 import com.teamwizardry.librarianlib.features.base.IExtraVariantHolder
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.helpers.getNBTString
+import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
 import net.minecraft.client.util.ITooltipFlag
@@ -34,6 +35,8 @@ import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
 import net.minecraft.util.ResourceLocation
 import net.minecraft.world.World
+import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.relauncher.SideOnly
 
 object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
 
@@ -64,8 +67,9 @@ object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
         val stack = playerIn.getHeldItem(handIn)
         val skill = stack.skill ?: return ActionResult(EnumActionResult.FAIL, stack)
 
-        if (!skill.startUsing(playerIn)) playerIn.activeHand = handIn
-        return ActionResult(EnumActionResult.PASS, stack)
+        val r = skill.startUsing(playerIn)
+        if (r == EnumActionResult.PASS) playerIn.activeHand = handIn
+        return ActionResult(r, stack)
     }
 
     override fun onItemUseFinish(stack: ItemStack, worldIn: World, entityLiving: EntityLivingBase): ItemStack {
@@ -75,6 +79,16 @@ object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
     }
 
     override fun getItemUseAction(stack: ItemStack) = EnumAction.BOW
+
+    @SideOnly(Side.CLIENT)
+    override fun showDurabilityBar(stack: ItemStack): Boolean {
+        return (stack.skill ?: return false) in Minecraft().player.cooldowns
+    }
+
+    @SideOnly(Side.CLIENT)
+    override fun getDurabilityForDisplay(stack: ItemStack): Double {
+        return 1.0 - Minecraft().player.cooldowns[(stack.skill ?: return .0), Minecraft().renderPartialTicks]
+    }
 
     /*override fun onPlayerStoppedUsing(stack: ItemStack, worldIn: World, entityLiving: EntityLivingBase, timeLeft: Int) {
         super.onPlayerStoppedUsing(stack, worldIn, entityLiving, timeLeft)

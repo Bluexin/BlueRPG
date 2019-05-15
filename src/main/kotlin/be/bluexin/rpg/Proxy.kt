@@ -33,6 +33,7 @@ import be.bluexin.rpg.items.DebugStatsItem
 import be.bluexin.rpg.items.DynItem
 import be.bluexin.rpg.items.DynamicData
 import be.bluexin.rpg.pets.*
+import be.bluexin.rpg.skills.CooldownCapability
 import be.bluexin.rpg.skills.SkillItem
 import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.skills.glitter.TrailSystem
@@ -101,6 +102,10 @@ open class CommonProxy : CoroutineScope {
         ) { it is EntityPlayer && it !is FakePlayer }
         CapabilitiesHandler.registerEntityCapability(
             PetStorage::class.java,
+            AutoCapabilityStorage()
+        ) { it is EntityPlayer && it !is FakePlayer }
+        CapabilitiesHandler.registerEntityCapability(
+            CooldownCapability::class.java,
             AutoCapabilityStorage()
         ) { it is EntityPlayer && it !is FakePlayer }
 

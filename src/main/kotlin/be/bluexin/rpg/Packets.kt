@@ -20,12 +20,16 @@ package be.bluexin.rpg
 import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.items.DynamicData
 import be.bluexin.rpg.pets.EggData
+import be.bluexin.rpg.skills.SkillData
+import be.bluexin.rpg.skills.SkillRegistry
+import be.bluexin.rpg.skills.cooldowns
 import be.bluexin.rpg.skills.glitter.AoE
 import be.bluexin.rpg.skills.glitter.BeamLightningSystem
 import be.bluexin.rpg.skills.glitter.Heal
 import be.bluexin.rpg.stats.*
 import com.teamwizardry.librarianlib.features.autoregister.PacketRegister
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
+import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.network.PacketBase
 import com.teamwizardry.librarianlib.features.saving.Save
 import net.minecraft.util.math.BlockPos
@@ -172,4 +176,22 @@ class PacketLightning(from: Vec3d, to: Vec3d) : PacketBase() {
     internal constructor() : this(Vec3d.ZERO, Vec3d.ZERO)
 
     override fun handle(ctx: MessageContext) = BeamLightningSystem.lightItUp(from, to)
+}
+
+@PacketRegister(Side.CLIENT)
+class PacketCooldown(skill: SkillData?, ticks: Int) : PacketBase() {
+    @Save
+    var skill = if (skill == null) 0 else SkillRegistry.getId(skill)
+        internal set
+
+    @Save
+    var ticks = ticks
+        internal set
+
+    @Suppress("unused")
+    internal constructor() : this(null, 0)
+
+    override fun handle(ctx: MessageContext) =
+        if (ticks == 0) Minecraft().player.cooldowns -= SkillRegistry.getValue(skill)!!
+        else Minecraft().player.cooldowns[SkillRegistry.getValue(skill)!!] = ticks
 }
