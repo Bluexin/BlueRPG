@@ -20,7 +20,9 @@ package be.bluexin.rpg.skills
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.gear.GearType
 import be.bluexin.rpg.gear.Rarity
+import be.bluexin.rpg.stats.SecondaryStat
 import be.bluexin.rpg.stats.Stat
+import be.bluexin.rpg.stats.get
 import be.bluexin.rpg.stats.mana
 import be.bluexin.rpg.util.*
 import be.bluexin.saomclib.onServer
@@ -36,6 +38,7 @@ import net.minecraft.util.ResourceLocation
 import net.minecraftforge.registries.IForgeRegistryEntry
 import java.io.File
 import java.util.*
+import kotlin.math.roundToInt
 
 object SkillRegistry : IdAwareForgeRegistryModifiable<SkillData> by buildRegistry("skills") {
     // TODO: set missing callback to return dummy value to be replaced by network loading
@@ -114,14 +117,19 @@ data class SkillData(
         } else false
     } else processor.stopUsing(caster, timeChanneled)
 
-    private fun checkRequirement(caster: EntityPlayer) = caster.mana >= this.mana && this !in caster.cooldowns
+    private fun checkRequirement(caster: EntityPlayer) =
+        caster.mana >= this.manaCost(caster) && this !in caster.cooldowns
 
     private fun consume(caster: EntityPlayer) {
         caster.world onServer {
-            caster.mana -= this.mana
-            caster.cooldowns[this] = this.cooldown
+            caster.mana -= this.manaCost(caster)
+            caster.cooldowns[this] =
+                (this.cooldown * Math.max(.0, 1 - caster[SecondaryStat.COOLDOWN_REDUCTION])).roundToInt()
         }
     }
+
+    private fun manaCost(caster: EntityPlayer) =
+        (this.mana * Math.max(.0, 1 - caster[SecondaryStat.MANA_REDUCTION])).roundToInt()
 
     override val name: String = key.toString()
 
