@@ -1,11 +1,11 @@
 [
   {
-    "modid": "rpg",
-    "name": "Rpg",
-    "description": "RPG Mod for Faerun",
+    "modid": "bluerpg",
+    "name": "Blue's RPG",
+    "description": "WIP (MMO)RPG framework by Bluexin",
     "version": "${version}",
     "mcversion": "${mcversion}",
-    "url": "",
+    "url": "https://github.com/Bluexin/BlueRPG",
     "updateUrl": "",
     "authorList": [
       "Bluexin"
