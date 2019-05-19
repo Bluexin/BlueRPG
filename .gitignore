@@ -29,5 +29,5 @@ hp_example.PNG
 sao-1.10.2.zip
 /rpg.ipr
 /rpg.iws
-/libs/
+#/libs/
 /logs/
