@@ -1,0 +1,32 @@
+{
+  "spritesheet": {
+    "textureWidth": 400,
+    "textureHeight": 400,
+    "sprites": {
+      "bg": [
+        0,
+        0,
+        258,
+        139
+      ],
+      "mask": [
+        264,
+        0,
+        8,
+        8
+      ],
+      "enabled": [
+        264,
+        8,
+        6,
+        6
+      ],
+      "no_class": [
+        264,
+        16,
+        16,
+        16
+      ]
+    }
+  }
+}

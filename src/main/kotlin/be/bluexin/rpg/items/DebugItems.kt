@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg.items
 
+import be.bluexin.rpg.gui.ClassesGui
 import be.bluexin.rpg.gui.GuiAttributes
 import be.bluexin.rpg.stats.PlayerStats
 import be.bluexin.rpg.stats.exp
@@ -24,6 +25,7 @@ import be.bluexin.rpg.stats.stats
 import be.bluexin.saomclib.onClient
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
+import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
@@ -36,6 +38,7 @@ import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import org.lwjgl.input.Keyboard
 
 object DebugStatsItem : ItemMod("debug_stats") {
 
@@ -74,7 +77,9 @@ object DebugStatsItem : ItemMod("debug_stats") {
                 playerIn.stats.attributePoints = PlayerStats.LEVELUP_ATTRIBUTES * 3
             }
         } else worldIn onClient {
-            Minecraft.getMinecraft().displayGuiScreen(GuiAttributes())
+            val mc = Minecraft()
+            if (Keyboard.isKeyDown(29)) mc.displayGuiScreen(ClassesGui())
+            else mc.displayGuiScreen(GuiAttributes())
             return ActionResult.newResult(EnumActionResult.SUCCESS, playerIn.getHeldItem(handIn))
         }
 

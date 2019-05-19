@@ -19,11 +19,9 @@ package be.bluexin.rpg.classes
 
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.events.SkillChangeEvent
+import be.bluexin.rpg.skills.SkillData
 import be.bluexin.rpg.stats.Stat
-import be.bluexin.rpg.util.ResourceLocationSerde
-import be.bluexin.rpg.util.StatDeserializer
-import be.bluexin.rpg.util.buildRegistry
-import be.bluexin.rpg.util.fire
+import be.bluexin.rpg.util.*
 import be.bluexin.saomclib.capabilities.AbstractEntityCapability
 import be.bluexin.saomclib.capabilities.Key
 import com.google.gson.GsonBuilder
@@ -83,7 +81,7 @@ object PlayerClassRegistry : IForgeRegistryModifiable<PlayerClass> by buildRegis
 
 data class PlayerClass(
     val key: ResourceLocation,
-    val skills: List<ResourceLocation>,
+    val skills: Map<ResourceLocation, Int>,
     val baseStats: Map<Stat, Int>
 ) : IForgeRegistryEntry.Impl<PlayerClass>() {
     init {
@@ -94,7 +92,7 @@ data class PlayerClass(
 
     data class SerData(
         val key: ResourceLocation,
-        val skills: List<ResourceLocation>,
+        val skills: Map<ResourceLocation, Int>,
         val baseStats: Map<Stat, Int>
     ) {
         val mapped get() = PlayerClass(key, skills, baseStats)
@@ -103,11 +101,28 @@ data class PlayerClass(
 
 @SaveInPlace
 class PlayerClassCollection(
-    @Save internal var skills: MutableMap<ResourceLocation, Int> = HashMap()
+    @Save private var skills: MutableMap<ResourceLocation, Int> = HashMap()
 ) : AbstractEntityCapability() {
     @Save("player_class")
-    internal var _playerClass = ResourceLocation(BlueRPG.MODID, "unknown_class")
-    // TODO: actual playerClass var
+    private var _playerClass: Array<ResourceLocation?> = arrayOfNulls(3)
+
+    @Deprecated("Only use trough PlayerClassCollection::get/set !!")
+    private val playerClasses: Array<PlayerClass?> = arrayOfNulls(3)
+
+    @Suppress("DEPRECATION")
+    operator fun get(index: Int) = playerClasses[index] ?: _playerClass[index]?.let(PlayerClassRegistry::get)
+
+    @Suppress("DEPRECATION")
+    operator fun set(index: Int, playerClass: PlayerClass?) {
+        this.playerClasses[index] = playerClass
+        this._playerClass[index] = playerClass?.key
+        // TODO: reset skills, base stats, ...
+    }
+
+    operator fun get(skill: SkillData) = this[skill.key]
+    operator fun set(skill: SkillData, value: Int) {
+        this[skill.key] = value
+    }
 
     operator fun get(skill: ResourceLocation): Int = skills.getOrDefault(skill, 0)
     operator fun set(skill: ResourceLocation, value: Int): Boolean {
@@ -157,3 +172,5 @@ class PlayerClassCollection(
             internal set
     }
 }
+
+val EntityPlayer.playerClass get() = this.getCapability(PlayerClassCollection.Capability, null)!!

@@ -34,7 +34,7 @@ object Textures {
     val POWER_BG = BASE.getSprite("power_bg", 8, 56)
     val POWER_FG = BASE.getSprite("power_fg", 8, 56)
 
-    val NEW_INVENTORY = Texture(ResourceLocation(BlueRPG.MODID, "textures/gui/gui_inventory.png"))
+    private val NEW_INVENTORY = Texture(ResourceLocation(BlueRPG.MODID, "textures/gui/gui_inventory.png"))
 
     val SCROLLBAR_FG = NEW_INVENTORY.getSprite("scrollbar_fg", 8, 8)
 
@@ -58,4 +58,10 @@ object Textures {
     val SLOT_BG = NEW_INVENTORY.getSprite("slot_bg", 18, 18)
 
     val MANA_BAR = ResourceLocation(BlueRPG.MODID, "textures/hud/mana_bar.png")
+
+    private val CLASSES = Texture(ResourceLocation(BlueRPG.MODID, "textures/gui/class.png"))
+    val CLASSES_BG = CLASSES.getSprite("bg", 258, 139)
+    val CLASSES_MASK = CLASSES.getSprite("mask", 8, 8)
+    val CLASSES_ENABLED = CLASSES.getSprite("enabled", 6, 6)
+    val CLASSES_EMPTY = CLASSES.getSprite("no_class", 16, 16)
 }

@@ -22,6 +22,7 @@ import be.bluexin.rpg.util.get
 import com.teamwizardry.librarianlib.features.base.IExtraVariantHolder
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.helpers.getNBTString
+import com.teamwizardry.librarianlib.features.helpers.setNBTString
 import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
@@ -39,6 +40,9 @@ import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
 object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
+
+    operator fun get(skill: SkillData) = ItemStack(this).apply { setNBTString("skill", skill.key.toString()) }
+    operator fun get(skill: ResourceLocation) = ItemStack(this).apply { setNBTString("skill", skill.toString()) }
 
     private val ItemStack.skillName
         get() = ResourceLocation(

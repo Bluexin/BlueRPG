@@ -351,9 +351,11 @@ object CommonEventHandler {
         event.registry.registerAll(
             PlayerClass(
                 ResourceLocation(BlueRPG.MODID, "class_0"),
-                skills = listOf(
-                    ResourceLocation(BlueRPG.MODID, "skill_3"),
-                    ResourceLocation(BlueRPG.MODID, "skill_4")
+                skills = mapOf(
+                    ResourceLocation(BlueRPG.MODID, "skill_3") to 0,
+                    ResourceLocation(BlueRPG.MODID, "skill_4") to 0,
+                    ResourceLocation(BlueRPG.MODID, "skill_1") to 1,
+                    ResourceLocation(BlueRPG.MODID, "skill_2") to 1
                 ),
                 baseStats = mapOf(
                     PrimaryStat.CONSTITUTION to 5,
@@ -362,9 +364,11 @@ object CommonEventHandler {
             ),
             PlayerClass(
                 ResourceLocation(BlueRPG.MODID, "class_1"),
-                skills = listOf(
-                    ResourceLocation(BlueRPG.MODID, "skill_1"),
-                    ResourceLocation(BlueRPG.MODID, "skill_2")
+                skills = mapOf(
+                    ResourceLocation(BlueRPG.MODID, "skill_1") to 0,
+                    ResourceLocation(BlueRPG.MODID, "skill_2") to 0,
+                    ResourceLocation(BlueRPG.MODID, "skill_3") to 1,
+                    ResourceLocation(BlueRPG.MODID, "skill_4") to 1
                 ),
                 baseStats = mapOf(
                     PrimaryStat.INTELLIGENCE to 5,
@@ -373,9 +377,11 @@ object CommonEventHandler {
             ),
             PlayerClass(
                 ResourceLocation(BlueRPG.MODID, "class_2"),
-                skills = listOf(
-                    ResourceLocation(BlueRPG.MODID, "skill_2"),
-                    ResourceLocation(BlueRPG.MODID, "skill_3")
+                skills = mapOf(
+                    ResourceLocation(BlueRPG.MODID, "skill_2") to 0,
+                    ResourceLocation(BlueRPG.MODID, "skill_3") to 0,
+                    ResourceLocation(BlueRPG.MODID, "skill_1") to 1,
+                    ResourceLocation(BlueRPG.MODID, "skill_4") to 1
                 ),
                 baseStats = mapOf(
                     PrimaryStat.CHARISMA to 5,
