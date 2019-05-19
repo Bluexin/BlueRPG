@@ -36,9 +36,10 @@ import be.bluexin.rpg.items.dynamicData
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.RenderEggItem
 import be.bluexin.rpg.pets.eggData
-import be.bluexin.rpg.skills.*
+import be.bluexin.rpg.skills.SkillItem
+import be.bluexin.rpg.skills.SkillRegistry
+import be.bluexin.rpg.skills.cooldowns
 import be.bluexin.rpg.stats.*
-import be.bluexin.rpg.util.RNG
 import be.bluexin.rpg.util.Resources
 import be.bluexin.saomclib.onServer
 import com.saomc.saoui.GLCore
@@ -63,7 +64,6 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagByte
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
 import net.minecraft.util.text.TextComponentString
 import net.minecraftforge.client.event.*
 import net.minecraftforge.common.util.FakePlayer
@@ -218,131 +218,6 @@ object CommonEventHandler {
         SkillRegistry
         PlayerClassRegistry
 //        GatheringRegistry
-    }
-
-    @SubscribeEvent
-    @JvmStatic
-    fun registerSkills(event: RegistryEvent.Register<SkillData>) {
-        event.registry.registerAll(
-            SkillData(
-                ResourceLocation(BlueRPG.MODID, "skill_0"),
-                mana = 10,
-                cooldown = 60,
-                magic = true,
-                levelTransformer = LevelModifier(0f, 0f),
-                processor = Processor(
-                    Use(10),
-                    Projectile(
-                        condition = RequireStatus(Status.AGGRESSIVE),
-                        color1 = 0x0055BB, color2 = 0x0085BB,
-                        trailSystem = ResourceLocation(BlueRPG.MODID, "ice"),
-                        velocity = 1.5f
-                    ),
-                    RequireStatus(Status.AGGRESSIVE),
-                    Damage { caster, _ ->
-                        caster[PrimaryStat.INTELLIGENCE] * 2f *
-                                RNG.nextDouble(.95, 1.05) + RNG.nextInt(3)
-                    }
-                ),
-                uuid = arrayOf()
-            ),
-            SkillData(
-                ResourceLocation(BlueRPG.MODID, "skill_1"),
-                mana = 10,
-                cooldown = 60,
-                magic = true,
-                levelTransformer = LevelModifier(0f, 0f),
-                processor = Processor(
-                    Use(20),
-                    Projectile(
-                        velocity = .8f,
-                        inaccuracy = 2.5f,
-                        color1 = 0xFFDD0B, color2 = 0xFF0000,
-                        trailSystem = ResourceLocation(BlueRPG.MODID, "embers"),
-                        precise = true
-                    ),
-                    RequireStatus(Status.AGGRESSIVE),
-                    Skill(
-                        AoE(color1 = 0xFFDD0B, color2 = 0xFF0000),
-                        RequireStatus(Status.AGGRESSIVE),
-                        Damage { caster, _ ->
-                            caster[PrimaryStat.STRENGTH] * 2f *
-                                    RNG.nextDouble(1.05, 1.15) + RNG.nextInt(6)
-                        }
-                    )
-                ),
-                uuid = arrayOf()
-            ),
-            SkillData(
-                ResourceLocation(BlueRPG.MODID, "skill_2"),
-                mana = 10,
-                cooldown = 60,
-                magic = true,
-                levelTransformer = LevelModifier(0f, 0f),
-                processor = Processor(
-                    Use(10),
-                    Self(
-                        color1 = 0x2CB000,
-                        color2 = 0x8EE807,
-                        glitter = PacketGlitter.Type.HEAL
-                    ),
-                    RequireStatus(Status.FRIENDLY),
-                    Damage { caster, _ ->
-                        -(caster[PrimaryStat.WISDOM] * 2f *
-                                RNG.nextDouble(.95, 1.05) + RNG.nextInt(3))
-                    }
-                ),
-                uuid = arrayOf()
-            ),
-            SkillData(
-                ResourceLocation(BlueRPG.MODID, "skill_3"),
-                mana = 10,
-                cooldown = 60,
-                magic = true,
-                levelTransformer = LevelModifier(0f, 0f),
-                processor = Processor(
-                    Use(15),
-                    Self(
-                        color1 = 0xA4D9F7,
-                        color2 = 0xCADDE8,
-                        glitter = PacketGlitter.Type.AOE
-                    ),
-                    null,
-                    Velocity { _, target ->
-                        if (target is TargetWithLookVec) target.lookVec
-                        else Vec3d.ZERO
-                    }
-                ),
-                uuid = arrayOf()
-            ),
-            SkillData(
-                ResourceLocation(BlueRPG.MODID, "skill_4"),
-                mana = 10,
-                cooldown = 60,
-                magic = true,
-                levelTransformer = LevelModifier(0f, 0f),
-                processor = Processor(
-                    Use(10),
-                    Raycast(range = 15.0),
-                    RequireStatus(Status.AGGRESSIVE),
-                    MultiEffect(
-                        arrayOf(
-                            Damage { caster, _ ->
-                                caster[PrimaryStat.DEXTERITY] * 2f * RNG.nextDouble(.95, 1.05) + RNG.nextInt(3)
-                            },
-                            Skill(
-                                Chain(delayMillis = 100),
-                                RequireStatus(Status.AGGRESSIVE),
-                                Damage { caster, _ ->
-                                    caster[PrimaryStat.DEXTERITY] * RNG.nextDouble(.95, 1.05) + RNG.nextInt(3)
-                                }
-                            )
-                        )
-                    )
-                ),
-                uuid = arrayOf()
-            )
-        )
     }
 
     @SubscribeEvent
