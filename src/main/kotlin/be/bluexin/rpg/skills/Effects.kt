@@ -46,14 +46,14 @@ interface Effect {
 
 @Savable
 @NamedDynamic("e:d")
-data class Damage(val value: DoubleExpression<TargetWithHealth>) : Effect {
+data class Damage(val value: (caster: EntityLivingBase, target: TargetWithHealth) -> Double) : Effect {
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<Target>) {
         GlobalScope.launch {
             for (e in targets.filter { it is TargetWithHealth && it is TargetWithWorld }) {
                 e as TargetWithWorld
                 e as TargetWithHealth
                 e.world.minecraftServer?.runMainThread {
-                    val value = this@Damage.value(Holder(caster.holder, e)).toFloat()
+                    val value = this@Damage.value(caster, e).toFloat()
                     if (value >= 0) e.attack(
                         DamageHandler.RpgDamageSource(EntityDamageSource("skill.test", caster)),
                         value
@@ -83,14 +83,14 @@ data class Buff(val effect: (caster: EntityLivingBase, target: TargetWithEffects
 
 @Savable
 @NamedDynamic("e:v")
-data class Velocity(val additionalVelocity: ObjectExpression<TargetWithMovement, Vec3d>) : Effect {
+data class Velocity(val additionalVelocity: (caster: EntityLivingBase, target: TargetWithMovement) -> Vec3d) : Effect {
     override fun invoke(caster: EntityLivingBase, targets: ReceiveChannel<Target>) {
         GlobalScope.launch {
             for (e in targets.filter { it is TargetWithMovement && it is TargetWithWorld }) {
                 e as TargetWithWorld
                 e as TargetWithMovement
                 e.world.minecraftServer?.runMainThread {
-                    e.movement += additionalVelocity(Holder(caster.holder, e))
+                    e.movement += additionalVelocity(caster, e)
                 }
             }
         }
