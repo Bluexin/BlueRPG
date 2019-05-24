@@ -55,7 +55,7 @@ class GuiRpgInventory(private val ct: RPGContainer) : GuiContainerBase(ct, 258, 
             ComponentVoid(238, 6, 8, 108).apply {
                 add(ComponentSprite(Textures.SCROLLBAR_FG, 0, 0).apply {
                     fun maxY() = this.parent!!.height.toDouble() - this.height
-                    scrollList.BUS.hook(ComponentScrollList.ScrollChangeEvent::class.java) { (it, _, new) ->
+                    scrollList.hook<ComponentScrollList.ScrollChangeEvent> { (it, _, new) ->
                         this.pos = vec(this.pos.x, maxY() * (new / it.maxScroll.toDouble()))
                     }
                 })

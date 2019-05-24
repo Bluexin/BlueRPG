@@ -80,7 +80,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                 geometry.transform.anchor = size / 2.0
                 color(Color.GREEN)
                 render.tooltip(listOf("rpg.display.save".localize()))
-                BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                hook<GuiComponentEvents.MouseClickEvent> {
                     PacketHandler.NETWORK.sendToServer(PacketSaveLoadEditorItem(pos, true))
                 }
             })
@@ -89,7 +89,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                 geometry.transform.anchor = size / 2.0
                 color(Color.BLUE)
                 render.tooltip(listOf("rpg.display.load".localize()))
-                BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                hook<GuiComponentEvents.MouseClickEvent> {
                     PacketHandler.NETWORK.sendToServer(PacketSaveLoadEditorItem(pos, false))
                 }
             })
@@ -99,7 +99,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
             text("Save TE")
         })
         bg.add(ComponentRect(131, 7, 40, 10).apply {
-            BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+            hook<GuiComponentEvents.MouseClickEvent> {
                 PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, null))
             }
             render.tooltip(listOf("Temporary workaround to save the current inventory content"))
@@ -128,7 +128,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     add(ComponentRect(0, -1, 120, 10).apply {
                         color(Color(0, 0, 0, 0))
                         render.tooltip(listOf("rpg.display.cyclerarity".localize()))
-                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                        hook<GuiComponentEvents.MouseClickEvent> {
                             val stats = tokenStats
                             val r = stats.rarity
                             var idx = r?.ordinal ?: -1
@@ -144,7 +144,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     add(ComponentRect(0, -1, 120, 10).apply {
                         color(Color(0, 0, 0, 0))
                         render.tooltip(listOf("rpg.display.cyclebind".localize()))
-                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                        hook<GuiComponentEvents.MouseClickEvent> {
                             val stats = tokenStats
                             stats.binding = Binding.values()[stats.binding.ordinal % Binding.values().size]
                             PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -173,7 +173,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                                 return@f it
                             }
                             render.tooltip(listOf("rpg.display.apply".localize()))
-                            BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                            hook<ComponentTextField.TextSentEvent> {
                                 val stats = tokenStats
                                 stats.ilvl = it.content.toInt()
                                 PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -204,7 +204,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                                 return@f it
                             }
                             render.tooltip(listOf("rpg.display.apply".localize()))
-                            BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                            hook<ComponentTextField.TextSentEvent> {
                                 val stats = tokenStats
                                 stats.levelReq = it.content.toInt()
                                 PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -234,7 +234,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     add(ComponentRect(0, -1, 129, 10).apply {
                         color(Color(0, 0, 0, 0))
                         render.tooltip(listOf("rpg.display.cyclename".localize()))
-                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                        hook<GuiComponentEvents.MouseClickEvent> {
                             val stats = gearStats
                             stats.name = if (it.button == EnumMouseButton.RIGHT) null else NameGenerator(
                                 iss,
@@ -256,7 +256,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                         useShadow(false)
                         useVanillaFilter(false)
                         render.tooltip(listOf("rpg.display.namefield".localize(), "rpg.display.apply".localize()))
-                        BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                        hook<ComponentTextField.TextSentEvent> {
                             val stats = gearStats
                             val t = it.content.trim()
                             stats.name = t.takeUnless { t.isEmpty() }
@@ -277,7 +277,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     add(ComponentRect(0, -1, 129, 10).apply {
                         color(Color(0, 0, 0, 0))
                         render.tooltip(listOf("rpg.display.cyclerarity".localize()))
-                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                        hook<GuiComponentEvents.MouseClickEvent> {
                             val stats = gearStats
                             val r = stats.rarity
                             var idx = r?.ordinal ?: -1
@@ -294,7 +294,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     add(ComponentRect(0, -1, 129, 10).apply {
                         color(Color(0, 0, 0, 0))
                         render.tooltip(listOf("rpg.display.cyclegenerator".localize()))
-                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                        hook<GuiComponentEvents.MouseClickEvent> {
                             val stats = gearStats
                             stats.generator = TokenType.values()[
                                     (stats.generator.ordinal + 1) % TokenType.values().size
@@ -311,7 +311,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     add(ComponentRect(0, -1, 129, 10).apply {
                         color(Color(0, 0, 0, 0))
                         render.tooltip(listOf("rpg.display.cyclebind".localize()))
-                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                        hook<GuiComponentEvents.MouseClickEvent> {
                             val stats = gearStats
                             stats.binding = Binding.values()[(stats.binding.ordinal + 1) % Binding.values().size]
                             PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -340,7 +340,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                                 return@f it
                             }
                             render.tooltip(listOf("rpg.display.apply".localize()))
-                            BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                            hook<ComponentTextField.TextSentEvent> {
                                 val stats = gearStats
                                 stats.ilvl = it.content.toInt()
                                 PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -371,7 +371,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                                 return@f it
                             }
                             render.tooltip(listOf("rpg.display.apply".localize()))
-                            BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                            hook<ComponentTextField.TextSentEvent> {
                                 val stats = gearStats
                                 stats.levelReq = it.content.toInt()
                                 PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -387,7 +387,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     add(ComponentRect(0, -1, 129, 10).apply {
                         color(Color(0, 0, 0, 0))
                         render.tooltip(listOf("rpg.display.cyclegenerated".localize()))
-                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                        hook<GuiComponentEvents.MouseClickEvent> {
                             val stats = gearStats
                             stats.generated = !stats.generated
                             PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -433,7 +433,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                                     return@f it
                                 }
                                 render.tooltip(listOf("rpg.display.apply".localize()))
-                                BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                                hook<ComponentTextField.TextSentEvent> {
                                     val stats = gearStats
                                     stats.stats[stat] = it.content.toInt()
                                     PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -457,10 +457,10 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     color(Color.BLUE)
                     clipping.clipToBounds = true
                     fun maxY() = this.parent!!.height.toDouble() - this.height
-                    scrollList.BUS.hook(ComponentScrollList.ScrollChangeEvent::class.java) { (it, _, new) ->
+                    scrollList.hook<ComponentScrollList.ScrollChangeEvent> { (it, _, new) ->
                         this.pos = vec(this.pos.x, maxY() * (new / it.maxScroll.toDouble()))
                     }
-                    /*BUS.hook(GuiComponentEvents.MouseDragEvent::class.java) {
+                    /*hook<GuiComponentEvents.MouseDragEvent> {
                         val p = (this.pos.y + it.mousePos.y).clamp(0.0, maxY())
                         val v = p / maxY()
                         val step = 1.0 / scrollList.maxScroll
@@ -489,7 +489,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     add(ComponentRect(0, -1, 129, 10).apply {
                         color(Color(0, 0, 0, 0))
                         render.tooltip(listOf("rpg.display.cyclepetname".localize()))
-                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                        hook<GuiComponentEvents.MouseClickEvent> {
                             val stats = eggStats
                             stats.name = if (it.button == EnumMouseButton.RIGHT) "Unnamed" else return@hook
                             PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -508,7 +508,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                         useShadow(false)
                         useVanillaFilter(false)
                         render.tooltip(listOf("rpg.display.namefield".localize(), "rpg.display.apply".localize()))
-                        BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                        hook<ComponentTextField.TextSentEvent> {
                             val stats = eggStats
                             val t = it.content.trim()
                             stats.name = if (t.isEmpty()) "Unnamed" else t
@@ -528,7 +528,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     add(ComponentRect(0, -1, 129, 10).apply {
                         color(Color(0, 0, 0, 0))
                         render.tooltip(listOf("rpg.display.cyclemovementtype".localize()))
-                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                        hook<GuiComponentEvents.MouseClickEvent> {
                             val stats = eggStats
                             stats.movementType =
                                     PetMovementType.values()[(stats.movementType.ordinal + 1) % PetMovementType.values().size]
@@ -558,7 +558,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                                 return@f it
                             }
                             render.tooltip(listOf("rpg.display.apply".localize()))
-                            BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                            hook<ComponentTextField.TextSentEvent> {
                                 val stats = eggStats
                                 stats.hatchTimeSeconds = it.content.toInt()
                                 PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -588,7 +588,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                                 return@f it
                             }
                             render.tooltip(listOf("rpg.display.apply".localize()))
-                            BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                            hook<ComponentTextField.TextSentEvent> {
                                 val stats = eggStats
                                 stats.secondsLived = it.content.toInt()
                                 PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -606,7 +606,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     add(ComponentRect(0, -1, 129, 10).apply {
                         color(Color(0, 0, 0, 0))
                         render.tooltip(listOf("rpg.display.cyclecolor".localize()))
-                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                        hook<GuiComponentEvents.MouseClickEvent> {
                             val stats = eggStats
                             stats.primaryColor = if (it.button == EnumMouseButton.RIGHT) 0 else return@hook
                             PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -630,7 +630,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                             return@f it
                         }
                         render.tooltip(listOf("rpg.display.apply".localize(), "rpg.display.colortooltip".localize()))
-                        BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                        hook<ComponentTextField.TextSentEvent> {
                             val stats = eggStats
                             stats.primaryColor =
                                     if (it.content.startsWith("0x"))
@@ -648,7 +648,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     add(ComponentRect(0, -1, 129, 10).apply {
                         color(Color(0, 0, 0, 0))
                         render.tooltip(listOf("rpg.display.cyclecolor".localize()))
-                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                        hook<GuiComponentEvents.MouseClickEvent> {
                             val stats = eggStats
                             stats.secondaryColor = if (it.button == EnumMouseButton.RIGHT) 0 else return@hook
                             PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -672,7 +672,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                             return@f it
                         }
                         render.tooltip(listOf("rpg.display.apply".localize(), "rpg.display.colortooltip".localize()))
-                        BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                        hook<ComponentTextField.TextSentEvent> {
                             val stats = eggStats
                             stats.secondaryColor =
                                     if (it.content.startsWith("0x"))
@@ -694,10 +694,10 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     color(Color.BLUE)
                     clipping.clipToBounds = true
                     fun maxY() = this.parent!!.height.toDouble() - this.height
-                    scrollList.BUS.hook(ComponentScrollList.ScrollChangeEvent::class.java) { (it, _, new) ->
+                    scrollList.hook<ComponentScrollList.ScrollChangeEvent> { (it, _, new) ->
                         this.pos = vec(this.pos.x, maxY() * (new / it.maxScroll.toDouble()))
                     }
-                    /*BUS.hook(GuiComponentEvents.MouseDragEvent::class.java) {
+                    /*hook<GuiComponentEvents.MouseDragEvent> {
                         val p = (this.pos.y + it.mousePos.y).clamp(0.0, maxY())
                         val v = p / maxY()
                         val step = 1.0 / scrollList.maxScroll
@@ -728,7 +728,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     add(ComponentRect(0, -1, 129, 10).apply {
                         color(Color(0, 0, 0, 0))
                         render.tooltip(listOf("rpg.display.cyclecolor".localize()))
-                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                        hook<GuiComponentEvents.MouseClickEvent> {
                             val stats = dynStats
                             stats.primaryColor = if (it.button == EnumMouseButton.RIGHT) 0 else return@hook
                             PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -752,7 +752,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                             return@f it
                         }
                         render.tooltip(listOf("rpg.display.apply".localize(), "rpg.display.colortooltip".localize()))
-                        BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                        hook<ComponentTextField.TextSentEvent> {
                             val stats = dynStats
                             stats.primaryColor =
                                 if (it.content.startsWith("0x"))
@@ -770,7 +770,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     add(ComponentRect(0, -1, 129, 10).apply {
                         color(Color(0, 0, 0, 0))
                         render.tooltip(listOf("rpg.display.cyclecolor".localize()))
-                        BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                        hook<GuiComponentEvents.MouseClickEvent> {
                             val stats = dynStats
                             stats.secondaryColor = if (it.button == EnumMouseButton.RIGHT) 0 else return@hook
                             PacketHandler.NETWORK.sendToServer(PacketSetEditorStats(pos, stats))
@@ -794,7 +794,7 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                             return@f it
                         }
                         render.tooltip(listOf("rpg.display.apply".localize(), "rpg.display.colortooltip".localize()))
-                        BUS.hook(ComponentTextField.TextSentEvent::class.java) {
+                        hook<ComponentTextField.TextSentEvent> {
                             val stats = dynStats
                             stats.secondaryColor =
                                 if (it.content.startsWith("0x"))
@@ -816,10 +816,10 @@ class GuiEditor(private val ct: ContainerEditor) : GuiContainerBase(ct, 176, 166
                     color(Color.BLUE)
                     clipping.clipToBounds = true
                     fun maxY() = this.parent!!.height.toDouble() - this.height
-                    scrollList.BUS.hook(ComponentScrollList.ScrollChangeEvent::class.java) { (it, _, new) ->
+                    scrollList.hook<ComponentScrollList.ScrollChangeEvent> { (it, _, new) ->
                         this.pos = vec(this.pos.x, maxY() * (new / it.maxScroll.toDouble()))
                     }
-                    /*BUS.hook(GuiComponentEvents.MouseDragEvent::class.java) {
+                    /*hook<GuiComponentEvents.MouseDragEvent> {
                         val p = (this.pos.y + it.mousePos.y).clamp(0.0, maxY())
                         val v = p / maxY()
                         val step = 1.0 / scrollList.maxScroll

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,21 +64,21 @@ class GuiAttributes : GuiBase(WIDTH, HEIGHT) {
             bg.add(ComponentRect(99, 44 + stat.ordinal * 10, 8, 8).apply {
                 color(Color(0, 0, 0, 0))
                 render.tooltip(listOf("rpg.display.increase.small".localize(stat.longName())))
-                BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                hook<GuiComponentEvents.MouseClickEvent> {
                     PacketHandler.NETWORK.sendToServer(PacketRaiseStat(stat, 1))
                 }
             })
             bg.add(ComponentText(110, 45 + stat.ordinal * 10).apply {
                 text("++")
                 render.tooltip(listOf("rpg.display.increase.big".localize(stat.longName())))
-                BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                hook<GuiComponentEvents.MouseClickEvent> {
                     PacketHandler.NETWORK.sendToServer(PacketRaiseStat(stat, 5))
                 }
             })
             bg.add(ComponentRect(109, 44 + stat.ordinal * 10, 14, 8).apply {
                 color(Color(0, 0, 0, 0))
                 render.tooltip(listOf("rpg.display.increase.big".localize(stat.longName())))
-                BUS.hook(GuiComponentEvents.MouseClickEvent::class.java) {
+                hook<GuiComponentEvents.MouseClickEvent> {
                     PacketHandler.NETWORK.sendToServer(PacketRaiseStat(stat, 5))
                 }
             })

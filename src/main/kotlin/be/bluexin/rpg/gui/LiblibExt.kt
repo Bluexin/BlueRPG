@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg.gui
 
+import com.teamwizardry.librarianlib.features.eventbus.Event
 import com.teamwizardry.librarianlib.features.eventbus.EventCancelable
 import com.teamwizardry.librarianlib.features.gui.component.GuiComponent
 import com.teamwizardry.librarianlib.features.gui.component.GuiComponentEvents
@@ -90,7 +91,7 @@ class ComponentScrollList(posX: Int, posY: Int, var rowHeight: Int, var limit: I
     fun _clear() = _children.clear()
 
     init {
-        BUS.hook(GuiComponentEvents.MouseWheelEvent::class.java) {
+        hook<GuiComponentEvents.MouseWheelEvent> {
             if (it.direction == GuiComponentEvents.MouseWheelDirection.UP) --scroll
             else ++scroll
         }
@@ -118,3 +119,5 @@ class ComponentEntity(
         GuiInventory.drawEntityOnScreen(x, y, scale, mx, my, entity)
     }
 }
+
+inline fun <reified T : Event> GuiComponent.hook(noinline action: (T) -> Unit) = BUS.hook(T::class.java, action)

@@ -17,6 +17,9 @@
 
 package be.bluexin.rpg
 
+import be.bluexin.rpg.classes.PlayerClassCollection
+import be.bluexin.rpg.classes.PlayerClassRegistry
+import be.bluexin.rpg.classes.playerClass
 import be.bluexin.rpg.containers.ContainerEditor
 import be.bluexin.rpg.items.DynamicData
 import be.bluexin.rpg.pets.EggData
@@ -27,11 +30,13 @@ import be.bluexin.rpg.skills.glitter.AoE
 import be.bluexin.rpg.skills.glitter.BeamLightningSystem
 import be.bluexin.rpg.skills.glitter.Heal
 import be.bluexin.rpg.stats.*
+import be.bluexin.rpg.util.get
 import com.teamwizardry.librarianlib.features.autoregister.PacketRegister
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
 import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.network.PacketBase
 import com.teamwizardry.librarianlib.features.saving.Save
+import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
@@ -194,4 +199,29 @@ class PacketCooldown(skill: SkillData?, ticks: Int) : PacketBase() {
     override fun handle(ctx: MessageContext) =
         if (ticks == 0) Minecraft().player.cooldowns -= SkillRegistry.getValue(skill)!!
         else Minecraft().player.cooldowns[SkillRegistry.getValue(skill)!!] = ticks
+}
+
+@PacketRegister(Side.SERVER)
+class PacketSetClass(@Save var clazz: ResourceLocation?, @Save var slot: Int) : PacketBase() {
+
+    @Suppress("unused")
+    internal constructor() : this(null, 0)
+
+    override fun handle(ctx: MessageContext) {
+        val pc = ctx.serverHandler.player.playerClass
+        if (PlayerClassCollection.removeClassWhenever || pc[slot] == null) pc[slot] =
+            if (clazz == null) null else PlayerClassRegistry[clazz!!]
+    }
+}
+
+@PacketRegister(Side.SERVER)
+class PacketChangeSkill(@Save var skill: ResourceLocation?, @Save var increase: Boolean) : PacketBase() {
+
+    @Suppress("unused")
+    internal constructor() : this(null, false)
+
+    override fun handle(ctx: MessageContext) {
+        if (increase) ++ctx.serverHandler.player.playerClass[skill!!]
+        else if (PlayerClassCollection.removeSkillsWhenever) --ctx.serverHandler.player.playerClass[skill!!]
+    }
 }

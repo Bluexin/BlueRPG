@@ -19,6 +19,7 @@ package be.bluexin.rpg.classes
 
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.events.SkillChangeEvent
+import be.bluexin.rpg.gui.ClassesGui
 import be.bluexin.rpg.skills.SkillData
 import be.bluexin.rpg.stats.Stat
 import be.bluexin.rpg.util.*
@@ -26,6 +27,8 @@ import be.bluexin.saomclib.capabilities.AbstractEntityCapability
 import be.bluexin.saomclib.capabilities.Key
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import com.teamwizardry.librarianlib.features.config.ConfigProperty
+import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import net.minecraft.entity.player.EntityPlayer
@@ -99,25 +102,55 @@ data class PlayerClass(
     }
 }
 
+/* TODO: revamp base stats
+LordPhrozenToday at 23:15
+as for base stats I think each  subclass tree should have a stat associsated with it
+dex/str/ etc
+and then you earn 1 added in for every tier 1 skill slot
+3 for every point in a tier 2
+and 5 for every point in a tier 3
+ */
 @SaveInPlace
 class PlayerClassCollection(
     @Save private var skills: MutableMap<ResourceLocation, Int> = HashMap()
 ) : AbstractEntityCapability() {
     @Save("player_class")
     private var _playerClass: Array<ResourceLocation?> = arrayOfNulls(3)
+        set(value) {
+            field = value
+            @Suppress("DEPRECATION")
+            playerClasses = arrayOfNulls(3) // clear cache, but keep it lazy
+
+            val ent = reference.get()
+            if (ent is EntityPlayer && ent.world.isRemote) {
+                val gui = Minecraft().currentScreen
+                if (gui is ClassesGui) gui.refresh()
+            }
+        }
 
     @Deprecated("Only use trough PlayerClassCollection::get/set !!")
-    private val playerClasses: Array<PlayerClass?> = arrayOfNulls(3)
+    private var playerClasses: Array<PlayerClass?> = arrayOfNulls(3)
 
     @Suppress("DEPRECATION")
-    operator fun get(index: Int) = playerClasses[index] ?: _playerClass[index]?.let(PlayerClassRegistry::get)
+    operator fun get(index: Int): PlayerClass? = playerClasses[index] ?: _playerClass[index]?.let {
+        val c = PlayerClassRegistry[it]
+        playerClasses[index] = c
+        return c
+    }
 
     @Suppress("DEPRECATION")
     operator fun set(index: Int, playerClass: PlayerClass?) {
-        this.playerClasses[index] = playerClass
-        this._playerClass[index] = playerClass?.key
-        // TODO: reset skills, base stats, ...
+        if (playerClass == null || playerClass !in classesSequence) {
+            this.playerClasses[index] = playerClass
+            this._playerClass[index] = playerClass?.key
+            // TODO: event, update base stats... or not?
+            this.skills.entries.removeIf { (skill, _) -> classesSequence.none { it?.skills?.contains(skill) == true } }
+            this.sync()
+        }
     }
+
+    operator fun contains(playerClass: PlayerClass) = playerClass.key in this
+    operator fun contains(playerClass: ResourceLocation) = playerClass in _playerClass
 
     operator fun get(skill: SkillData) = this[skill.key]
     operator fun set(skill: SkillData, value: Int) {
@@ -126,6 +159,10 @@ class PlayerClassCollection(
 
     operator fun get(skill: ResourceLocation): Int = skills.getOrDefault(skill, 0)
     operator fun set(skill: ResourceLocation, value: Int): Boolean {
+        if (value < 0 || value >= 3) return false
+        if (skill !in this.skills && classesSequence.none { it?.skills?.contains(skill) == true }) return false
+        // TODO: skill tiers... or not?
+
         val r = reference.get()
         val evt = if (r is EntityPlayer) {
             SkillChangeEvent(r, skill, this[skill], value)
@@ -133,12 +170,14 @@ class PlayerClassCollection(
 
         return if (evt == null || (fire(evt) && evt.result != Event.Result.DENY)) {
             if (evt?.newValue ?: value != 0) skills[skill] = evt?.newValue ?: value
-            else skills.remove(skill)
+            else skills.remove(skill) // TODO: remove skill from available in actives
+            this.sync()
             // TODO: refresh passive
-            dirty()
             true
         } else false
     }
+
+    val classesSequence = (0 until 3).asSequence().map(this::get)
 
     operator fun invoke() = skills.asSequence()
 
@@ -146,17 +185,6 @@ class PlayerClassCollection(
 
     fun load(other: PlayerClassCollection) {
         this.skills = other.skills
-    }
-
-    internal var dirty = false
-        private set
-
-    internal fun clean() {
-        dirty = false
-    }
-
-    internal fun dirty() {
-        dirty = true
     }
 
     fun clear() = skills.clear()
@@ -170,6 +198,19 @@ class PlayerClassCollection(
         @CapabilityInject(PlayerClassCollection::class)
         lateinit var Capability: Capability<PlayerClassCollection>
             internal set
+
+
+        @ConfigProperty(
+            category = "general",
+            comment = "Allow players to remove selected classes whenever they want to"
+        )
+        var removeClassWhenever = false
+
+        @ConfigProperty(
+            category = "general",
+            comment = "Allow players to remove invested skill points whenever they want to"
+        )
+        var removeSkillsWhenever = false
     }
 }
 
