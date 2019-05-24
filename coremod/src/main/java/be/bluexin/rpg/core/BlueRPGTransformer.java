@@ -18,7 +18,6 @@
 package be.bluexin.rpg.core;
 
 import net.minecraft.launchwrapper.IClassTransformer;
-import net.minecraft.launchwrapper.Launch;
 import org.apache.logging.log4j.LogManager;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -209,7 +208,7 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
         boolean didAnything = findMethodAndTransform(node, sig, action);
 
         if (didAnything) {
-            ClassWriter writer = new SafeClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+            ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
             node.accept(writer);
             return writer.toByteArray();
         }
@@ -585,49 +584,4 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
         }
     }
 
-    /**
-     * Safe class writer.
-     * The way COMPUTE_FRAMES works may require loading additional classes. This can cause ClassCircularityErrors.
-     * The override for getCommonSuperClass will ensure that COMPUTE_FRAMES works properly by using the right ClassLoader.
-     * <p>
-     * Code adapted from: https://github.com/JamiesWhiteShirt/clothesline/blob/master/src/core/java/com/jamieswhiteshirt/clothesline/core/SafeClassWriter.java
-     * <p>
-     * // FIXME: this still causes ClassCircularityErrors, and default implementation seems to use the correct class loader. Worked around by checking for Object preemptively.
-     */
-    public static class SafeClassWriter extends ClassWriter {
-        public SafeClassWriter(int flags) {
-            super(flags);
-        }
-
-        public SafeClassWriter(ClassReader classReader, int flags) {
-            super(classReader, flags);
-        }
-
-        @Override
-        protected String getCommonSuperClass(String type1, String type2) {
-            if (type2.equals("java/lang/Object")) return type2;
-            Class<?> c, d;
-            ClassLoader classLoader = Launch.classLoader;
-            try {
-                c = Class.forName(type1.replace('/', '.'), false, classLoader);
-                d = Class.forName(type2.replace('/', '.'), false, classLoader);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            if (c.isAssignableFrom(d)) {
-                return type1;
-            }
-            if (d.isAssignableFrom(c)) {
-                return type2;
-            }
-            if (c.isInterface() || d.isInterface()) {
-                return "java/lang/Object";
-            } else {
-                do {
-                    c = c.getSuperclass();
-                } while (!c.isAssignableFrom(d));
-                return c.getName().replace('.', '/');
-            }
-        }
-    }
 }
