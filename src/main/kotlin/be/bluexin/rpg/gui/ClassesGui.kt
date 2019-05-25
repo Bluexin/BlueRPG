@@ -295,7 +295,7 @@ class ClassSelectionComponent(
 
 class ClassButton(posX: Int, posY: Int, clazz: ResourceLocation? = null) : GuiComponent(posX, posY, 18, 18) {
     init {
-        this.add(if (clazz == null) ComponentSprite(Textures.CLASSES_EMPTY, 1, 1) else ComponentRaw(1, 1, Consumer {
+        this.add(if (clazz == null) ComponentSprite(Textures.CLASS_BG, 0, 0) else ComponentRaw(1, 1, Consumer {
             GLCore.glBindTexture(clazz)
             GLCore.glTexturedRectV2(x = .0, y = .0, width = 16.0, height = 16.0, textureW = 16, textureH = 16)
         }))

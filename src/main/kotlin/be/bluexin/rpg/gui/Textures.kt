@@ -63,6 +63,5 @@ object Textures {
     val CLASSES_BG = CLASSES.getSprite("bg", 258, 139)
     val CLASSES_MASK = CLASSES.getSprite("mask", 8, 8)
     val CLASSES_ENABLED = CLASSES.getSprite("enabled", 6, 6)
-    val CLASSES_EMPTY = CLASSES.getSprite("no_class", 16, 16)
     val CLASSES_SELECTION = CLASSES.getSprite("class_select", 26, 26)
 }

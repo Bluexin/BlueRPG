@@ -17,11 +17,13 @@
 
 package be.bluexin.rpg.gui
 
+import be.bluexin.rpg.classes.playerClass
 import be.bluexin.rpg.containers.RPGContainer
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.PrimaryStat
 import be.bluexin.rpg.stats.SecondaryStat
 import be.bluexin.rpg.stats.Stat
+import com.teamwizardry.librarianlib.features.gui.component.GuiComponentEvents
 import com.teamwizardry.librarianlib.features.gui.components.ComponentRect
 import com.teamwizardry.librarianlib.features.gui.components.ComponentSprite
 import com.teamwizardry.librarianlib.features.gui.components.ComponentText
@@ -30,6 +32,7 @@ import com.teamwizardry.librarianlib.features.guicontainer.ComponentSlot
 import com.teamwizardry.librarianlib.features.guicontainer.GuiContainerBase
 import com.teamwizardry.librarianlib.features.guicontainer.builtin.BaseLayouts
 import com.teamwizardry.librarianlib.features.helpers.vec
+import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.kotlin.height
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.gui.inventory.GuiContainerCreative
@@ -71,8 +74,14 @@ class GuiRpgInventory(private val ct: RPGContainer) : GuiContainerBase(ct, 258, 
             equipment.add(ComponentSprite(Textures.CRAFTING_BG, 78 + 18 * it, 116))
         }
 
+        val playerClassData = Minecraft().player.playerClass
         repeat(3) {
-            equipment.add(ComponentSprite(Textures.CLASS_BG, 149 + 18 * it, 116))
+            val playerClass = playerClassData[it]
+            equipment.add(ClassButton(149 + 18 * it, 116, playerClass?.key).apply {
+                hook<GuiComponentEvents.MouseClickEvent> {
+                    mc.displayGuiScreen(ClassesGui())
+                }
+            })
         }
     }
 
