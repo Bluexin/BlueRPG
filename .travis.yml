@@ -15,10 +15,10 @@ jdk:
   - oraclejdk8
 after_success:
   - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew publish -PmavenPassword=$REPO_PWD; fi
-#  - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
-#  - chmod +x send.sh
-#  - ./send.sh success $WEBHOOK_URL
+  - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
+  - chmod +x send.sh
+  - ./send.sh success $WEBHOOK_URL
 after_failure:
-#  - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
-#  - chmod +x send.sh
-#  - ./send.sh failure $WEBHOOK_URL
+  - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
+  - chmod +x send.sh
+  - ./send.sh failure $WEBHOOK_URL
