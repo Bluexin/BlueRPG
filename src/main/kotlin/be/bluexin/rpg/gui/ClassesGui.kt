@@ -300,9 +300,9 @@ class ClassButton(posX: Int, posY: Int, clazz: ResourceLocation? = null) : GuiCo
             GLCore.glTexturedRectV2(x = .0, y = .0, width = 16.0, height = 16.0, textureW = 16, textureH = 16)
         }))
         this.render.setTooltip(
-            if (clazz == null) listOf("bluerpg.noclass".localize()) else listOf(
-                "$clazz.name".localize(),
-                "$clazz.description".localize()
+            if (clazz == null) listOf("rpg.class.none".localize()) else listOf(
+                "rpg.class.$clazz.name".localize(),
+                "rpg.class.$clazz.description".localize()
             )
         )
         enableHighlight(1, 1)

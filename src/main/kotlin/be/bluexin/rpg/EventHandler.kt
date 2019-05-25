@@ -227,7 +227,7 @@ object CommonEventHandler {
             PlayerClass(
                 ResourceLocation(BlueRPG.MODID, "class_0"),
                 skills = mapOf(
-                    ResourceLocation(BlueRPG.MODID, "skill_3") to 0,
+                    ResourceLocation(BlueRPG.MODID, "skill_0") to 0,
                     ResourceLocation(BlueRPG.MODID, "skill_4") to 0,
                     ResourceLocation(BlueRPG.MODID, "skill_1") to 1,
                     ResourceLocation(BlueRPG.MODID, "skill_2") to 1
@@ -243,7 +243,7 @@ object CommonEventHandler {
                     ResourceLocation(BlueRPG.MODID, "skill_1") to 0,
                     ResourceLocation(BlueRPG.MODID, "skill_2") to 0,
                     ResourceLocation(BlueRPG.MODID, "skill_3") to 1,
-                    ResourceLocation(BlueRPG.MODID, "skill_4") to 1
+                    ResourceLocation(BlueRPG.MODID, "skill_0") to 1
                 ),
                 baseStats = mapOf(
                     PrimaryStat.INTELLIGENCE to 5,

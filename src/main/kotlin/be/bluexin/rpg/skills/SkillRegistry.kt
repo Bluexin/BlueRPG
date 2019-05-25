@@ -18,6 +18,7 @@
 package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.classes.playerClass
 import be.bluexin.rpg.gear.GearType
 import be.bluexin.rpg.gear.Rarity
 import be.bluexin.rpg.stats.SecondaryStat
@@ -118,18 +119,26 @@ data class SkillData(
     } else processor.stopUsing(caster, timeChanneled)
 
     private fun checkRequirement(caster: EntityPlayer) =
-        caster.mana >= this.manaCost(caster) && this !in caster.cooldowns
+        caster.mana >= this.manaCostReduced(caster) && this !in caster.cooldowns
 
     private fun consume(caster: EntityPlayer) {
         caster.world onServer {
-            caster.mana -= this.manaCost(caster)
-            caster.cooldowns[this] =
-                (this.cooldown * Math.max(.0, 1 - caster[SecondaryStat.COOLDOWN_REDUCTION])).roundToInt()
+            caster.mana -= this.manaCostReduced(caster)
+            caster.cooldowns[this] = this.cooldownReduced(caster)
         }
     }
 
-    private fun manaCost(caster: EntityPlayer) =
-        (this.mana * Math.max(.0, 1 - caster[SecondaryStat.MANA_REDUCTION])).toFloat()
+    fun manaCost(caster: EntityPlayer) =
+        (1 - (Math.max(0, caster.playerClass[this] - 1)) * levelTransformer.manaMod) * this.mana
+
+    fun cooldown(caster: EntityPlayer) =
+        ((1 - (Math.max(0, caster.playerClass[this] - 1)) * levelTransformer.cooldownMod) * this.cooldown).roundToInt()
+
+    fun cooldownReduced(caster: EntityPlayer) =
+        (this.cooldown(caster) * Math.max(.0, 1 - caster[SecondaryStat.COOLDOWN_REDUCTION])).roundToInt()
+
+    fun manaCostReduced(caster: EntityPlayer) =
+        (this.manaCost(caster) * Math.max(.0, 1 - caster[SecondaryStat.MANA_REDUCTION])).toFloat()
 
     override val name: String = key.toString()
 

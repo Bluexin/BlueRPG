@@ -17,13 +17,10 @@
 
 package be.bluexin.rpg.inventory
 
-import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.gear.ItemOffHand
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.petStorage
-import be.bluexin.rpg.skills.SkillItem
 import be.bluexin.rpg.util.offset
-import com.teamwizardry.librarianlib.features.helpers.setNBTString
 import com.teamwizardry.librarianlib.features.kotlin.asNonnullListWithDefault
 import com.teamwizardry.librarianlib.features.kotlin.clamp
 import com.teamwizardry.librarianlib.features.kotlin.isNotEmpty
@@ -66,9 +63,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
     ).flatten()
     val destroyableIndices = armorIndices + eggIndex
 
-    val skills = MutableList(5) {
-        ItemStack(SkillItem).apply { setNBTString("skill", "${BlueRPG.MODID}:skill_$it") }
-    }
+    val skills = Array(5) { ItemStack.EMPTY }
 
     init {
         this.allInventories = listOf(

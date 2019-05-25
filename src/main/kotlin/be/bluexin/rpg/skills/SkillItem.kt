@@ -18,6 +18,7 @@
 package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.classes.playerClass
 import be.bluexin.rpg.util.get
 import com.teamwizardry.librarianlib.features.base.IExtraVariantHolder
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
@@ -41,6 +42,7 @@ import net.minecraftforge.fml.relauncher.SideOnly
 
 object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
 
+    val unknown get() = ItemStack(this)
     operator fun get(skill: SkillData) = ItemStack(this).apply { setNBTString("skill", skill.key.toString()) }
     operator fun get(skill: ResourceLocation) = ItemStack(this).apply { setNBTString("skill", skill.toString()) }
 
@@ -50,7 +52,8 @@ object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
         )
     private val ItemStack.skill get() = SkillRegistry[this.skillName]
 
-    override fun getTranslationKey(stack: ItemStack) = stack.skill?.name ?: "${BlueRPG.MODID}:unknown_skill"
+    override fun getTranslationKey(stack: ItemStack) =
+        "rpg.skill.${(stack.skill?.name ?: "${BlueRPG.MODID}:unknown_skill")}"
 
     override val extraVariants by lazy { arrayOf("unknown_skill", *SkillRegistry.allSkillStrings) }
 
@@ -58,10 +61,13 @@ object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
         { ModelResourceLocation(it.skillName, "inventory") }
 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
+        val player = Minecraft().player
         stack.skill?.apply {
-            tooltip += "rpg.tooltip.${stack.skillName}"
-            tooltip += "rpg.tooltip.manacost".localize(mana)
-            tooltip += "rpg.tooltip.cooldown".localize(cooldown)
+            tooltip += "rpg.skill.level".localize(player.playerClass[this])
+            tooltip += "rpg.skill.$name.description".localize()
+            tooltip += "rpg.skill.manacost".localize(manaCost(player), manaCostReduced(player))
+            tooltip += "rpg.skill.cooldown".localize(cooldown(player), cooldownReduced(player))
+            tooltip += "rpg.skill.casttime".localize(processor.trigger.castTimeTicks)
         }
     }
 

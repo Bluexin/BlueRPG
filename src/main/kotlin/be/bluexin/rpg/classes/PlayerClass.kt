@@ -20,7 +20,9 @@ package be.bluexin.rpg.classes
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.events.SkillChangeEvent
 import be.bluexin.rpg.gui.ClassesGui
+import be.bluexin.rpg.inventory.RPGInventory
 import be.bluexin.rpg.skills.SkillData
+import be.bluexin.rpg.skills.SkillItem
 import be.bluexin.rpg.stats.Stat
 import be.bluexin.rpg.util.*
 import be.bluexin.saomclib.capabilities.AbstractEntityCapability
@@ -32,6 +34,8 @@ import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.saving.Save
 import com.teamwizardry.librarianlib.features.saving.SaveInPlace
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
@@ -148,7 +152,6 @@ class PlayerClassCollection(
             this.playerClasses[index] = playerClass
             this._playerClass[index] = playerClass?.key
             // TODO: event, update base stats... or not?
-            // TODO: remove skills from selectedSkills
             this.checkAvailableSkills()
             this.checkSelectedSkills()
             this.sync()
@@ -161,7 +164,6 @@ class PlayerClassCollection(
 
         for (i in selectedSkills.indices) if (selectedSkills[i] == skill) selectedSkills[i] = null
         selectedSkills[index] = skill
-        // TODO: change hotbar skills
         this.sync()
     }
 
@@ -198,6 +200,17 @@ class PlayerClassCollection(
         } else false
     }
 
+    override fun sync() {
+        super.sync()
+        val ent = reference.get()
+        if (ent is EntityPlayerMP) {
+            val hotbarSkills = (ent.inventory as RPGInventory).skills
+            for (i in selectedSkills.indices) {
+                hotbarSkills[i] = selectedSkills[i]?.let { SkillItem[it] } ?: ItemStack.EMPTY
+            }
+        }
+    }
+
     val classesSequence = (0 until 3).asSequence().map(this::get)
 
     operator fun invoke() = skills.asSequence()
@@ -218,9 +231,15 @@ class PlayerClassCollection(
 
     override fun postRead() {
         val ent = reference.get()
-        if (ent is EntityPlayer && ent.world.isRemote) {
-            val gui = Minecraft().currentScreen
-            if (gui is ClassesGui) gui.refresh()
+        if (ent is EntityPlayer) {
+            val hotbarSkills = (ent.inventory as RPGInventory).skills
+            for (i in selectedSkills.indices) {
+                hotbarSkills[i] = selectedSkills[i]?.let { SkillItem[it] } ?: ItemStack.EMPTY
+            }
+            if (ent.world.isRemote) {
+                val gui = Minecraft().currentScreen
+                if (gui is ClassesGui) gui.refresh()
+            }
         }
     }
 
