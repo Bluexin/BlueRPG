@@ -113,19 +113,23 @@ and 5 for every point in a tier 3
 @SaveInPlace
 class PlayerClassCollection(
     @Save private var skills: MutableMap<ResourceLocation, Int> = HashMap()
-) : AbstractEntityCapability() {
+) : AbstractEntityCapability(), HasReadCallback {
     @Save("player_class")
     private var _playerClass: Array<ResourceLocation?> = arrayOfNulls(3)
         set(value) {
             field = value
             @Suppress("DEPRECATION")
             playerClasses = arrayOfNulls(3) // clear cache, but keep it lazy
+        }
 
-            val ent = reference.get()
-            if (ent is EntityPlayer && ent.world.isRemote) {
-                val gui = Minecraft().currentScreen
-                if (gui is ClassesGui) gui.refresh()
-            }
+    @Save
+    private var selectedSkills: Array<ResourceLocation?> = arrayOfNulls(5)
+
+    @Save
+    var skillPoints = 1
+        set(value) {
+            field = value
+            this.sync()
         }
 
     @Deprecated("Only use trough PlayerClassCollection::get/set !!")
@@ -144,9 +148,21 @@ class PlayerClassCollection(
             this.playerClasses[index] = playerClass
             this._playerClass[index] = playerClass?.key
             // TODO: event, update base stats... or not?
-            this.skills.entries.removeIf { (skill, _) -> classesSequence.none { it?.skills?.contains(skill) == true } }
+            // TODO: remove skills from selectedSkills
+            this.checkAvailableSkills()
+            this.checkSelectedSkills()
             this.sync()
         }
+    }
+
+    fun getSelectedSkill(index: Int) = selectedSkills[index]
+    fun setSelectedSkill(index: Int, skill: ResourceLocation) {
+        if (this[skill] <= 0) return
+
+        for (i in selectedSkills.indices) if (selectedSkills[i] == skill) selectedSkills[i] = null
+        selectedSkills[index] = skill
+        // TODO: change hotbar skills
+        this.sync()
     }
 
     operator fun contains(playerClass: PlayerClass) = playerClass.key in this
@@ -159,9 +175,12 @@ class PlayerClassCollection(
 
     operator fun get(skill: ResourceLocation): Int = skills.getOrDefault(skill, 0)
     operator fun set(skill: ResourceLocation, value: Int): Boolean {
-        if (value < 0 || value >= 3) return false
+        if (value < 0 || value > 3) return false
         if (skill !in this.skills && classesSequence.none { it?.skills?.contains(skill) == true }) return false
         // TODO: skill tiers... or not?
+
+        val deltaPoints = value - this[skill]
+        if (deltaPoints > skillPoints) return false
 
         val r = reference.get()
         val evt = if (r is EntityPlayer) {
@@ -170,7 +189,9 @@ class PlayerClassCollection(
 
         return if (evt == null || (fire(evt) && evt.result != Event.Result.DENY)) {
             if (evt?.newValue ?: value != 0) skills[skill] = evt?.newValue ?: value
-            else skills.remove(skill) // TODO: remove skill from available in actives
+            else skills.remove(skill)
+            skillPoints -= deltaPoints
+            this.checkSelectedSkills()
             this.sync()
             // TODO: refresh passive
             true
@@ -183,13 +204,25 @@ class PlayerClassCollection(
 
     operator fun iterator(): Iterator<MutableMap.MutableEntry<ResourceLocation, Int>> = skills.iterator()
 
-    fun load(other: PlayerClassCollection) {
-        this.skills = other.skills
+    private fun checkSelectedSkills() {
+        for (i in selectedSkills.indices) if (selectedSkills[i] != null && this[selectedSkills[i]!!] <= 0) selectedSkills[i] =
+            null
     }
 
-    fun clear() = skills.clear()
+    private fun checkAvailableSkills() {
+        val toRemove = this.skills.entries.filter { (skill, _) ->
+            classesSequence.none { it?.skills?.contains(skill) == true }
+        }
+        toRemove.forEach { this[it.key] = 0 }
+    }
 
-    fun isEmpty() = skills.isEmpty()
+    override fun postRead() {
+        val ent = reference.get()
+        if (ent is EntityPlayer && ent.world.isRemote) {
+            val gui = Minecraft().currentScreen
+            if (gui is ClassesGui) gui.refresh()
+        }
+    }
 
     companion object {
         @Key

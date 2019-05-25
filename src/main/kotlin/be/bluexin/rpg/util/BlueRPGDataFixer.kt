@@ -28,7 +28,7 @@ import net.minecraftforge.common.util.CompoundDataFixer
 import net.minecraftforge.common.util.ModFixs
 
 object BlueRPGDataFixer {
-    private const val DATA_VERSION = 2
+    private const val DATA_VERSION = 3
     private lateinit var fixer: ModFixs
 
     fun setup(fixer: DataFixer) {
@@ -61,6 +61,6 @@ object BlueRPGDataFixer {
             return compound
         }
 
-        override fun getFixVersion() = 2
+        override fun getFixVersion() = 3
     }
 }

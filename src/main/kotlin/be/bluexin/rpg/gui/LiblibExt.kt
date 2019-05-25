@@ -19,6 +19,7 @@ package be.bluexin.rpg.gui
 
 import com.teamwizardry.librarianlib.features.eventbus.Event
 import com.teamwizardry.librarianlib.features.eventbus.EventCancelable
+import com.teamwizardry.librarianlib.features.gui.EnumMouseButton
 import com.teamwizardry.librarianlib.features.gui.component.GuiComponent
 import com.teamwizardry.librarianlib.features.gui.component.GuiComponentEvents
 import com.teamwizardry.librarianlib.features.helpers.vec
@@ -26,7 +27,9 @@ import com.teamwizardry.librarianlib.features.kotlin.clamp
 import com.teamwizardry.librarianlib.features.kotlin.height
 import com.teamwizardry.librarianlib.features.kotlin.width
 import com.teamwizardry.librarianlib.features.math.Vec2d
+import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.inventory.GuiInventory
+import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.entity.EntityLivingBase
 import java.util.*
 import kotlin.math.max
@@ -121,3 +124,35 @@ class ComponentEntity(
 }
 
 inline fun <reified T : Event> GuiComponent.hook(noinline action: (T) -> Unit) = BUS.hook(T::class.java, action)
+
+fun GuiComponent.enableHighlight(
+    posX: Int = 0,
+    posY: Int = 0,
+    width: Int = 16,
+    height: Int = 16,
+    allowOcclusion: Boolean = false,
+    filter: (() -> Boolean)? = null
+) = hook<GuiComponentEvents.PostDrawEvent> {
+    if (((allowOcclusion && this.geometry.mouseOverNoOcclusion) || this.mouseOver) && filter?.invoke() != false) {
+        Gui.drawRect(posX, posY, width + posX, height + posY, -2130706433)
+        GlStateManager.enableBlend()
+    }
+}
+
+inline fun <reified T : Any> GuiComponent.makeDragReceiver(
+    key: String,
+    posX: Int = 0,
+    posY: Int = 0,
+    width: Int = 16,
+    height: Int = 16,
+    crossinline onReceive: (T) -> Unit
+) {
+    this.enableHighlight(posX, posY, width, height, true) {
+        this.mouseOver || root.hasData(T::class.java, key)
+    }
+    hook<GuiComponentEvents.MouseUpEvent> {
+        if (it.button == EnumMouseButton.LEFT && geometry.mouseOverNoOcclusion &&
+            root.hasData(T::class.java, key)
+        ) onReceive(root.getData(T::class.java, key)!!)
+    }
+}

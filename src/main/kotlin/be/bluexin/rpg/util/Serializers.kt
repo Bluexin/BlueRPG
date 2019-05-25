@@ -47,8 +47,13 @@ class AutoCapabilityStorage<T : AbstractCapability> : Capability.IStorage<T> {
     ) {
         val nbtTagCompound = nbt as? NBTTagCompound ?: return
         AbstractSaveHandler.readAutoNBT(instance, nbtTagCompound, false)
+        if (instance is HasReadCallback) instance.postRead()
     }
 
     override fun writeNBT(capability: Capability<T>, instance: T, side: EnumFacing?) =
         AbstractSaveHandler.writeAutoNBT(instance, false)
+}
+
+interface HasReadCallback {
+    fun postRead()
 }

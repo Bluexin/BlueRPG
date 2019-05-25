@@ -279,7 +279,8 @@ rpg.pet.hatching=Age: %d (hatches at %d)
 rpg.pet.notifhatched=Your %s has hatched !
 
 # Skills
-
+rpg.skillpoints.long=Available Skill Points
+rpg.skillpoints.short=PTS
 bluerpg:skill_0.name=Ice Shard
 bluerpg:skill_1.name=Fire Bomb
 bluerpg:skill_2.name=Heal

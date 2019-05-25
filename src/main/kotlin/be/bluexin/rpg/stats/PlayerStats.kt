@@ -18,6 +18,7 @@
 package be.bluexin.rpg.stats
 
 import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.classes.playerClass
 import be.bluexin.rpg.events.ExperienceChangeEvent
 import be.bluexin.rpg.events.LevelUpEvent
 import be.bluexin.rpg.util.fire
@@ -137,6 +138,7 @@ class Level(private val player: WeakReference<EntityPlayer>) {
                     if (this != null) {
                         this.world onServer {
                             this.stats.attributePoints += PlayerStats.LEVELUP_ATTRIBUTES * (value - old)
+                            ++this.playerClass.skillPoints
                         }
                         fire(LevelUpEvent(this, old, value))
                     }

@@ -225,3 +225,15 @@ class PacketChangeSkill(@Save var skill: ResourceLocation?, @Save var increase: 
         else if (PlayerClassCollection.removeSkillsWhenever) --ctx.serverHandler.player.playerClass[skill!!]
     }
 }
+
+
+@PacketRegister(Side.SERVER)
+class PacketSelectSkill(@Save var skill: ResourceLocation?, @Save var slot: Int) : PacketBase() {
+
+    @Suppress("unused")
+    internal constructor() : this(null, -1)
+
+    override fun handle(ctx: MessageContext) {
+        ctx.serverHandler.player.playerClass.setSelectedSkill(slot, skill!!)
+    }
+}
