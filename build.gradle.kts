@@ -73,7 +73,7 @@ dependencies {
     contained("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version")
     contained("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
 
-    api("com.teamwizardry.librarianlib:librarianlib-1.12.2:bugfix-drawclipped-state-4.20-SNAPSHOT") {
+    api("com.teamwizardry.librarianlib:librarianlib-1.12.2:feature-improved-extravariants-4.20-SNAPSHOT") {
         because("This is more up-to-date")
     }
     implementation("moe.plushie:armourers_workshop-1.12.2:0.49.0-SNAPSHOT:deobf")

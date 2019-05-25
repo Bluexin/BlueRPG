@@ -20,6 +20,7 @@ package be.bluexin.rpg.skills
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.classes.playerClass
 import be.bluexin.rpg.util.get
+import com.teamwizardry.librarianlib.features.base.ICustomTexturePath
 import com.teamwizardry.librarianlib.features.base.IExtraVariantHolder
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.helpers.getNBTString
@@ -40,7 +41,7 @@ import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
+object SkillItem : ItemMod("skill_item"), IExtraVariantHolder, ICustomTexturePath {
 
     val unknown get() = ItemStack(this)
     operator fun get(skill: SkillData) = ItemStack(this).apply { setNBTString("skill", skill.key.toString()) }
@@ -55,10 +56,20 @@ object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
     override fun getTranslationKey(stack: ItemStack) =
         "rpg.skill.${(stack.skill?.name ?: "${BlueRPG.MODID}:unknown_skill")}"
 
-    override val extraVariants by lazy { arrayOf("unknown_skill", *SkillRegistry.allSkillStrings) }
+    override val extraVariants by lazy {
+        arrayOf(
+            "${BlueRPG.MODID}:skill/unknown_skill",
+            *SkillRegistry.keys.map { it.modelPath }.toTypedArray()
+        )
+    }
 
     override val meshDefinition: ((stack: ItemStack) -> ModelResourceLocation)? =
-        { ModelResourceLocation(it.skillName, "inventory") }
+        {
+            ModelResourceLocation(
+                ResourceLocation(it.skill?.name ?: "${BlueRPG.MODID}:unknown_skill").modelPath,
+                "inventory"
+            )
+        }
 
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
         val player = Minecraft().player
@@ -69,6 +80,7 @@ object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
             tooltip += "rpg.skill.cooldown".localize(cooldown(player), cooldownReduced(player))
             tooltip += "rpg.skill.casttime".localize(processor.trigger.castTimeTicks)
         }
+        if (flagIn.isAdvanced) tooltip += stack.skillName.toString()
     }
 
     override fun getMaxItemUseDuration(stack: ItemStack) = stack.skill?.processor?.trigger?.castTimeTicks ?: 0
@@ -100,7 +112,11 @@ object SkillItem : ItemMod("skill_item"), IExtraVariantHolder {
         return 1.0 - Minecraft().player.cooldowns[(stack.skill ?: return .0), Minecraft().renderPartialTicks]
     }
 
-    /*override fun onPlayerStoppedUsing(stack: ItemStack, worldIn: World, entityLiving: EntityLivingBase, timeLeft: Int) {
+    private val ResourceLocation.modelPath get() = "$namespace:skill/$path"
+
+    override fun texturePath(variant: String) = "skills/${variant.substringAfter('/')}"
+
+/*override fun onPlayerStoppedUsing(stack: ItemStack, worldIn: World, entityLiving: EntityLivingBase, timeLeft: Int) {
         super.onPlayerStoppedUsing(stack, worldIn, entityLiving, timeLeft)
     }*/ // Could be used for special effect when stopping spell before the end?
 }

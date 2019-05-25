@@ -146,6 +146,8 @@ class PlayerClassCollection(
         return c
     }
 
+    private var batching = false
+
     @Suppress("DEPRECATION")
     operator fun set(index: Int, playerClass: PlayerClass?) {
         if (playerClass == null || playerClass !in classesSequence) {
@@ -201,13 +203,10 @@ class PlayerClassCollection(
     }
 
     override fun sync() {
-        super.sync()
-        val ent = reference.get()
-        if (ent is EntityPlayerMP) {
-            val hotbarSkills = (ent.inventory as RPGInventory).skills
-            for (i in selectedSkills.indices) {
-                hotbarSkills[i] = selectedSkills[i]?.let { SkillItem[it] } ?: ItemStack.EMPTY
-            }
+        if (!batching) {
+            super.sync()
+            val ent = reference.get()
+            if (ent is EntityPlayerMP) refreshHotbarSkills(ent)
         }
     }
 
@@ -218,29 +217,38 @@ class PlayerClassCollection(
     operator fun iterator(): Iterator<MutableMap.MutableEntry<ResourceLocation, Int>> = skills.iterator()
 
     private fun checkSelectedSkills() {
-        for (i in selectedSkills.indices) if (selectedSkills[i] != null && this[selectedSkills[i]!!] <= 0) selectedSkills[i] =
-            null
+        for (i in selectedSkills.indices) if (selectedSkills[i] != null && this[selectedSkills[i]!!] <= 0)
+            selectedSkills[i] = null
     }
 
-    private fun checkAvailableSkills() {
-        val toRemove = this.skills.entries.filter { (skill, _) ->
+    private fun checkAvailableSkills() = batch {
+        this.skills.entries.filter { (skill, _) ->
             classesSequence.none { it?.skills?.contains(skill) == true }
-        }
-        toRemove.forEach { this[it.key] = 0 }
+        }.forEach { this[it.key] = 0 }
+    }
+
+    private fun refreshHotbarSkills(player: EntityPlayer) {
+        val hotbarSkills = (player.inventory as RPGInventory).skills
+        for (i in selectedSkills.indices) hotbarSkills[i] = selectedSkills[i]?.let { SkillItem[it] } ?: ItemStack.EMPTY
     }
 
     override fun postRead() {
         val ent = reference.get()
         if (ent is EntityPlayer) {
-            val hotbarSkills = (ent.inventory as RPGInventory).skills
-            for (i in selectedSkills.indices) {
-                hotbarSkills[i] = selectedSkills[i]?.let { SkillItem[it] } ?: ItemStack.EMPTY
-            }
             if (ent.world.isRemote) {
                 val gui = Minecraft().currentScreen
                 if (gui is ClassesGui) gui.refresh()
-            }
+            } else checkAvailableSkills()
+            refreshHotbarSkills(ent)
         }
+    }
+
+    private inline fun batch(block: () -> Unit) {
+        val wasBatching = batching
+        batching = true
+        block()
+        batching = wasBatching
+        sync()
     }
 
     companion object {
