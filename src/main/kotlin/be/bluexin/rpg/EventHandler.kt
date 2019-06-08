@@ -418,12 +418,23 @@ object ClientEventHandler {
     private fun renderCastBar() {
         val mc = Minecraft()
         val iss = mc.player.activeItemStack
-        if (iss.item == SkillItem && iss.maxItemUseDuration > 0) {
+        val charge = if (iss.item == SkillItem) {
+            if (iss.maxItemUseDuration > 0) min(1 - mc.player.itemInUseCount / iss.maxItemUseDuration.toFloat(), 1f)
+            else -1f
+        } else {
+            val cd = mc.player.cooldowns
+            if (cd.slotInUse >= 0) {
+                val iss1 = (mc.player.inventory as RPGInventory).skills[cd.slotInUse]
+                if (iss1.item == SkillItem && iss1.maxItemUseDuration > 0) {
+                    min(cd.currentCastTime / iss1.maxItemUseDuration.toFloat(), 1f)
+                } else -1f
+            } else -1f
+        }
+        if (charge >= 0) {
             GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
             GlStateManager.disableBlend()
 
             mc.profiler.startSection("castBar")
-            val charge = min(1 - mc.player.itemInUseCount / iss.maxItemUseDuration.toFloat(), 1f)
             val barWidth = 182
             val res = ScaledResolution(mc)
             val x = res.scaledWidth / 2 - barWidth / 2
@@ -495,12 +506,6 @@ object ClientEventHandler {
             renderManaBar()
         }
     }
-
-    /*@SubscribeEvent
-    fun drawInventory(event: GuiContainerEvent.DrawForeground) {
-        val ct = event.guiContainer as? GuiInventory ?: return
-
-    }*/
 }
 
 @SideOnly(Side.SERVER)

@@ -19,6 +19,9 @@ package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.PacketCooldown
+import be.bluexin.rpg.PacketSetUseTime
+import be.bluexin.rpg.inventory.RPGInventory
+import be.bluexin.rpg.skills.SkillItem.skill
 import be.bluexin.rpg.util.get
 import be.bluexin.saomclib.capabilities.AbstractEntityCapability
 import be.bluexin.saomclib.capabilities.Key
@@ -47,7 +50,25 @@ class CooldownCapability : AbstractEntityCapability() {
     @Save
     private var ticks: Int = 0
 
-    operator fun contains(skillIn: SkillData) = this[skillIn] > 0f
+    var slotInUse: Int = -1
+        private set(value) {
+            if (value < 5 && value != field) {
+                field = value
+                startUseTicks = if (slotInUse < 0) -1 else ticks
+                notifyUsing()
+            }
+        }
+
+    private var startUseTicks: Int = -1
+
+    val currentCastTime get() = if (startUseTicks >= 0) ticks - startUseTicks else -1
+
+    operator fun contains(skillIn: SkillData?) = skillIn != null && this[skillIn] > 0f
+
+    operator fun contains(skillSlot: Int): Boolean {
+        val iss = ((player ?: return false).inventory as RPGInventory).skills[skillSlot]
+        return if (iss.item == SkillItem) iss.skill in this else false
+    }
 
     operator fun get(skillIn: SkillData, partialTicks: Float = 0f): Float {
         val cd = this.cooldowns[skillIn] ?: return 0f
@@ -66,6 +87,16 @@ class CooldownCapability : AbstractEntityCapability() {
             } else false
         }
     }
+
+    fun startUsing(skillSlot: Int) {
+        this.slotInUse = skillSlot
+    }
+
+    fun stopUsing(skillSlot: Int): Int = if (this.slotInUse == skillSlot) {
+        val castTime = this.currentCastTime
+        slotInUse = -1
+        castTime
+    } else -1
 
     operator fun set(skillIn: SkillData, ticksIn: Int) {
         this.cooldowns[skillIn] = Cooldown(this.ticks, this.ticks + ticksIn)
@@ -88,6 +119,13 @@ class CooldownCapability : AbstractEntityCapability() {
         val p = player ?: return
         p.world onServer {
             PacketHandler.NETWORK.sendTo(PacketCooldown(skillIn, 0), p as EntityPlayerMP)
+        }
+    }
+
+    private fun notifyUsing() {
+        val p = player ?: return
+        p.world onServer {
+            PacketHandler.NETWORK.sendTo(PacketSetUseTime(this.slotInUse), p as EntityPlayerMP)
         }
     }
 

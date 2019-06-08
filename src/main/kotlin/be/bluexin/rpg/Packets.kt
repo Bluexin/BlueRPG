@@ -21,9 +21,11 @@ import be.bluexin.rpg.classes.PlayerClassCollection
 import be.bluexin.rpg.classes.PlayerClassRegistry
 import be.bluexin.rpg.classes.playerClass
 import be.bluexin.rpg.containers.ContainerEditor
+import be.bluexin.rpg.inventory.RPGInventory
 import be.bluexin.rpg.items.DynamicData
 import be.bluexin.rpg.pets.EggData
 import be.bluexin.rpg.skills.SkillData
+import be.bluexin.rpg.skills.SkillItem.skill
 import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.skills.cooldowns
 import be.bluexin.rpg.skills.glitter.AoE
@@ -34,8 +36,10 @@ import be.bluexin.rpg.util.get
 import com.teamwizardry.librarianlib.features.autoregister.PacketRegister
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
 import com.teamwizardry.librarianlib.features.kotlin.Minecraft
+import com.teamwizardry.librarianlib.features.kotlin.isNotEmpty
 import com.teamwizardry.librarianlib.features.network.PacketBase
 import com.teamwizardry.librarianlib.features.saving.Save
+import net.minecraft.util.EnumActionResult
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
@@ -236,4 +240,34 @@ class PacketSelectSkill(@Save var skill: ResourceLocation?, @Save var slot: Int)
     override fun handle(ctx: MessageContext) {
         ctx.serverHandler.player.playerClass.setSelectedSkill(slot, skill!!)
     }
+}
+
+@PacketRegister(Side.SERVER)
+class PacketUseSkill(@Save var skillSlot: Int, @Save var press: Boolean) : PacketBase() {
+    @Suppress("unused")
+    internal constructor() : this(-1, false)
+
+    override fun handle(ctx: MessageContext) {
+        val player = ctx.serverHandler.player
+        val inventory = player.inventory as RPGInventory
+        val skillStack = inventory.skills[skillSlot]
+        if (skillStack.isNotEmpty) {
+            val skill = skillStack.skill ?: return
+            if (press) {
+                val r = skill.startUsing(player)
+                if (r == EnumActionResult.PASS) player.cooldowns.startUsing(skillSlot)
+            } else {
+                val time = player.cooldowns.stopUsing(skillSlot)
+                if (time >= 0) skill.stopUsing(player, time)
+            }
+        }
+    }
+}
+
+@PacketRegister(Side.CLIENT)
+class PacketSetUseTime(@Save var skillSlot: Int) : PacketBase() {
+    @Suppress("unused")
+    internal constructor() : this(-1)
+
+    override fun handle(ctx: MessageContext) = Minecraft().player.cooldowns.startUsing(skillSlot)
 }

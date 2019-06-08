@@ -34,6 +34,7 @@ import be.bluexin.rpg.items.DynItem
 import be.bluexin.rpg.items.DynamicData
 import be.bluexin.rpg.pets.*
 import be.bluexin.rpg.skills.CooldownCapability
+import be.bluexin.rpg.skills.Keybinds
 import be.bluexin.rpg.skills.SkillItem
 import be.bluexin.rpg.skills.glitter.TrailSystem
 import be.bluexin.rpg.stats.*
@@ -261,6 +262,11 @@ class ClientProxy : CommonProxy() {
         TrailSystem.load()
 
         registerEntityRenderers()
+    }
+
+    override fun init(event: FMLInitializationEvent) {
+        super.init(event)
+        Keybinds.register()
     }
 
     private fun registerEntityRenderers() {

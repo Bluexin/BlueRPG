@@ -51,7 +51,7 @@ object SkillItem : ItemMod("skill_item"), IExtraVariantHolder, ICustomTexturePat
         get() = ResourceLocation(
             this.getNBTString("skill") ?: "${BlueRPG.MODID}:unknown_skill"
         )
-    private val ItemStack.skill get() = SkillRegistry[this.skillName]
+    val ItemStack.skill get() = SkillRegistry[this.skillName]
 
     override fun getTranslationKey(stack: ItemStack) =
         "rpg.skill.${(stack.skill?.name ?: "${BlueRPG.MODID}:unknown_skill")}"
