@@ -59,7 +59,7 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) :
         val m = super<IRPGGear>.getAttributeModifiers(slot, stack)
 
         if (stack.stats?.generated == true) for ((stat, value) in type.attributes) {
-            m[stat.attribute.name] = AttributeModifier(stat.uuid[0], stat.attribute.name, value, stat.operation)
+            m[stat.attribute.name] = AttributeModifier(stat.uuid[0], stat.attribute.name, value, stat.operation.op)
         }
 
         return m

@@ -83,6 +83,8 @@ interface TargetWithBoundingBox : Target {
 
 interface TargetWithLookVec : Target {
     val lookVec: Vec3d
+    val yaw: Float
+    val pitch: Float
 }
 
 interface TargetWithWorld : Target {

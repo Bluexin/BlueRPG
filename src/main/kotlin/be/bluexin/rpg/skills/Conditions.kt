@@ -29,29 +29,29 @@ import kotlin.random.Random
 @Savable
 @NamedDynamic("t:t")
 interface Condition {
-    operator fun invoke(caster: EntityLivingBase, target: Target): Boolean
+    operator fun invoke(context: SkillContext, target: Target): Boolean
 }
 
 @Savable
 @NamedDynamic("t:l")
 object IsLiving : Condition {
-    override fun invoke(caster: EntityLivingBase, target: Target) = target.it is EntityLivingBase
+    override fun invoke(context: SkillContext, target: Target) = target.it is EntityLivingBase
 }
 
 @Savable
 @NamedDynamic("t:h")
 object HasPosition : Condition {
-    override fun invoke(caster: EntityLivingBase, target: Target) = target is TargetWithPosition
+    override fun invoke(context: SkillContext, target: Target) = target is TargetWithPosition
 }
 
 @Savable
 @NamedDynamic("t:m")
 data class MultiCondition(val c1: Condition, val c2: Condition, val mode: LinkMode) :
     Condition {
-    override fun invoke(caster: EntityLivingBase, target: Target) = when (mode) {
-        MultiCondition.LinkMode.AND -> c1(caster, target) && c2(caster, target)
-        MultiCondition.LinkMode.OR -> c1(caster, target) || c2(caster, target)
-        MultiCondition.LinkMode.XOR -> c1(caster, target) xor c2(caster, target)
+    override fun invoke(context: SkillContext, target: Target) = when (mode) {
+        LinkMode.AND -> c1(context, target) && c2(context, target)
+        LinkMode.OR -> c1(context, target) || c2(context, target)
+        LinkMode.XOR -> c1(context, target) xor c2(context, target)
     }
 
     enum class LinkMode {
@@ -64,36 +64,34 @@ data class MultiCondition(val c1: Condition, val c2: Condition, val mode: LinkMo
 @Savable
 @NamedDynamic("t:i")
 data class Inverted(val c1: Condition) : Condition {
-    override fun invoke(caster: EntityLivingBase, target: Target) = !c1(caster, target)
+    override fun invoke(context: SkillContext, target: Target) = !c1(context, target)
 }
 
 @Savable
 @NamedDynamic("t:r")
-data class Random(val chance: DoubleExpression<Target>) : Condition {
+data class Random(val chance: (SkillContext, Target) -> Double) : Condition {
     private val rng = Random(RNG.nextLong())
 
-    override fun invoke(caster: EntityLivingBase, target: Target) = rng.nextDouble() < chance(
-        Holder(caster.holder, target)
-    )
+    override fun invoke(context: SkillContext, target: Target) = rng.nextDouble() < chance(context, target)
 }
 
 @Savable
 @NamedDynamic("t:g")
 data class RequireGear(val slot: EntityEquipmentSlot, val item: Item) : Condition {
-    override fun invoke(caster: EntityLivingBase, target: Target) =
+    override fun invoke(context: SkillContext, target: Target) =
         target is TargetWithGear && target.getItemStackFromSlot(slot).item == item
 }
 
 @Savable
 @NamedDynamic("t:s")
 data class RequireStatus(val status: Status) : Condition {
-    override fun invoke(caster: EntityLivingBase, target: Target) =
-        target is TargetWithStatus && target.isStatusFor(status, caster.holder)
+    override fun invoke(context: SkillContext, target: Target) =
+        target is TargetWithStatus && target.isStatusFor(status, context.caster.holder)
 }
 
 @Savable
 @NamedDynamic("t:p")
 data class RequirePotion(val effect: Potion, val level: Int = 0) : Condition {
-    override fun invoke(caster: EntityLivingBase, target: Target) =
+    override fun invoke(context: SkillContext, target: Target) =
         target is TargetWithEffects && target.getPotionEffect(effect)?.amplifier ?: -1 >= level
 }

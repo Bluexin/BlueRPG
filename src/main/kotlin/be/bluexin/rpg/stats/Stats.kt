@@ -118,7 +118,7 @@ interface Stat {
 
     val shouldRegister get() = true
 
-    val operation get() = 0
+    val operation get() = Operation.ADD
 
     val baseValue get() = 0.0
 
@@ -307,7 +307,7 @@ enum class SecondaryStat(uuid: Array<String>, attribute: IAttribute? = null) : S
             "fdf24012-758d-4c7b-8672-d2f67751c4c8"
         ), SharedMonsterAttributes.MOVEMENT_SPEED
     ) {
-        override val operation = 1
+        override val operation = Operation.MULTIPLY_ADDITIVE
         override fun localize(value: Double) = "rpg.tooltip.pctstat".localize(format.format(value * 1_000))
     },
     LIFE_STEAL_CHANCE(

@@ -58,6 +58,8 @@ open class LivingHolder<T : EntityLivingBase>(living: T) :
     override val pos: Vec3d get() = it.getPositionEyes(1f)
     override val feet: Vec3d get() = it.positionVector
     override val lookVec: Vec3d get() = it.lookVec
+    override val yaw get() = it.rotationYaw
+    override val pitch get() = it.rotationPitch
     override val world: World get() = it.world
     override var movement: Vec3d
         get() = it.motionVec

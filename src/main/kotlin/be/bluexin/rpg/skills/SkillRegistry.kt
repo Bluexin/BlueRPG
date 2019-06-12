@@ -104,19 +104,19 @@ data class SkillData(
      */
     fun startUsing(caster: EntityLivingBase): EnumActionResult = if (caster is EntityPlayer) {
         if (checkRequirement(caster)) {
-            if (processor.startUsing(caster)) {
+            if (processor.startUsing(caster.asContext)) {
                 consume(caster)
                 EnumActionResult.SUCCESS
             } else EnumActionResult.PASS
         } else EnumActionResult.FAIL
-    } else if (processor.startUsing(caster)) EnumActionResult.SUCCESS else EnumActionResult.PASS
+    } else if (processor.startUsing(caster.asContext)) EnumActionResult.SUCCESS else EnumActionResult.PASS
 
     fun stopUsing(caster: EntityLivingBase, timeChanneled: Int): Boolean = if (caster is EntityPlayer) {
-        if (checkRequirement(caster) && processor.stopUsing(caster, timeChanneled)) {
+        if (checkRequirement(caster) && processor.stopUsing(caster.asContext, timeChanneled)) {
             consume(caster)
             true
         } else false
-    } else processor.stopUsing(caster, timeChanneled)
+    } else processor.stopUsing(caster.asContext, timeChanneled)
 
     private fun checkRequirement(caster: EntityPlayer) =
         caster.mana >= this.manaCostReduced(caster) && this !in caster.cooldowns
@@ -139,6 +139,9 @@ data class SkillData(
 
     fun manaCostReduced(caster: EntityPlayer) =
         (this.manaCost(caster) * Math.max(.0, 1 - caster[SecondaryStat.MANA_REDUCTION])).toFloat()
+
+    private val EntityLivingBase.asContext
+        get() = SkillContext(this, if (this is EntityPlayer) this.playerClass[this@SkillData] else 1)
 
     override val name: String = key.toString()
 

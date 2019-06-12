@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,21 +31,26 @@ data class Processor(
     val effect: Effect
 ) {
 
-    fun startUsing(caster: EntityLivingBase): Boolean =
-        if (trigger.startUsing(caster)) {
-            caster.world onServer { this.cast(caster) }
+    fun startUsing(context: SkillContext): Boolean =
+        if (trigger.startUsing(context)) {
+            context.caster.world onServer { this.cast(context) }
             true
         } else false
 
-    fun stopUsing(caster: EntityLivingBase, timeChanneled: Int) =
-        if (trigger.stopUsing(caster, timeChanneled)) {
-            caster.world onServer { this.cast(caster) }
+    fun stopUsing(context: SkillContext, timeChanneled: Int) =
+        if (trigger.stopUsing(context, timeChanneled)) {
+            context.caster.world onServer { this.cast(context) }
             true
         } else false
 
-    private fun cast(caster: EntityLivingBase) {
+    private fun cast(context: SkillContext) {
         val channel = Channel<Target>(capacity = Channel.UNLIMITED)
-        targeting(caster, caster.holder, channel)
-        effect(caster, condition?.let { c -> channel.filter { c(caster, it) } } ?: channel)
+        targeting(context, context.caster.holder, channel)
+        effect(context, condition?.let { c -> channel.filter { c(context, it) } } ?: channel)
     }
 }
+
+data class SkillContext(
+    val caster: EntityLivingBase,
+    val level: Int
+)

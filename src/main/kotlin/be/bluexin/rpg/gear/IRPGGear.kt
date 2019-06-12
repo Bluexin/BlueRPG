@@ -104,8 +104,8 @@ interface IRPGGear : IUsable<ItemStack> { // TODO: use ISpecialArmor
             m[stat.attribute.name] = AttributeModifier(
                 stat.uuid(this.gearSlot),
                 stat.attribute.name,
-                if (stat.operation != 0) stat(value) / 100.0 else stat(value),
-                stat.operation
+                if (stat.operation != Operation.ADD) stat(value) / 100.0 else stat(value),
+                stat.operation.op
             )
         }
 

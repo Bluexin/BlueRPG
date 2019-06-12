@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.Vec3d
 import java.lang.StrictMath.pow
@@ -53,7 +52,7 @@ import java.util.*
 @Savable
 @NamedDynamic("t:t")
 interface Targeting {
-    operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>)
+    operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>)
     val range: Double
 }
 
@@ -69,11 +68,11 @@ data class Projectile(
     val color2: Int = 0,
     val trailSystem: ResourceLocation = ResourceLocation(BlueRPG.MODID, "none")
 ) : Targeting {
-    override operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>) {
+    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
         if (from is TargetWithWorld && from is TargetWithPosition) from.world.minecraftServer!!.runMainThread {
             from.world.spawnEntity(EntitySkillProjectile(
                 from.world,
-                if (caster is EntityPlayer) PlayerHolder(caster) else null,
+                context,
                 from,
                 range,
                 result,
@@ -96,7 +95,7 @@ data class Self(
     val color2: Int = 0,
     val glitter: PacketGlitter.Type = PacketGlitter.Type.AOE
 ) : Targeting {
-    override operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>) {
+    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
         if (from is TargetWithPosition && from is TargetWithWorld) PacketHandler.NETWORK.sendToAllAround(
             PacketGlitter(glitter, from.feet, color1, color2, .4),
             from.world,
@@ -115,7 +114,7 @@ data class Self(
 data class Raycast(
     override val range: Double = 3.0
 ) : Targeting {
-    override operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>) {
+    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
         if (from is TargetWithPosition && from is TargetWithLookVec && from is TargetWithWorld) GlobalScope.launch {
             val r = RaycastUtils.raycast(from.world, from.pos, from.lookVec, range)
             val e = getEntityLookedAt(from, from.world, r, range)
@@ -137,13 +136,13 @@ data class Raycast(
 data class Channelling(
     val delayMillis: Long, val procs: Int, val targeting: Targeting
 ) : Targeting by targeting {
-    override operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>) {
+    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
         GlobalScope.launch {
             val p = produce(capacity = Channel.UNLIMITED) {
                 repeat(procs) {
                     if (it != 0) delay(delayMillis)
                     val c = Channel<Target>(capacity = Channel.UNLIMITED)
-                    targeting(caster, from, c)
+                    targeting(context, from, c)
                     send(c)
                 }
             }
@@ -181,7 +180,7 @@ data class AoE(
     val color1: Int = 0,
     val color2: Int = 0
 ) : Targeting {
-    override operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>) {
+    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
         if (from is TargetWithPosition && from is TargetWithWorld) {
             PacketHandler.NETWORK.sendToAllAround(
                 PacketGlitter(PacketGlitter.Type.AOE, from.pos, color1, color2, range / 5),
@@ -219,7 +218,7 @@ data class Chain(
     override val range: Double = 3.0, val maxTargets: Int = 5, val delayMillis: Long = 500, val repeat: Boolean = false,
     val condition: Condition? = null, val includeFrom: Boolean = false
 ) : Targeting {
-    override operator fun invoke(caster: EntityLivingBase, from: Target, result: SendChannel<Target>) {
+    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
         if (from is TargetWithPosition && from is TargetWithWorld) GlobalScope.launch {
             val w = Vec3d(range, range, range)
             val dist = pow(range, 2.0)
@@ -237,7 +236,7 @@ data class Chain(
                         val h = LivingHolder(it!!)
                         @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
                         h != previousTarget && previousTarget.getDistanceSq(h) <= dist &&
-                                (repeat || h !in targets) && (condition == null || condition!!(caster, h))
+                                (repeat || h !in targets) && (condition == null || (condition!!)(context, h))
                     }
                 } catch (_: Exception) {
                     listOf<EntityLivingBase>()

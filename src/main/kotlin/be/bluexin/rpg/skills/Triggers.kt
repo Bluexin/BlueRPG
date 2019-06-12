@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,20 +19,19 @@ package be.bluexin.rpg.skills
 
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable
-import net.minecraft.entity.EntityLivingBase
 
 @Savable
 @NamedDynamic("tr:t")
 interface Trigger {
-    fun startUsing(entity: EntityLivingBase): Boolean
-    fun stopUsing(entity: EntityLivingBase, time: Int): Boolean
+    fun startUsing(context: SkillContext): Boolean
+    fun stopUsing(context: SkillContext, time: Int): Boolean
     val castTimeTicks: Int
 }
 
 @Savable
 @NamedDynamic("tr:c")
 data class Use(override val castTimeTicks: Int) : Trigger {
-    override fun startUsing(entity: EntityLivingBase) = this.castTimeTicks == 0
+    override fun startUsing(context: SkillContext) = this.castTimeTicks == 0
 
-    override fun stopUsing(entity: EntityLivingBase, time: Int) = this.castTimeTicks != 0 && time >= this.castTimeTicks
+    override fun stopUsing(context: SkillContext, time: Int) = this.castTimeTicks != 0 && time >= this.castTimeTicks
 }

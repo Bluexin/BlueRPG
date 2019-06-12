@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -330,14 +330,7 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
     @Save
     override var knockback: Int = 0
 
-    var caster: PlayerHolder? = null
-
-    @Save
-    var caster_uuid: UUID?
-        get() = caster?.uuid
-        set(value) {
-            caster = if (value != null) world.getPlayerEntityByUUID(value)?.let { PlayerHolder(it) } else null
-        }
+    var context: SkillContext? = null
 
     var range by managedValue(RANGE)
     var color1 by managedValue(COLOR_1)
@@ -358,17 +351,17 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
 
     constructor(
         world: World,
-        caster: PlayerHolder?,
+        context: SkillContext,
         origin: TargetWithPosition,
         range: Double,
         result: SendChannel<Target>,
         filter: Condition? = null,
         precise: Boolean = false
     ) : super(world, origin.x, origin.y, origin.z) {
-        this.caster = caster
+        this.context = context
         this.result = result
         this.range = pow(range, 2.0).toFloat()
-        this.thrower = caster?.it
+        this.thrower = context.caster
         this.filter = filter
         this.precise = precise
     }
@@ -424,8 +417,8 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
                     @Suppress("UNCHECKED_CAST")
                     val h = (if (precise) WorldPosHolder(world, positionVector) else LivingHolder(e))
                     val f = filter
-                    val c = caster
-                    if (f == null || c == null || f(c.it, h)) {
+                    val c = context
+                    if (f == null || c == null || f(c, h)) {
                         runBlocking { r.send(h) }
                         setDead() // TODO: allow to hit multiple
                     }
@@ -434,8 +427,8 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
                     @Suppress("UNCHECKED_CAST")
                     val h = WorldPosHolder(world, v)
                     val f = filter
-                    val c = caster
-                    if (f == null || c == null || f(c.it, h)) {
+                    val c = context
+                    if (f == null || c == null || f(c, h)) {
                         runBlocking { r.send(h) }
                         setDead() // TODO: allow to hit multiple
                     }
