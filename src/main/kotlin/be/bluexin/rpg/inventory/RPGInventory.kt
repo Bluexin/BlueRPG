@@ -161,9 +161,8 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
 
     @SideOnly(Side.CLIENT)
     override fun changeCurrentItem(direction: Int) {
-//        if (player.isCreative) return super.changeCurrentItem(direction)
-        this.currentItem = (this.currentItem - MathHelper.clamp(direction, -1, 1) + /*rpgHotbar.size*/ 9) %
-                /*rpgHotbar.size*/ 9
+        if (player.isCreative) return super.changeCurrentItem(direction)
+        this.currentItem = (this.currentItem - MathHelper.clamp(direction, -1, 1) + rpgHotbar.size) % rpgHotbar.size
     }
 
     override fun getFirstEmptyStack() =

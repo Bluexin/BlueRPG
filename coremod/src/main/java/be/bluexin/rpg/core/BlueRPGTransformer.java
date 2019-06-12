@@ -50,6 +50,7 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
         transformers.put("net.minecraft.entity.EntityLivingBase", BlueRPGTransformer::transformELB);
         transformers.put("net.minecraft.block.BlockEnderChest", BlueRPGTransformer::transformBEC);
         transformers.put("boni.dummy.EntityDummy", BlueRPGTransformer::transformDummy);
+        transformers.put("net.minecraft.entity.player.InventoryPlayer", BlueRPGTransformer::transformInventoryPlayer);
     }
 
     private static byte[] transformPlayer(byte[] basicClass) {
@@ -191,6 +192,24 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
 
                     method.instructions.insert(node, l);
 
+                    return true;
+                }
+        ));
+    }
+
+    private static byte[] transformInventoryPlayer(byte[] basicClass) {
+        final MethodSignature getHotbarSize = new MethodSignature("getHotbarSize", "func_70451_h", "()I");
+        final MethodSignature isHotbar = new MethodSignature("isHotbar", "func_184435_e", "(I)Z");
+
+        return transform(transform(basicClass, getHotbarSize, "Change static getHotbarSize", combine(
+                (node) -> node.getOpcode() == BIPUSH,
+                (method, node) -> {
+                    ((IntInsnNode) node).operand = 4;
+                    return true;
+                })), isHotbar, "Change static isHotbar", combine(
+                (node) -> node.getOpcode() == BIPUSH,
+                (method, node) -> {
+                    ((IntInsnNode) node).operand = 4;
                     return true;
                 }
         ));
