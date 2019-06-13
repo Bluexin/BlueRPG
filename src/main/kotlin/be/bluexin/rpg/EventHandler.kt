@@ -21,6 +21,7 @@ package be.bluexin.rpg
 
 import be.bluexin.rpg.classes.PlayerClass
 import be.bluexin.rpg.classes.PlayerClassRegistry
+import be.bluexin.rpg.classes.playerClass
 import be.bluexin.rpg.containers.RPGContainer
 import be.bluexin.rpg.containers.RPGEnderChestContainer
 import be.bluexin.rpg.events.CreatePlayerContainerEvent
@@ -36,11 +37,13 @@ import be.bluexin.rpg.items.dynamicData
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.RenderEggItem
 import be.bluexin.rpg.pets.eggData
+import be.bluexin.rpg.skills.SkillContext
 import be.bluexin.rpg.skills.SkillItem
 import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.skills.cooldowns
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.Resources
+import be.bluexin.rpg.util.get
 import be.bluexin.saomclib.onServer
 import com.saomc.saoui.GLCore
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
@@ -101,14 +104,19 @@ object CommonEventHandler {
             if (stats.dirty) stats.sync()
             if (event.player.health > event.player.maxHealth) event.player.health = event.player.maxHealth
             if (event.player.mana > event.player.maxMana) event.player.mana = event.player.maxMana
-            var regenTick = event.player.entityData.getInteger("bluerpg:regen")
-            if (--regenTick <= 0) {
-                regenTick = 100
-                val combat = event.player.combatTracker.inCombat
-                event.player.heal((event.player[SecondaryStat.REGEN] * if (combat) 0.2 else 1.0).toFloat())
-                event.player.mana += ((event.player[SecondaryStat.SPIRIT] * if (combat) 0.2 else 1.0).toFloat()) // TODO: event
+            val time = event.player.world.totalWorldTime
+            if (time % 10 == 0L) {
+                event.player.playerClass.iterator().asSequence().mapNotNull { SkillRegistry[it.key] to it.value }
+                    .forEach { (skill, level) ->
+                        skill?.processor?.startUsing(SkillContext(event.player, level))
+                    }
+                if (time % 100 == 0L) {
+                    val combat = event.player.combatTracker.inCombat
+                    event.player.heal((event.player[SecondaryStat.REGEN] * if (combat) 0.2 else 1.0).toFloat())
+                    event.player.mana += ((event.player[SecondaryStat.SPIRIT] * if (combat) 0.2 else 1.0).toFloat()) // TODO: event
+                }
             }
-            event.player.entityData.setInteger("bluerpg:regen", regenTick)
+
         }
     }
 

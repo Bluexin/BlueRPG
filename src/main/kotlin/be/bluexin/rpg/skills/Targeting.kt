@@ -178,11 +178,12 @@ data class Channelling(
 data class AoE(
     override val range: Double = 3.0, val shape: Shape = Shape.CIRCLE,
     val color1: Int = 0,
-    val color2: Int = 0
+    val color2: Int = 0,
+    val glitter: Boolean = true // TODO: improve handling
 ) : Targeting {
     override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
         if (from is TargetWithPosition && from is TargetWithWorld) {
-            PacketHandler.NETWORK.sendToAllAround(
+            if (glitter) PacketHandler.NETWORK.sendToAllAround(
                 PacketGlitter(PacketGlitter.Type.AOE, from.pos, color1, color2, range / 5),
                 from.world,
                 from.pos,

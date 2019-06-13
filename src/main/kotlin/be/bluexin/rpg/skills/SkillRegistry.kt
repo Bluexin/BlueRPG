@@ -97,6 +97,8 @@ data class SkillData(
         this.registryName = key
     }
 
+    val passive get() = processor.trigger == Passive
+
     /**
      * [EnumActionResult.SUCCESS] = casting done (instant)
      * [EnumActionResult.PASS] = casting ongoing
@@ -197,9 +199,34 @@ data class SkillData(
 
         val mapped get() = SkillData(key, mana, cooldown, magic, levelTransformer, processor, uuid)
     }
+
+    companion object {
+        /**
+         * Passive skills are actually automatically cast twice a second.
+         */
+        fun passive(
+            key: ResourceLocation,
+            targeting: Targeting,
+            condition: Condition?,
+            effect: Effect,
+            uuid: Array<UUID>
+        ) = SkillData(
+            key,
+            processor = Processor(Passive, targeting, condition, effect),
+            uuid = uuid,
+            cooldown = 0,
+            levelTransformer = LevelModifier.ZERO,
+            magic = true,
+            mana = 0
+        )
+    }
 }
 
 data class LevelModifier(
     val manaMod: Float,
     val cooldownMod: Float
-)
+) {
+    companion object {
+        val ZERO = LevelModifier(0f, 0f)
+    }
+}

@@ -35,3 +35,12 @@ data class Use(override val castTimeTicks: Int) : Trigger {
 
     override fun stopUsing(context: SkillContext, time: Int) = this.castTimeTicks != 0 && time >= this.castTimeTicks
 }
+
+/**
+ * Passive skills are actually automatically cast twice a second.
+ */
+object Passive : Trigger {
+    override fun startUsing(context: SkillContext) = true
+    override fun stopUsing(context: SkillContext, time: Int) = false
+    override val castTimeTicks get() = 0
+}

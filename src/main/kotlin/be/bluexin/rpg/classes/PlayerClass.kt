@@ -23,6 +23,7 @@ import be.bluexin.rpg.gui.ClassesGui
 import be.bluexin.rpg.inventory.RPGInventory
 import be.bluexin.rpg.skills.SkillData
 import be.bluexin.rpg.skills.SkillItem
+import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.stats.Stat
 import be.bluexin.rpg.util.*
 import be.bluexin.saomclib.capabilities.AbstractEntityCapability
@@ -162,7 +163,7 @@ class PlayerClassCollection(
 
     fun getSelectedSkill(index: Int) = selectedSkills[index]
     fun setSelectedSkill(index: Int, skill: ResourceLocation) {
-        if (this[skill] <= 0) return
+        if (this[skill] <= 0 || SkillRegistry[skill]?.passive != false) return
 
         for (i in selectedSkills.indices) if (selectedSkills[i] == skill) selectedSkills[i] = null
         selectedSkills[index] = skill

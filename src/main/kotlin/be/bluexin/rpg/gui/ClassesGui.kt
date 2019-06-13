@@ -24,6 +24,8 @@ import be.bluexin.rpg.classes.PlayerClassCollection
 import be.bluexin.rpg.classes.PlayerClassRegistry
 import be.bluexin.rpg.classes.playerClass
 import be.bluexin.rpg.skills.SkillItem
+import be.bluexin.rpg.skills.SkillRegistry
+import be.bluexin.rpg.util.get
 import com.saomc.saoui.GLCore
 import com.saomc.saoui.api.elements.neo.basicAnimation
 import com.saomc.saoui.api.elements.neo.plusAssign
@@ -139,31 +141,33 @@ class SkillComponent(posX: Int, posY: Int, skill: ResourceLocation, skills: Play
                     else -> Unit
                 }
             }
-            hook<GuiComponentEvents.MouseDownEvent> {
-                if (it.button == EnumMouseButton.LEFT && this@SkillComponent.mouseOver && skills[skill] > 0)
-                    this@SkillComponent.clickedIn = true
-            }
-            hook<GuiComponentEvents.MouseUpEvent> {
-                if (it.button == EnumMouseButton.LEFT) this@SkillComponent.clickedIn = false
-            }
-            hook<GuiComponentEvents.MouseDragEvent> { ev ->
-                if (ev.button == EnumMouseButton.LEFT && this@SkillComponent.clickedIn) {
-                    this@SkillComponent.clickedIn = false
-                    bg.add(ComponentStack(0, 0).apply {
-                        this@SkillComponent.root.setData(ResourceLocation::class.java, "dragged_skill", skill)
-                        ++zIndex
-                        stack.setValue(SkillItem[skill])
-                        quantityText.add { _, _ -> null }
-                        enableTooltip(false)
-                        DragMixin(this) { it }.apply {
-                            mouseDown = ev.button
-                            dragOffset = vec(8, 8)
-                        }
-                        hook<DragMixin.DragDropEvent> {
-                            this.invalidate()
-                            this@SkillComponent.root.removeData(ResourceLocation::class.java, "dragged_skill")
-                        }
-                    })
+            if (SkillRegistry[skill]?.passive == false) {
+                hook<GuiComponentEvents.MouseDownEvent> {
+                    if (it.button == EnumMouseButton.LEFT && this@SkillComponent.mouseOver && skills[skill] > 0)
+                        this@SkillComponent.clickedIn = true
+                }
+                hook<GuiComponentEvents.MouseUpEvent> {
+                    if (it.button == EnumMouseButton.LEFT) this@SkillComponent.clickedIn = false
+                }
+                hook<GuiComponentEvents.MouseDragEvent> { ev ->
+                    if (ev.button == EnumMouseButton.LEFT && this@SkillComponent.clickedIn) {
+                        this@SkillComponent.clickedIn = false
+                        bg.add(ComponentStack(0, 0).apply {
+                            this@SkillComponent.root.setData(ResourceLocation::class.java, "dragged_skill", skill)
+                            ++zIndex
+                            stack.setValue(SkillItem[skill])
+                            quantityText.add { _, _ -> null }
+                            enableTooltip(false)
+                            DragMixin(this) { it }.apply {
+                                mouseDown = ev.button
+                                dragOffset = vec(8, 8)
+                            }
+                            hook<DragMixin.DragDropEvent> {
+                                this.invalidate()
+                                this@SkillComponent.root.removeData(ResourceLocation::class.java, "dragged_skill")
+                            }
+                        })
+                    }
                 }
             }
             enableHighlight()
