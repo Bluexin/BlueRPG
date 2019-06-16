@@ -57,6 +57,7 @@ interface IRPGGear : IUsable<ItemStack> { // TODO: use ISpecialArmor
                 stats.ilvl, stats.rarity?.localized ?: "Error", "rpg.$key.name".localize()
             )
             tooltip += spacer
+            if (this.type is WeaponType && (this.type as WeaponType).twoHander) tooltip += "rpg.display.twohander".localize()
             tooltipizeFixedStats(stats).forEach { tooltip += it }
             tooltip += spacer
             val p = Minecraft.getMinecraft().player

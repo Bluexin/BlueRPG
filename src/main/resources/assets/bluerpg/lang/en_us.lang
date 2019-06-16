@@ -52,6 +52,7 @@ rpg.notification.bound=Your %s has been bound to you
 
 # Item Tooltip
 rpg.tooltip.spacer=§7§r
+rpg.display.twohander=Two-handed
 rpg.tooltip.desc=§8-=[A Level %1$d %2$s %3$s]=-§r
 rpg.tooltip.fstat=§7%2$s: §f%1$s§r
 rpg.tooltip.levelreq=§7Level Req: %d§r
