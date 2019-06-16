@@ -93,10 +93,11 @@ data class Projectile(
 data class Self(
     val color1: Int = 0,
     val color2: Int = 0,
-    val glitter: PacketGlitter.Type = PacketGlitter.Type.AOE
+    val glitter: PacketGlitter.Type = PacketGlitter.Type.AOE,
+    val enableGlitter: Boolean = true
 ) : Targeting {
     override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
-        if (from is TargetWithPosition && from is TargetWithWorld) PacketHandler.NETWORK.sendToAllAround(
+        if (enableGlitter && from is TargetWithPosition && from is TargetWithWorld) PacketHandler.NETWORK.sendToAllAround(
             PacketGlitter(glitter, from.feet, color1, color2, .4),
             from.world,
             from.pos,
@@ -112,7 +113,8 @@ data class Self(
 @Savable
 @NamedDynamic("t:r")
 data class Raycast(
-    override val range: Double = 3.0
+    override val range: Double = 3.0,
+    val enableGlitter: Boolean = true
 ) : Targeting {
     override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
         if (from is TargetWithPosition && from is TargetWithLookVec && from is TargetWithWorld) GlobalScope.launch {
@@ -121,7 +123,7 @@ data class Raycast(
             val t: TargetWithPosition = if (e is EntityLivingBase) e.holder
             else PosHolder(r?.hitVec ?: (from.pos + from.lookVec * range))
             result.offerOrSendAndClose(t)
-            PacketHandler.NETWORK.sendToAllAround(
+            if (enableGlitter) PacketHandler.NETWORK.sendToAllAround(
                 PacketLightning(from.pos, t.pos),
                 from.world,
                 from.pos,
@@ -179,11 +181,11 @@ data class AoE(
     override val range: Double = 3.0, val shape: Shape = Shape.CIRCLE,
     val color1: Int = 0,
     val color2: Int = 0,
-    val glitter: Boolean = true // TODO: improve handling
+    val enableGlitter: Boolean = true // TODO: improve handling
 ) : Targeting {
     override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
         if (from is TargetWithPosition && from is TargetWithWorld) {
-            if (glitter) PacketHandler.NETWORK.sendToAllAround(
+            if (enableGlitter) PacketHandler.NETWORK.sendToAllAround(
                 PacketGlitter(PacketGlitter.Type.AOE, from.pos, color1, color2, range / 5),
                 from.world,
                 from.pos,
@@ -217,7 +219,7 @@ data class AoE(
 @NamedDynamic("t:i")
 data class Chain(
     override val range: Double = 3.0, val maxTargets: Int = 5, val delayMillis: Long = 500, val repeat: Boolean = false,
-    val condition: Condition? = null, val includeFrom: Boolean = false
+    val condition: Condition? = null, val includeFrom: Boolean = false, val enableGlitter: Boolean = true
 ) : Targeting {
     override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
         if (from is TargetWithPosition && from is TargetWithWorld) GlobalScope.launch {
@@ -247,7 +249,7 @@ data class Chain(
                     val h = LivingHolder(e)
                     if (!repeat) targets += h
                     result.send(h)
-                    PacketHandler.NETWORK.sendToAllAround(
+                    if (enableGlitter) PacketHandler.NETWORK.sendToAllAround(
                         PacketLightning(previousTarget.pos, h.pos),
                         from.world,
                         from.pos,
