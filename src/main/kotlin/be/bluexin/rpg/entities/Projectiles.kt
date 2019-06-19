@@ -42,22 +42,28 @@ import com.teamwizardry.librarianlib.features.particle.functions.TickFunction
 import com.teamwizardry.librarianlib.features.particle.spawn
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
+import io.netty.buffer.ByteBuf
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.runBlocking
+import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.IProjectile
 import net.minecraft.entity.projectile.EntityArrow
 import net.minecraft.item.ItemStack
 import net.minecraft.util.DamageSource
 import net.minecraft.util.ResourceLocation
+import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.awt.Color
 import java.lang.StrictMath.pow
 import java.util.*
+import kotlin.collections.HashSet
 
 interface RpgProjectile : IProjectile {
     var computedDamage: Double
@@ -306,9 +312,10 @@ class EntityWandProjectile : ThrowableEntityMod, RpgProjectile {
 }
 
 @Savable
-class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
+class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile, IEntityAdditionalSpawnData {
 
     internal companion object {
+        // TODO: move all these to spawnData
         private val RANGE = EntitySkillProjectile::class.createFloatKey()
 
         private val COLOR_1 = EntitySkillProjectile::class.createIntKey()
@@ -316,6 +323,8 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
 
         private val TRAIL_SYSTEM = EntitySkillProjectile::class.createResourceLocationKey()
     }
+
+    private val alreadyHit = HashSet<Entity>()
 
     @Save
     var initialX = 0.0
@@ -344,6 +353,8 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
 
     private var precise = false
 
+    var passtrough: Boolean = false
+
     private val spawnedParticles = LinkedList<DoubleArray>()
 
     @Suppress("unused")
@@ -356,7 +367,10 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
         range: Double,
         result: SendChannel<Target>,
         filter: Condition? = null,
-        precise: Boolean = false
+        precise: Boolean = false,
+        passtrough: Boolean = false,
+        width: Float = .25f,
+        height: Float = .25f
     ) : super(world, origin.x, origin.y, origin.z) {
         this.context = context
         this.result = result
@@ -364,6 +378,16 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
         this.thrower = context.caster
         this.filter = filter
         this.precise = precise
+        this.passtrough = passtrough
+        this.setSize(width, height)
+    }
+
+    override fun readSpawnData(additionalData: ByteBuf) {
+        this.passtrough = additionalData.readBoolean()
+    }
+
+    override fun writeSpawnData(buffer: ByteBuf) {
+        buffer.writeBoolean(this.passtrough)
     }
 
     override fun entityInit() { // Warning: this runs before CTOR
@@ -374,28 +398,12 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
         this.getDataManager().register(TRAIL_SYSTEM, ResourceLocation(BlueRPG.MODID, "ice"))
     }
 
-    override fun onUpdate() {
-        super.onUpdate()
-
-        world onClient {
-            renderParticles(spawnedParticles)
-            if (initialX == 0.0) {
-                initialX = super.posX
-                initialY = super.posY
-                initialZ = super.posZ
-            }
-        }
-
-        if (this.inWater || this.getDistanceSq(initialX, initialY, initialZ) > range) {
-            this.setDead()
-        }
-    }
-
     override fun realShoot(shooter: TargetWithLookVec, pitchOffset: Float, velocity: Float, inaccuracy: Float) {
         initialX = super.posX
         initialY = super.posY
         initialZ = super.posZ
         val lookVec = shooter.lookVec
+        if (shooter is LivingHolder<*>) thrower = shooter.it
         this.shoot(lookVec.x, lookVec.y, lookVec.z, velocity, inaccuracy)
 
         if (shooter is TargetWithMovement) {
@@ -409,7 +417,7 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
     }
 
     override fun onImpact(result: RayTraceResult) {
-        world onServer {
+        if (!this.isDead) world onServer {
             val r = this.result
             if (r != null) {
                 val e = result.entityHit
@@ -420,7 +428,7 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
                     val c = context
                     if (f == null || c == null || f(c, h)) {
                         runBlocking { r.send(h) }
-                        setDead() // TODO: allow to hit multiple
+                        if (!passtrough) setDead()
                     }
                 } else {
                     val v = result.hitVec
@@ -430,7 +438,7 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
                     val c = context
                     if (f == null || c == null || f(c, h)) {
                         runBlocking { r.send(h) }
-                        setDead() // TODO: allow to hit multiple
+                        if (!passtrough) setDead()
                     }
                 }
             }
@@ -448,5 +456,91 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile {
         }
         result?.close()
         super.setDead()
+    }
+
+    override fun onUpdate() {
+        //region super<EntityThrowable>::onUpdate
+        this.lastTickPosX = this.posX
+        this.lastTickPosY = this.posY
+        this.lastTickPosZ = this.posZ
+        //endregion
+
+        //region super<Entity>::onUpdate
+        if (!this.world.isRemote) {
+            this.setFlag(6, this.isGlowing)
+        }
+
+        this.onEntityUpdate()
+        //endregion
+
+        //region super<EntityThrowable>::onUpdate
+        if (this.throwableShake > 0) --this.throwableShake
+
+        if (this.inGround) {
+            if (this.world.getBlockState(BlockPos(this.xTile, this.yTile, this.zTile)).block === this.inTile) {
+                if (++this.ticksInGround == 1200) this.setDead()
+                return
+            }
+
+            this.inGround = false
+            this.motionX *= (this.rand.nextFloat() * 0.2f).toDouble()
+            this.motionY *= (this.rand.nextFloat() * 0.2f).toDouble()
+            this.motionZ *= (this.rand.nextFloat() * 0.2f).toDouble()
+            this.ticksInGround = 0
+            this.ticksInAir = 0
+        } else ++this.ticksInAir
+        //endregion
+
+        val list = this.world.getEntitiesWithinAABBExcludingEntity(
+            this,
+            this.entityBoundingBox.expand(this.motionX, this.motionY, this.motionZ).grow(1.0)
+        ).asSequence()
+            .filter { it !== this.thrower }
+            .filter { it !in this.alreadyHit }
+            .filter(Entity::canBeCollidedWith)
+            .toList()
+
+        this.alreadyHit += list
+
+        list.forEach {
+            val rt = RayTraceResult(it)
+            if (!net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, rt)) this.onImpact(rt)
+        }
+
+        //region super<EntityThrowable>::onUpdate
+        this.posX += this.motionX
+        this.posY += this.motionY
+        this.posZ += this.motionZ
+        val f = MathHelper.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ)
+        this.rotationYaw = (MathHelper.atan2(this.motionX, this.motionZ) * (180.0 / Math.PI)).toFloat()
+
+        this.rotationPitch = (MathHelper.atan2(this.motionY, f.toDouble()) * (180.0 / Math.PI)).toFloat()
+        while (this.rotationPitch - this.prevRotationPitch < -180.0f) this.prevRotationPitch -= 360.0f
+        while (this.rotationPitch - this.prevRotationPitch >= 180.0f) this.prevRotationPitch += 360.0f
+        while (this.rotationYaw - this.prevRotationYaw < -180.0f) this.prevRotationYaw -= 360.0f
+        while (this.rotationYaw - this.prevRotationYaw >= 180.0f) this.prevRotationYaw += 360.0f
+
+        this.rotationPitch = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * 0.2f
+        this.rotationYaw = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * 0.2f
+
+        this.motionX *= .99
+        this.motionY *= .99
+        this.motionZ *= .99
+
+        if (!this.hasNoGravity()) this.motionY -= this.gravityVelocity.toDouble()
+
+        this.setPosition(this.posX, this.posY, this.posZ)
+        //endregion
+
+        world onClient {
+            renderParticles(spawnedParticles)
+            if (initialX == 0.0) {
+                initialX = super.posX
+                initialY = super.posY
+                initialZ = super.posZ
+            }
+        }
+
+        if (this.inWater || this.getDistanceSq(initialX, initialY, initialZ) > range) this.setDead()
     }
 }

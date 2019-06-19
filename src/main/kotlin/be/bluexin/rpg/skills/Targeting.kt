@@ -64,6 +64,9 @@ data class Projectile(
     val inaccuracy: Float = 1f,
     val condition: Condition? = null,
     val precise: Boolean = false,
+    val passtrough: Boolean = false,
+    val width: Float = .25f,
+    val height: Float = .25f,
     val color1: Int = 0,
     val color2: Int = 0,
     val trailSystem: ResourceLocation = ResourceLocation(BlueRPG.MODID, "none")
@@ -77,7 +80,8 @@ data class Projectile(
                 range,
                 result,
                 condition,
-                precise
+                precise,
+                passtrough, width, height
             ).apply {
                 color1 = this@Projectile.color1
                 color2 = this@Projectile.color2
