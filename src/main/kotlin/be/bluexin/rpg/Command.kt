@@ -22,10 +22,9 @@ import be.bluexin.rpg.skills.SkillContext
 import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.stats.FormulaeConfiguration
 import be.bluexin.rpg.util.get
-import net.minecraft.command.CommandBase
-import net.minecraft.command.CommandException
-import net.minecraft.command.ICommandSender
-import net.minecraft.command.WrongUsageException
+import com.teamwizardry.librarianlib.features.kotlin.localize
+import net.minecraft.command.*
+import net.minecraft.command.CommandBase.getEntity
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
@@ -34,12 +33,23 @@ import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.text.TextComponentTranslation
 
+fun <T : Entity> getEntityList(
+    server: MinecraftServer,
+    sender: ICommandSender,
+    target: String,
+    clazz: Class<T>
+): List<T> {
+    return (if (EntitySelector.isSelector(target)) EntitySelector.matchEntities(
+        sender, target, clazz
+    ) else listOf(getEntity(server, sender, target, clazz)))
+}
+
 object Command : CommandBase() {
     enum class Commands(private val handle: (server: MinecraftServer, sender: ICommandSender, args: List<String>) -> Unit) {
         RELOAD({ _, sender, _ ->
             FormulaeConfiguration.reload()
             RarityConfiguration.reload()
-            sender.sendMessage(net.minecraft.util.text.TextComponentTranslation("bluerpg.command.reload.success"))
+            sender.sendMessage(TextComponentTranslation("bluerpg.command.reload.success"))
         });
 
         operator fun invoke(server: MinecraftServer, sender: ICommandSender, args: List<String>) =
@@ -77,12 +87,19 @@ object CommandCast : CommandBase() {
 
     override fun execute(server: MinecraftServer, sender: ICommandSender, args: Array<String>) {
         if (args.size < 2) throw WrongUsageException(getUsage(sender))
-        val target = getEntity(server, sender, args[0], EntityLivingBase::class.java)
+        val target = getEntityList(server, sender, args[0], EntityLivingBase::class.java)
         val skill = SkillRegistry[ResourceLocation(args[1])]
             ?: throw CommandException("bluerpg.command.cast.skillnotfound", args[1])
         val lvl = args.getOrNull(2)?.toIntOrNull() ?: 1
-        sender.sendMessage(TextComponentTranslation("bluerpg.command.cast.success", skill.key, lvl, target.name))
-        skill.processor.cast(SkillContext(target, lvl))
+        sender.sendMessage(
+            TextComponentTranslation(
+                "bluerpg.command.cast.success",
+                skill.key,
+                lvl,
+                target.singleOrNull()?.name ?: "bluerpg.command.cast.targets".localize(target.size)
+            )
+        )
+        for (t in target) skill.processor.cast(SkillContext(t, lvl))
     }
 
     override fun getUsage(sender: ICommandSender) = "bluerpg.command.cast.usage"

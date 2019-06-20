@@ -51,6 +51,7 @@ bluerpg.command.usage=/bluerpg <command>
 bluerpg.command.cast.usage=/bluerpgcast <from> <skill> <level>
 bluerpg.command.cast.skillnotfound=Couldn't find skill with key %s
 bluerpg.command.cast.success=Cast %1$s level %2$d from %3$s
+bluerpg.command.cast.targets=%d targets
 bluerpg.command.noperms=Insufficient permissions to run this command
 bluerpg.command.reload.success=Reloaded formulae. Check the console for errors.
 
