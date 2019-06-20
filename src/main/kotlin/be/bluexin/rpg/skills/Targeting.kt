@@ -47,31 +47,26 @@ import java.util.*
 @NamedDynamic("t:t")
 interface Targeting {
     operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Pair<Target, Target>>)
-    val range: Double
+    val range: (context: SkillContext) -> Double
 }
 
 @Savable
 @NamedDynamic("t:p")
 data class Projectile(
-    override val range: Double = 15.0,
-    val velocity: Float = 1f,
-    val inaccuracy: Float = 1f,
-    val condition: Condition? = null,
-    val precise: Boolean = false,
-    val passtrough: Boolean = false,
-    val width: Float = .25f,
-    val height: Float = .25f,
+    override val range: (context: SkillContext) -> Double = { 15.0 },
+    val args: (context: SkillContext) -> Args = { Args() },
     val projectileInfo: ProjectileInfo = ProjectileInfo(),
     val clientInfo: TargetingInfo<Projectile>? = null
 ) : Targeting {
     override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Pair<Target, Target>>) {
         if (from is TargetWithWorld && from is TargetWithPosition) from.world.minecraftServer!!.runMainThread {
             val r = Channel<Target>(Channel.UNLIMITED)
+            val (velocity, inaccuracy, condition, precise, passtrough, width, height) = args(context)
             val p = EntitySkillProjectile(
                 from.world,
                 context,
                 from,
-                range,
+                range(context),
                 r,
                 condition,
                 precise,
@@ -91,6 +86,16 @@ data class Projectile(
             clientInfo(this, context, from)
         }
     }
+
+    data class Args(
+        val velocity: Float = 1f,
+        val inaccuracy: Float = 1f,
+        val condition: Condition? = null,
+        val precise: Boolean = false,
+        val passtrough: Boolean = false,
+        val width: Float = .25f,
+        val height: Float = .25f
+    )
 }
 
 @Savable
@@ -103,18 +108,18 @@ data class Self(
         result.offerOrSendAndClose(from to from)
     }
 
-    override val range: Double
-        get() = 0.0
+    override val range: (SkillContext) -> Double get() = { .0 }
 }
 
 @Savable
 @NamedDynamic("t:r")
 data class Raycast(
-    override val range: Double = 3.0,
+    override val range: (context: SkillContext) -> Double = { 3.0 },
     val clientInfo: TargetingInfo<Raycast>? = null
 ) : Targeting {
     override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Pair<Target, Target>>) {
         if (from is TargetWithPosition && from is TargetWithLookVec && from is TargetWithWorld) GlobalScope.launch {
+            val range = range(context)
             val r = RaycastUtils.raycast(from.world, from.pos, from.lookVec, range)
             val e = getEntityLookedAt(from, from.world, r, range)
             val t: TargetWithPosition = if (e is EntityLivingBase) e.holder
@@ -128,10 +133,11 @@ data class Raycast(
 @Savable
 @NamedDynamic("t:c")
 data class Channelling(
-    val delayMillis: Long, val procs: Int, val targeting: Targeting
+    val targeting: Targeting, val args: (context: SkillContext) -> Args
 ) : Targeting by targeting {
     override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Pair<Target, Target>>) {
         GlobalScope.launch {
+            val (delayMillis, procs) = args(context)
             val p = produce(capacity = Channel.UNLIMITED) {
                 repeat(procs) {
                     if (it != 0) delay(delayMillis)
@@ -165,17 +171,22 @@ data class Channelling(
             result.close()
         }
     }
+
+    data class Args(
+        val delayMillis: Long, val procs: Int
+    )
 }
 
 @Savable
 @NamedDynamic("t:a")
 data class AoE(
-    override val range: Double = 3.0, val shape: Shape = Shape.CIRCLE,
+    override val range: (context: SkillContext) -> Double = { 3.0 }, val shape: Shape = Shape.CIRCLE,
     val clientInfo: TargetingInfo<AoE>? = null
 ) : Targeting {
     override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Pair<Target, Target>>) {
         if (from is TargetWithPosition && from is TargetWithWorld) {
             clientInfo(this, context, from)
+            val range = range(context)
             val dist = pow(range, 2.0)
             val entPos = from.pos
             val w = Vec3d(range, range, range)
@@ -203,11 +214,14 @@ data class AoE(
 @Savable
 @NamedDynamic("t:i")
 data class Chain(
-    override val range: Double = 3.0, val maxTargets: Int = 5, val delayMillis: Long = 500, val repeat: Boolean = false,
-    val condition: Condition? = null, val includeFrom: Boolean = false, val clientInfo: TargetingInfo<Chain>? = null
+    override val range: (context: SkillContext) -> Double = { 3.0 },
+    val args: (context: SkillContext) -> Args = { Args() },
+    val clientInfo: TargetingInfo<Chain>? = null
 ) : Targeting {
     override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Pair<Target, Target>>) {
         if (from is TargetWithPosition && from is TargetWithWorld) GlobalScope.launch {
+            val range = range(context)
+            val (maxTargets, delayMillis, repeat, condition, includeFrom) = args(context)
             val w = Vec3d(range, range, range)
             val dist = pow(range, 2.0)
             val targets = LinkedHashSet<Target>()
@@ -244,4 +258,12 @@ data class Chain(
             result.close()
         }
     }
+
+    data class Args(
+        val maxTargets: Int = 5,
+        val delayMillis: Long = 500,
+        val repeat: Boolean = false,
+        val condition: Condition? = null,
+        val includeFrom: Boolean = false
+    )
 }

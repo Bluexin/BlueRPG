@@ -29,13 +29,7 @@ import com.teamwizardry.librarianlib.features.kotlin.Minecraft
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
 import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.EnumAction
 import net.minecraft.item.ItemStack
-import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
 import net.minecraft.util.ResourceLocation
 import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.Side
@@ -78,29 +72,17 @@ object SkillItem : ItemMod("skill_item"), IExtraVariantHolder, ICustomTexturePat
             tooltip += "rpg.skill.$name.description".localize()
             tooltip += "rpg.skill.manacost".localize(manaCost(player), manaCostReduced(player))
             tooltip += "rpg.skill.cooldown".localize(cooldown(player), cooldownReduced(player))
-            tooltip += "rpg.skill.casttime".localize(processor.trigger.castTimeTicks)
+            tooltip += "rpg.skill.casttime".localize(
+                processor.trigger.castTimeTicks(
+                    SkillContext(
+                        player,
+                        player.playerClass[this]
+                    )
+                )
+            )
         }
         if (flagIn.isAdvanced) tooltip += stack.skillName.toString()
     }
-
-    override fun getMaxItemUseDuration(stack: ItemStack) = stack.skill?.processor?.trigger?.castTimeTicks ?: 0
-
-    override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
-        val stack = playerIn.getHeldItem(handIn)
-        val skill = stack.skill ?: return ActionResult(EnumActionResult.FAIL, stack)
-
-        val r = skill.startUsing(playerIn)
-        if (r == EnumActionResult.PASS) playerIn.activeHand = handIn
-        return ActionResult(r, stack)
-    }
-
-    override fun onItemUseFinish(stack: ItemStack, worldIn: World, entityLiving: EntityLivingBase): ItemStack {
-        val skill = stack.skill ?: return stack
-        skill.stopUsing(entityLiving, skill.processor.trigger.castTimeTicks)
-        return stack
-    }
-
-    override fun getItemUseAction(stack: ItemStack) = EnumAction.BOW
 
     @SideOnly(Side.CLIENT)
     override fun showDurabilityBar(stack: ItemStack): Boolean {

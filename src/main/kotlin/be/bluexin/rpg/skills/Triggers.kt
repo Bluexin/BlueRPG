@@ -25,20 +25,23 @@ import com.teamwizardry.librarianlib.features.saving.Savable
 interface Trigger {
     fun startUsing(context: SkillContext): Boolean
     fun stopUsing(context: SkillContext, time: Int): Boolean
-    val castTimeTicks: Int
+    val castTimeTicks: (context: SkillContext) -> Int
 }
 
 @Savable
 @NamedDynamic("tr:c")
-data class Use(override val castTimeTicks: Int, val clientInfo: CastInfo<Use>? = null) : Trigger {
+data class Use(override val castTimeTicks: (context: SkillContext) -> Int, val clientInfo: CastInfo<Use>? = null) :
+    Trigger {
     override fun startUsing(context: SkillContext): Boolean {
-        clientInfo(this, context, 0, this.castTimeTicks)
-        return this.castTimeTicks == 0
+        val castTimeTicks = this.castTimeTicks(context)
+        clientInfo(this, context, 0, castTimeTicks)
+        return castTimeTicks == 0
     }
 
     override fun stopUsing(context: SkillContext, time: Int): Boolean {
-        clientInfo(this, context, time, this.castTimeTicks)
-        return this.castTimeTicks != 0 && time >= this.castTimeTicks
+        val castTimeTicks = this.castTimeTicks(context)
+        clientInfo(this, context, time, castTimeTicks)
+        return castTimeTicks != 0 && time >= castTimeTicks
     }
 }
 
@@ -58,7 +61,7 @@ open class Passive(val clientInfo: CastInfo<Passive>? = null) : Trigger {
         return false
     }
 
-    override val castTimeTicks get() = 0
+    override val castTimeTicks: (SkillContext) -> Int get() = { 0 }
 
     companion object : Passive()
 }
