@@ -84,6 +84,7 @@ object BlueRPG {
     @Mod.EventHandler
     fun serverStart(event: FMLServerStartingEvent) {
         event.registerServerCommand(Command)
+        event.registerServerCommand(CommandCast)
         if (event.server.isDedicatedServer) BlueRPGDataFixer.setup(event.server.dataFixer)
         // TODO: register fixer for client & server here (was I drunk?)
     }

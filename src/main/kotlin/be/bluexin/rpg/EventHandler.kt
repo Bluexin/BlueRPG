@@ -107,8 +107,9 @@ object CommonEventHandler {
             val time = event.player.world.totalWorldTime
             if (time % 10 == 0L) {
                 event.player.playerClass.iterator().asSequence().mapNotNull { SkillRegistry[it.key] to it.value }
+                    .filter { (skill, _) -> skill?.passive == true }
                     .forEach { (skill, level) ->
-                        skill?.processor?.startUsing(SkillContext(event.player, level))
+                        skill?.processor?.cast(SkillContext(event.player, level))
                     }
                 if (time % 100 == 0L) {
                     val combat = event.player.combatTracker.inCombat

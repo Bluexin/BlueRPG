@@ -18,13 +18,21 @@
 package be.bluexin.rpg
 
 import be.bluexin.rpg.gear.RarityConfiguration
+import be.bluexin.rpg.skills.SkillContext
+import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.stats.FormulaeConfiguration
+import be.bluexin.rpg.util.get
 import net.minecraft.command.CommandBase
+import net.minecraft.command.CommandException
 import net.minecraft.command.ICommandSender
 import net.minecraft.command.WrongUsageException
+import net.minecraft.entity.Entity
+import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.server.MinecraftServer
+import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.text.TextComponentTranslation
 
 object Command : CommandBase() {
     enum class Commands(private val handle: (server: MinecraftServer, sender: ICommandSender, args: List<String>) -> Unit) {
@@ -60,6 +68,43 @@ object Command : CommandBase() {
         if (sender !is EntityPlayer) return mutableListOf()
         if (args.size != 1) return super.getTabCompletions(server, sender, args, pos)
         val l = Commands.values().map { it.name.toLowerCase() }
-        return CommandBase.getListOfStringsMatchingLastWord(args, l)
+        return getListOfStringsMatchingLastWord(args, l)
     }
+}
+
+object CommandCast : CommandBase() {
+    override fun getName() = "bluerpgcast"
+
+    override fun execute(server: MinecraftServer, sender: ICommandSender, args: Array<String>) {
+        if (args.size < 2) throw WrongUsageException(getUsage(sender))
+        val target = getEntity(server, sender, args[0], EntityLivingBase::class.java)
+        val skill = SkillRegistry[ResourceLocation(args[1])]
+            ?: throw CommandException("bluerpg.command.cast.skillnotfound", args[1])
+        val lvl = args.getOrNull(2)?.toIntOrNull() ?: 1
+        sender.sendMessage(TextComponentTranslation("bluerpg.command.cast.success", skill.key, lvl, target.name))
+        skill.processor.cast(SkillContext(target, lvl))
+    }
+
+    override fun getUsage(sender: ICommandSender) = "bluerpg.command.cast.usage"
+
+    override fun getRequiredPermissionLevel() = 2
+
+    override fun getTabCompletions(
+        server: MinecraftServer,
+        sender: ICommandSender,
+        args: Array<String>,
+        targetPos: BlockPos?
+    ): MutableList<String> {
+        return when (args.size) {
+            1 -> getListOfStringsMatchingLastWord(args, *server.onlinePlayerNames)
+            2 -> getListOfStringsMatchingLastWord(args, SkillRegistry.keys)
+            else -> super.getTabCompletions(server, sender, args, targetPos)
+        }
+
+    }
+
+    override fun checkPermission(server: MinecraftServer, sender: ICommandSender) =
+        sender is Entity && super.checkPermission(server, sender)
+
+    override fun getAliases() = listOf("cast")
 }

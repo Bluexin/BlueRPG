@@ -46,6 +46,14 @@ rpg.display.debug_exp.shift=Use while shifting to gain 100 XP
 rpg.display.item=%1$s %2$s
 item_group.bluerpg=Blue RPG
 
+# Commands
+bluerpg.command.usage=/bluerpg <command>
+bluerpg.command.cast.usage=/bluerpgcast <from> <skill> <level>
+bluerpg.command.cast.skillnotfound=Couldn't find skill with key %s
+bluerpg.command.cast.success=Cast %1$s level %2$d from %3$s
+bluerpg.command.noperms=Insufficient permissions to run this command
+bluerpg.command.reload.success=Reloaded formulae. Check the console for errors.
+
 # Broadcast
 rpg.broadcast.item=Congratulations! %1$s obtained %2$s
 rpg.notification.bound=Your %s has been bound to you
