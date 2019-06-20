@@ -491,20 +491,30 @@ class EntitySkillProjectile : ThrowableEntityMod, RpgProjectile, IEntityAddition
         } else ++this.ticksInAir
         //endregion
 
-        val list = this.world.getEntitiesWithinAABBExcludingEntity(
-            this,
-            this.entityBoundingBox.expand(this.motionX, this.motionY, this.motionZ).grow(1.0)
-        ).asSequence()
-            .filter { it !== this.thrower }
-            .filter { it !in this.alreadyHit }
-            .filter(Entity::canBeCollidedWith)
-            .toList()
+        world onServer {
+            val pos = this.positionVector
+            val posWithMove = vec(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ)
+            val hits = this.world.getEntitiesWithinAABBExcludingEntity(
+                this,
+                this.entityBoundingBox.expand(this.motionX, this.motionY, this.motionZ).grow(1.0)
+            ).asSequence()
+                .filter { it !== this.thrower }
+                .filter { it !in this.alreadyHit }
+                .filter(Entity::canBeCollidedWith)
+                .mapNotNull {
+                    val axisalignedbb = it.entityBoundingBox.grow(0.30000001192092896)
+                    val r = axisalignedbb.calculateIntercept(pos, posWithMove)
+                    r?.entityHit = it
+                    r
+                }.ifEmpty {
+                    sequenceOf(this.world.rayTraceBlocks(pos, posWithMove)).filterNotNull()
+                }
 
-        this.alreadyHit += list
+            hits.forEach {
+                if (!net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, it)) this.onImpact(it)
+            }
 
-        list.forEach {
-            val rt = RayTraceResult(it)
-            if (!net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, rt)) this.onImpact(rt)
+            this.alreadyHit += hits.mapNotNull { it.entityHit }.toList()
         }
 
         //region super<EntityThrowable>::onUpdate
