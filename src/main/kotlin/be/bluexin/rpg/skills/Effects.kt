@@ -26,10 +26,7 @@ import com.teamwizardry.librarianlib.features.saving.Savable
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.filter
-import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.selects.select
 import net.minecraft.util.EntityDamageSource
 import net.minecraft.util.math.Vec3d
 import java.util.*
@@ -40,39 +37,54 @@ import kotlin.math.abs
 @Savable
 @NamedDynamic("e:e")
 interface Effect {
-    operator fun invoke(context: SkillContext, targets: ReceiveChannel<Target>)
+    operator fun invoke(
+        context: SkillContext,
+        targets: ReceiveChannel<Pair<Target, Target>>
+    )
 }
 
 @Savable
 @NamedDynamic("e:d")
-data class Damage(val value: (context: SkillContext, target: TargetWithHealth) -> Double) : Effect {
-    override fun invoke(context: SkillContext, targets: ReceiveChannel<Target>) {
+data class Damage(
+    val clientInfo: OnHitInfo? = null,
+    val value: (context: SkillContext, target: TargetWithHealth) -> Double
+) : Effect {
+    override fun invoke(
+        context: SkillContext,
+        targets: ReceiveChannel<Pair<Target, Target>>
+    ) {
         GlobalScope.launch {
-            for (e in targets.filter { it is TargetWithHealth && it is TargetWithWorld }) {
-                e as TargetWithWorld
-                e as TargetWithHealth
-                e.world.minecraftServer?.runMainThread {
-                    val value = this@Damage.value(context, e).toFloat()
-                    if (value >= 0) e.attack(
-                        DamageHandler.RpgDamageSource(EntityDamageSource("skill.test", context.caster)),
-                        value
-                    )
-                    else e.heal(abs(value))
+            for ((from, target) in targets) {
+                if (target is TargetWithWorld && target is TargetWithHealth) {
+                    target.world.minecraftServer?.runMainThread {
+                        val value = this@Damage.value(context, target).toFloat()
+                        if (value >= 0) target.attack(
+                            DamageHandler.RpgDamageSource(EntityDamageSource("skill.test", context.caster)),
+                            value
+                        )
+                        else target.heal(abs(value))
+                    }
                 }
+
+                clientInfo(context, from, target)
             }
         }
     }
 }
 
 @Savable
-@NamedDynamic("e:b") // TODO: (de)serialization of PotionEffects
-data class ApplyBuff(val effect: (context: SkillContext, target: TargetWithEffects) -> Buff) : Effect {
-    override fun invoke(context: SkillContext, targets: ReceiveChannel<Target>) {
+@NamedDynamic("e:b")
+data class ApplyBuff(
+    val clientInfo: OnHitInfo? = null,
+    val effect: (context: SkillContext, target: TargetWithEffects) -> Buff
+) : Effect {
+    override fun invoke(
+        context: SkillContext,
+        targets: ReceiveChannel<Pair<Target, Target>>
+    ) {
         GlobalScope.launch {
-            for (e in targets.filter { it is TargetWithEffects && it is TargetWithWorld }) {
-                e as TargetWithWorld
-                e as TargetWithEffects
-                e.world.minecraftServer?.runMainThread {
+            for ((_, e) in targets) {
+                if (e is TargetWithWorld && e is TargetWithEffects) e.world.minecraftServer?.runMainThread {
                     e.addPotionEffect(effect(context, e).toVanilla)
                 }
             }
@@ -82,13 +94,17 @@ data class ApplyBuff(val effect: (context: SkillContext, target: TargetWithEffec
 
 @Savable
 @NamedDynamic("e:v")
-data class Velocity(val additionalVelocity: (context: SkillContext, target: TargetWithMovement) -> Vec3d) : Effect {
-    override fun invoke(context: SkillContext, targets: ReceiveChannel<Target>) {
+data class Velocity(
+    val clientInfo: OnHitInfo? = null,
+    val additionalVelocity: (context: SkillContext, target: TargetWithMovement) -> Vec3d
+) : Effect {
+    override fun invoke(
+        context: SkillContext,
+        targets: ReceiveChannel<Pair<Target, Target>>
+    ) {
         GlobalScope.launch {
-            for (e in targets.filter { it is TargetWithMovement && it is TargetWithWorld }) {
-                e as TargetWithWorld
-                e as TargetWithMovement
-                e.world.minecraftServer?.runMainThread {
+            for ((_, e) in targets) {
+                if (e is TargetWithWorld && e is TargetWithMovement) e.world.minecraftServer?.runMainThread {
                     e.movement += additionalVelocity(context, e)
                 }
             }
@@ -101,47 +117,21 @@ data class Velocity(val additionalVelocity: (context: SkillContext, target: Targ
 data class Skill(
     val targeting: Targeting,
     val condition: Condition?,
-    val effect: Effect
+    val effect: Effect,
+    val clientInfo: OnHitInfo? = null
 ) : Effect {
-    override fun invoke(context: SkillContext, targets: ReceiveChannel<Target>) {
+    override fun invoke(
+        context: SkillContext,
+        targets: ReceiveChannel<Pair<Target, Target>>
+    ) {
         GlobalScope.launch {
-            val p = produce(capacity = Channel.UNLIMITED) {
-                for (e in targets) {
-                    val c = Channel<Target>(capacity = Channel.UNLIMITED)
+            for ((_, e) in targets) {
+                launch {
+                    val c = Channel<Pair<Target, Target>>(capacity = Channel.UNLIMITED)
                     targeting(context, e, c)
-                    send(c)
+                    effect(context, c)
                 }
             }
-
-            val result = Channel<Target>(capacity = Channel.UNLIMITED)
-            effect(
-                context,
-                if (condition == null) result else result.filter {
-                    @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
-                    (condition!!.invoke(context, it))
-                })
-            val chs = LinkedList<Channel<Target>>()
-            val toAdd = LinkedList<Channel<Target>>()
-            var flag = true
-            while (flag || chs.isNotEmpty()) {
-                select<Unit> {
-                    if (flag) p.onReceiveOrNull {
-                        if (it != null) toAdd += it
-                        else flag = false
-                    }
-                    val iter = chs.iterator()
-                    while (iter.hasNext()) {
-                        iter.next().onReceiveOrNull {
-                            if (it != null) result.send(it)
-                            else iter.remove()
-                        }
-                    }
-                }
-                chs += toAdd
-                toAdd.clear()
-            }
-
-            result.close()
         }
     }
 }
@@ -149,10 +139,12 @@ data class Skill(
 @Savable
 @NamedDynamic("e:m")
 data class MultiEffect(val effects: Array<Effect>) : Effect {
-
-    override fun invoke(context: SkillContext, targets: ReceiveChannel<Target>) {
+    override fun invoke(
+        context: SkillContext,
+        targets: ReceiveChannel<Pair<Target, Target>>
+    ) {
         GlobalScope.launch {
-            val channels = Array<Channel<Target>>(effects.size) {
+            val channels = Array<Channel<Pair<Target, Target>>>(effects.size) {
                 Channel(capacity = Channel.UNLIMITED)
             }
             effects.forEachIndexed { i, effect -> effect(context, channels[i]) }

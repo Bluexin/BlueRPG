@@ -44,9 +44,9 @@ data class Processor(
         } else false
 
     private fun cast(context: SkillContext) {
-        val channel = Channel<Target>(capacity = Channel.UNLIMITED)
+        val channel = Channel<Pair<Target, Target>>(capacity = Channel.UNLIMITED)
         targeting(context, context.caster.holder, channel)
-        effect(context, condition?.let { c -> channel.filter { c(context, it) } } ?: channel)
+        effect(context, condition?.let { c -> channel.filter { c(context, it.second) } } ?: channel)
     }
 }
 

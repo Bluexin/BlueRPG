@@ -19,9 +19,6 @@
 
 package be.bluexin.rpg.skills
 
-import be.bluexin.rpg.BlueRPG
-import be.bluexin.rpg.PacketGlitter
-import be.bluexin.rpg.PacketLightning
 import be.bluexin.rpg.entities.EntitySkillProjectile
 import be.bluexin.rpg.util.getEntityLookedAt
 import be.bluexin.rpg.util.offerOrSendAndClose
@@ -31,8 +28,6 @@ import com.teamwizardry.librarianlib.features.helpers.aabb
 import com.teamwizardry.librarianlib.features.kotlin.minus
 import com.teamwizardry.librarianlib.features.kotlin.plus
 import com.teamwizardry.librarianlib.features.kotlin.times
-import com.teamwizardry.librarianlib.features.network.PacketHandler
-import com.teamwizardry.librarianlib.features.network.sendToAllAround
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.utilities.RaycastUtils
@@ -44,7 +39,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import net.minecraft.entity.EntityLivingBase
-import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.Vec3d
 import java.lang.StrictMath.pow
 import java.util.*
@@ -52,7 +46,7 @@ import java.util.*
 @Savable
 @NamedDynamic("t:t")
 interface Targeting {
-    operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>)
+    operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Pair<Target, Target>>)
     val range: Double
 }
 
@@ -67,27 +61,34 @@ data class Projectile(
     val passtrough: Boolean = false,
     val width: Float = .25f,
     val height: Float = .25f,
-    val color1: Int = 0,
-    val color2: Int = 0,
-    val trailSystem: ResourceLocation = ResourceLocation(BlueRPG.MODID, "none")
+    val projectileInfo: ProjectileInfo = ProjectileInfo(),
+    val clientInfo: TargetingInfo<Projectile>? = null
 ) : Targeting {
-    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
+    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Pair<Target, Target>>) {
         if (from is TargetWithWorld && from is TargetWithPosition) from.world.minecraftServer!!.runMainThread {
-            from.world.spawnEntity(EntitySkillProjectile(
+            val r = Channel<Target>(Channel.UNLIMITED)
+            val p = EntitySkillProjectile(
                 from.world,
                 context,
                 from,
                 range,
-                result,
+                r,
                 condition,
                 precise,
                 passtrough, width, height
             ).apply {
-                color1 = this@Projectile.color1
-                color2 = this@Projectile.color2
-                trailSystemKey = this@Projectile.trailSystem
+                color1 = projectileInfo.color1
+                color2 = projectileInfo.color2
+                trailSystemKey = projectileInfo.trailSystem
                 if (from is TargetWithLookVec) realShoot(from, 0.0f, velocity, inaccuracy)
-            })
+            }
+            from.world.spawnEntity(p)
+            GlobalScope.launch {
+                val h = ProjectileHolder(p)
+                for (e in r) result.send(h to e)
+                result.close()
+            }
+            clientInfo(this, context, from)
         }
     }
 }
@@ -95,19 +96,11 @@ data class Projectile(
 @Savable
 @NamedDynamic("t:s")
 data class Self(
-    val color1: Int = 0,
-    val color2: Int = 0,
-    val glitter: PacketGlitter.Type = PacketGlitter.Type.AOE,
-    val enableGlitter: Boolean = true
+    val clientInfo: TargetingInfo<Self>? = null
 ) : Targeting {
-    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
-        if (enableGlitter && from is TargetWithPosition && from is TargetWithWorld) PacketHandler.NETWORK.sendToAllAround(
-            PacketGlitter(glitter, from.feet, color1, color2, .4),
-            from.world,
-            from.pos,
-            64.0
-        )
-        result.offerOrSendAndClose(from)
+    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Pair<Target, Target>>) {
+        clientInfo(this, context, from)
+        result.offerOrSendAndClose(from to from)
     }
 
     override val range: Double
@@ -118,21 +111,16 @@ data class Self(
 @NamedDynamic("t:r")
 data class Raycast(
     override val range: Double = 3.0,
-    val enableGlitter: Boolean = true
+    val clientInfo: TargetingInfo<Raycast>? = null
 ) : Targeting {
-    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
+    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Pair<Target, Target>>) {
         if (from is TargetWithPosition && from is TargetWithLookVec && from is TargetWithWorld) GlobalScope.launch {
             val r = RaycastUtils.raycast(from.world, from.pos, from.lookVec, range)
             val e = getEntityLookedAt(from, from.world, r, range)
             val t: TargetWithPosition = if (e is EntityLivingBase) e.holder
             else PosHolder(r?.hitVec ?: (from.pos + from.lookVec * range))
-            result.offerOrSendAndClose(t)
-            if (enableGlitter) PacketHandler.NETWORK.sendToAllAround(
-                PacketLightning(from.pos, t.pos),
-                from.world,
-                from.pos,
-                64.0
-            )
+            result.offerOrSendAndClose(from to t)
+            clientInfo(this@Raycast, context, from)
         }
     }
 }
@@ -142,19 +130,19 @@ data class Raycast(
 data class Channelling(
     val delayMillis: Long, val procs: Int, val targeting: Targeting
 ) : Targeting by targeting {
-    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
+    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Pair<Target, Target>>) {
         GlobalScope.launch {
             val p = produce(capacity = Channel.UNLIMITED) {
                 repeat(procs) {
                     if (it != 0) delay(delayMillis)
-                    val c = Channel<Target>(capacity = Channel.UNLIMITED)
+                    val c = Channel<Pair<Target, Target>>(capacity = Channel.UNLIMITED)
                     targeting(context, from, c)
                     send(c)
                 }
             }
 
-            val chs = LinkedList<Channel<Target>>()
-            val toAdd = LinkedList<Channel<Target>>()
+            val chs = LinkedList<Channel<Pair<Target, Target>>>()
+            val toAdd = LinkedList<Channel<Pair<Target, Target>>>()
             var flag = true
             while (flag || chs.isNotEmpty()) {
                 select<Unit> {
@@ -183,18 +171,11 @@ data class Channelling(
 @NamedDynamic("t:a")
 data class AoE(
     override val range: Double = 3.0, val shape: Shape = Shape.CIRCLE,
-    val color1: Int = 0,
-    val color2: Int = 0,
-    val enableGlitter: Boolean = true // TODO: improve handling
+    val clientInfo: TargetingInfo<AoE>? = null
 ) : Targeting {
-    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
+    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Pair<Target, Target>>) {
         if (from is TargetWithPosition && from is TargetWithWorld) {
-            if (enableGlitter) PacketHandler.NETWORK.sendToAllAround(
-                PacketGlitter(PacketGlitter.Type.AOE, from.pos, color1, color2, range / 5),
-                from.world,
-                from.pos,
-                64.0
-            )
+            clientInfo(this, context, from)
             val dist = pow(range, 2.0)
             val entPos = from.pos
             val w = Vec3d(range, range, range)
@@ -207,7 +188,7 @@ data class AoE(
                 }
             )
             GlobalScope.launch {
-                e.forEach { result.send(LivingHolder(it!!)) }
+                e.forEach { result.send(from to LivingHolder(it!!)) }
                 result.close()
             }
         }
@@ -223,15 +204,15 @@ data class AoE(
 @NamedDynamic("t:i")
 data class Chain(
     override val range: Double = 3.0, val maxTargets: Int = 5, val delayMillis: Long = 500, val repeat: Boolean = false,
-    val condition: Condition? = null, val includeFrom: Boolean = false, val enableGlitter: Boolean = true
+    val condition: Condition? = null, val includeFrom: Boolean = false, val clientInfo: TargetingInfo<Chain>? = null
 ) : Targeting {
-    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Target>) {
+    override operator fun invoke(context: SkillContext, from: Target, result: SendChannel<Pair<Target, Target>>) {
         if (from is TargetWithPosition && from is TargetWithWorld) GlobalScope.launch {
             val w = Vec3d(range, range, range)
             val dist = pow(range, 2.0)
             val targets = LinkedHashSet<Target>()
             targets.add(from)
-            if (includeFrom) result.send(from)
+            if (includeFrom) result.send(from to from)
             var previousTarget: TargetWithPosition = from
             repeat(maxTargets) { c ->
                 if (c != 0) delay(delayMillis)
@@ -252,13 +233,8 @@ data class Chain(
                 if (e != null) {
                     val h = LivingHolder(e)
                     if (!repeat) targets += h
-                    result.send(h)
-                    if (enableGlitter) PacketHandler.NETWORK.sendToAllAround(
-                        PacketLightning(previousTarget.pos, h.pos),
-                        from.world,
-                        from.pos,
-                        64.0
-                    )
+                    result.send(previousTarget to h)
+                    clientInfo(this@Chain, context, from)
                     previousTarget = h
                 } else {
                     result.close()

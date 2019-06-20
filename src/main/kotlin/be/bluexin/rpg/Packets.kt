@@ -28,9 +28,6 @@ import be.bluexin.rpg.skills.SkillData
 import be.bluexin.rpg.skills.SkillItem.skill
 import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.skills.cooldowns
-import be.bluexin.rpg.skills.glitter.AoE
-import be.bluexin.rpg.skills.glitter.BeamLightningSystem
-import be.bluexin.rpg.skills.glitter.Heal
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.util.get
 import com.teamwizardry.librarianlib.features.autoregister.PacketRegister
@@ -42,10 +39,8 @@ import com.teamwizardry.librarianlib.features.saving.Save
 import net.minecraft.util.EnumActionResult
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
 import net.minecraftforge.fml.relauncher.Side
-import java.awt.Color
 
 @PacketRegister(Side.SERVER)
 class PacketRaiseStat(stat: PrimaryStat, amount: Int) : PacketBase() {
@@ -123,68 +118,6 @@ class PacketSaveLoadEditorItem(pos: BlockPos, saving: Boolean) : PacketBase() {
 @PacketRegister(Side.SERVER)
 class PacketAttack : PacketBase() {
     override fun handle(ctx: MessageContext) = DamageHandler.handleCustomAttack(ctx.serverHandler.player)
-}
-
-@PacketRegister(Side.CLIENT)
-class PacketGlitter(type: Type, pos: Vec3d, color1: Int, color2: Int, spread: Double) : PacketBase() {
-    @Save
-    var type = type
-        internal set
-
-    @Save
-    var pos = pos
-        internal set
-
-    @Save
-    var color1 = color1
-        internal set
-
-    @Save
-    var color2 = color2
-        internal set
-
-    @Save
-    var spread = spread
-        internal set
-
-    @Suppress("unused")
-    internal constructor() : this(Type.AOE, Vec3d.ZERO, 0, 0, .0)
-
-    constructor(type: Type, pos: Vec3d, color1: Color, color2: Color, spread: Double) : this(
-        type,
-        pos,
-        color1.rgb,
-        color2.rgb,
-        spread
-    )
-
-    enum class Type {
-        AOE,
-        HEAL
-    }
-
-    override fun handle(ctx: MessageContext) {
-        when (type) {
-            Type.AOE -> AoE.burst(pos, Color(color1, true), Color(color2, true), spread)
-            Type.HEAL -> Heal.burst(pos, Color(color1, true), Color(color2, true), spread)
-        }
-    }
-}
-
-@PacketRegister(Side.CLIENT)
-class PacketLightning(from: Vec3d, to: Vec3d) : PacketBase() {
-
-    @Save
-    var from = from
-        internal set
-    @Save
-    var to = to
-        internal set
-
-    @Suppress("unused")
-    internal constructor() : this(Vec3d.ZERO, Vec3d.ZERO)
-
-    override fun handle(ctx: MessageContext) = BeamLightningSystem.lightItUp(from, to)
 }
 
 @PacketRegister(Side.CLIENT)

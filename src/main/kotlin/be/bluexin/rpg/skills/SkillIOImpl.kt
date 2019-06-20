@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg.skills
 
+import be.bluexin.rpg.entities.EntitySkillProjectile
 import be.bluexin.rpg.stats.Stat
 import be.bluexin.rpg.stats.get
 import be.bluexin.saomclib.capabilities.getPartyCapability
@@ -107,6 +108,45 @@ open class LivingHolder<T : EntityLivingBase>(living: T) :
 class PlayerHolder(player: EntityPlayer) : LivingHolder<EntityPlayer>(player), TargetWithParty, TargetWithStats {
     override val party get() = it.getPartyCapability().party
     override fun get(stat: Stat) = it[stat]
+}
+
+class ProjectileHolder(projectile: EntitySkillProjectile) : DefaultHolder<EntitySkillProjectile>(projectile),
+    TargetWithPosition, TargetWithWorld,
+    TargetWithMovement, TargetWithCollision, TargetWithBoundingBox {
+    override val pos: Vec3d get() = it.positionVector
+    override val boundingBox: AxisAlignedBB get() = it.entityBoundingBox
+    override val world: World get() = it.world
+    override var movement: Vec3d
+        get() = it.motionVec
+        set(value) {
+            it.motionVec = value
+            it.velocityChanged = true
+        }
+
+    override val onGround: Boolean get() = it.onGround
+
+    /* Optimizing these */
+    override val x: Double get() = it.posX
+    override val y: Double get() = it.posY
+    override val z: Double get() = it.posZ
+    override var motionX: Double
+        get() = it.motionX
+        set(value) {
+            it.motionX = value
+            it.velocityChanged = true
+        }
+    override var motionY: Double
+        get() = it.motionY
+        set(value) {
+            it.motionY = value
+            it.velocityChanged = true
+        }
+    override var motionZ: Double
+        get() = it.motionZ
+        set(value) {
+            it.motionZ = value
+            it.velocityChanged = true
+        }
 }
 
 val EntityLivingBase.holder

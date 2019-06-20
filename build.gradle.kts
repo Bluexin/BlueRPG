@@ -24,6 +24,7 @@ plugins {
     `java-library`
     `maven-publish`
     kotlin("jvm")
+    kotlin("plugin.noarg")
     id("net.minecraftforge.gradle.forge")
 }
 
@@ -40,6 +41,10 @@ minecraft {
 
     replace("GRADLE:VERSION", project.version)
     replaceIn("BlueRPG.kt")
+}
+
+noArg {
+    annotation("com.teamwizardry.librarianlib.features.autoregister.PacketRegister")
 }
 
 repositories {

@@ -30,17 +30,35 @@ interface Trigger {
 
 @Savable
 @NamedDynamic("tr:c")
-data class Use(override val castTimeTicks: Int) : Trigger {
-    override fun startUsing(context: SkillContext) = this.castTimeTicks == 0
+data class Use(override val castTimeTicks: Int, val clientInfo: CastInfo<Use>? = null) : Trigger {
+    override fun startUsing(context: SkillContext): Boolean {
+        clientInfo(this, context, 0, this.castTimeTicks)
+        return this.castTimeTicks == 0
+    }
 
-    override fun stopUsing(context: SkillContext, time: Int) = this.castTimeTicks != 0 && time >= this.castTimeTicks
+    override fun stopUsing(context: SkillContext, time: Int): Boolean {
+        clientInfo(this, context, time, this.castTimeTicks)
+        return this.castTimeTicks != 0 && time >= this.castTimeTicks
+    }
 }
 
 /**
  * Passive skills are actually automatically cast twice a second.
  */
-object Passive : Trigger {
-    override fun startUsing(context: SkillContext) = true
-    override fun stopUsing(context: SkillContext, time: Int) = false
+@Savable
+@NamedDynamic("tr:p")
+open class Passive(val clientInfo: CastInfo<Passive>? = null) : Trigger {
+    override fun startUsing(context: SkillContext): Boolean {
+        clientInfo(this, context, 0, 0)
+        return true
+    }
+
+    override fun stopUsing(context: SkillContext, time: Int): Boolean {
+        clientInfo(this, context, 1, 0)
+        return false
+    }
+
     override val castTimeTicks get() = 0
+
+    companion object : Passive()
 }
