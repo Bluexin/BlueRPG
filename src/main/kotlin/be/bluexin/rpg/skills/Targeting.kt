@@ -96,6 +96,21 @@ data class Projectile(
         val width: Float = .25f,
         val height: Float = .25f
     )
+
+    constructor(
+        range: Double = 15.0,
+        args: (context: SkillContext) -> Args = { Args() },
+        projectileInfo: ProjectileInfo = ProjectileInfo(),
+        clientInfo: TargetingInfo<Projectile>? = null
+    )
+            : this({ range }, args, projectileInfo, clientInfo)
+
+    constructor(
+        range: Double = 15.0,
+        args: Args = Args(),
+        projectileInfo: ProjectileInfo = ProjectileInfo(),
+        clientInfo: TargetingInfo<Projectile>? = null
+    ) : this({ range }, { args }, projectileInfo, clientInfo)
 }
 
 @Savable
@@ -128,6 +143,8 @@ data class Raycast(
             clientInfo(this@Raycast, context, from)
         }
     }
+
+    constructor(range: Double = 3.0, clientInfo: TargetingInfo<Raycast>? = null) : this({ range }, clientInfo)
 }
 
 @Savable
@@ -175,6 +192,8 @@ data class Channelling(
     data class Args(
         val delayMillis: Long, val procs: Int
     )
+
+    constructor(targeting: Targeting, args: Args) : this(targeting, { args })
 }
 
 @Savable
@@ -209,6 +228,12 @@ data class AoE(
         SQUARE,
         CIRCLE
     }
+
+    constructor(range: Double, shape: Shape = Shape.CIRCLE, clientInfo: TargetingInfo<AoE>? = null) : this(
+        { range },
+        shape,
+        clientInfo
+    )
 }
 
 @Savable
@@ -266,4 +291,14 @@ data class Chain(
         val condition: Condition? = null,
         val includeFrom: Boolean = false
     )
+
+    constructor(
+        range: Double = 3.0,
+        args: (context: SkillContext) -> Args = { Args() },
+        clientInfo: TargetingInfo<Chain>? = null
+    )
+            : this({ range }, args, clientInfo)
+
+    constructor(range: Double = 3.0, args: Args = Args(), clientInfo: TargetingInfo<Chain>? = null)
+            : this({ range }, { args }, clientInfo)
 }

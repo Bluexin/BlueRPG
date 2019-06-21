@@ -43,6 +43,8 @@ data class Use(override val castTimeTicks: (context: SkillContext) -> Int, val c
         clientInfo(this, context, time, castTimeTicks)
         return castTimeTicks != 0 && time >= castTimeTicks
     }
+
+    constructor(castTimeTicks: Int, clientInfo: CastInfo<Use>? = null) : this({ castTimeTicks }, clientInfo)
 }
 
 /**
