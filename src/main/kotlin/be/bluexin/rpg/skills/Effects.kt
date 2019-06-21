@@ -59,11 +59,10 @@ data class Damage(
                 if (target is TargetWithWorld && target is TargetWithHealth) {
                     target.world.minecraftServer?.runMainThread {
                         val value = this@Damage.value(context, target).toFloat()
-                        if (value >= 0) target.attack(
+                        if (value > 0) target.attack(
                             DamageHandler.RpgDamageSource(EntityDamageSource("skill.test", context.caster)),
                             value
-                        )
-                        else target.heal(abs(value))
+                        ) else if (value < 0) target.heal(abs(value))
                     }
                 }
 
