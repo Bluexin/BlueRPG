@@ -433,11 +433,13 @@ object ClientEventHandler {
         } else {
             val cd = mc.player.cooldowns
             if (cd.slotInUse >= 0) {
-                val iss1 = (mc.player.inventory as RPGInventory).skills[cd.slotInUse]
-                if (iss1.item == SkillItem && iss1.maxItemUseDuration > 0) {
-                    min(cd.currentCastTime / iss1.maxItemUseDuration.toFloat(), 1f)
-                } else -1f
-            } else -1f
+                val pc = mc.player.playerClass
+                val rs = pc.getSelectedSkill(cd.slotInUse) ?: return
+                val skill = SkillRegistry[rs] ?: return
+                val useTime = skill.processor.trigger.castTimeTicks(SkillContext(mc.player, pc[skill]))
+                if (useTime <= 0) return
+                min(cd.currentCastTime / useTime.toFloat(), 1f)
+            } else return
         }
         if (charge >= 0) {
             GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
