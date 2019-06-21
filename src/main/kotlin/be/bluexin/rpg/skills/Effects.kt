@@ -179,3 +179,16 @@ data class Threat(val amount: (context: SkillContext, target: Target) -> Double)
         }
     }
 }
+
+object Taunt : Effect {
+    override fun invoke(context: SkillContext, targets: ReceiveChannel<Pair<Target, Target>>) {
+        GlobalScope.launch {
+            for ((from, target) in targets) {
+                if (from is LivingHolder<*> && target is LivingHolder<*>) context.caster.world.minecraftServer?.runMainThread {
+                    DSThreat.apply(target.it, from.it, Double.MAX_VALUE, DSThreat.THREAT_TYPE.GEN_ATTACKED)
+                    DSThreat.apply(target.it, from.it, Double.MAX_VALUE, DSThreat.THREAT_TYPE.GEN_ATTACKED)
+                }
+            }
+        }
+    }
+}
