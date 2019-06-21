@@ -118,6 +118,8 @@ interface TargetWithCollision : Target {
 interface TargetWithHealth : Target {
     fun attack(source: DamageSource, amount: Float): Boolean
     fun heal(amount: Float)
+    val health: Float
+    val maxHealth: Float
 }
 
 interface TargetWithGear : Target {

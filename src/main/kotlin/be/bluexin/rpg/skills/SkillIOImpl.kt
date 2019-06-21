@@ -71,6 +71,8 @@ open class LivingHolder<T : EntityLivingBase>(living: T) :
     override val onGround: Boolean get() = it.onGround
     override fun attack(source: DamageSource, amount: Float) = it.attackEntityFrom(source, amount)
     override fun heal(amount: Float) = it.heal(amount)
+    override val health: Float get() = it.health
+    override val maxHealth: Float get() = it.maxHealth
     override val uuid: UUID get() = it.persistentID
     override val boundingBox: AxisAlignedBB get() = it.entityBoundingBox
 
