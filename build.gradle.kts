@@ -82,6 +82,8 @@ dependencies {
         because("This is more up-to-date")
     }
     implementation("moe.plushie:armourers_workshop-1.12.2:0.49.0-SNAPSHOT:deobf")
+    deobfCompile("com.fantasticsource.dynamicstealth:DynamicStealth:1.12.2.078")
+    deobfCompile("com.fantasticsource.dynamicstealth:FantasticLib:1.12.2.016")
     api("org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version")
 }
 

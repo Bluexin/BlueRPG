@@ -31,6 +31,7 @@ import net.minecraft.util.EntityDamageSource
 import net.minecraft.util.math.Vec3d
 import java.util.*
 import kotlin.math.abs
+import com.fantasticsource.dynamicstealth.server.threat.Threat as DSThreat
 
 // Can't use ReceiveChannel#map in these till jvm has union types
 
@@ -164,5 +165,17 @@ data class MultiEffect(val effects: Array<Effect>) : Effect {
 
     override fun hashCode(): Int {
         return Arrays.hashCode(effects)
+    }
+}
+
+data class Threat(val amount: (context: SkillContext, target: Target) -> Double) : Effect {
+    override fun invoke(context: SkillContext, targets: ReceiveChannel<Pair<Target, Target>>) {
+        GlobalScope.launch {
+            for ((from, target) in targets) {
+                if (from is LivingHolder<*> && target is LivingHolder<*>) context.caster.world.minecraftServer?.runMainThread {
+                    DSThreat.apply(target.it, from.it, amount(context, target), DSThreat.THREAT_TYPE.GEN_ATTACKED)
+                }
+            }
+        }
     }
 }
