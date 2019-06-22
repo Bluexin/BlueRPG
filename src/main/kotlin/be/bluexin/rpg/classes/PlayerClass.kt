@@ -196,6 +196,7 @@ class PlayerClassCollection(
             if (evt?.newValue ?: value != 0) skills[skill] = evt?.newValue ?: value
             else skills.remove(skill)
             skillPoints -= deltaPoints
+            this.checkAvailableSkills()
             this.checkSelectedSkills()
             this.sync()
             // TODO: refresh passive
@@ -222,9 +223,17 @@ class PlayerClassCollection(
             selectedSkills[i] = null
     }
 
+    private fun tierPoints(clazz: PlayerClass, tier: Int): Int {
+        if (tier < 0) return Int.MAX_VALUE
+        return clazz.skills.asSequence().filter { it.value == tier }.sumBy { this[it.key] }
+    }
+
     private fun checkAvailableSkills() = batch {
         this.skills.entries.filter { (skill, _) ->
-            classesSequence.none { it?.skills?.contains(skill) == true }
+            classesSequence.none {
+                val contains = it?.skills?.contains(skill) == true
+                if (contains) it != null && tierPoints(it, it.skills.getOrDefault(skill, 0) - 1) >= 3 else false
+            }
         }.forEach { this[it.key] = 0 }
     }
 
