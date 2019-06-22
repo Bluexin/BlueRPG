@@ -83,10 +83,11 @@ data class ApplyBuff(
         targets: ReceiveChannel<Pair<Target, Target>>
     ) {
         GlobalScope.launch {
-            for ((_, e) in targets) {
-                if (e is TargetWithWorld && e is TargetWithEffects) e.world.minecraftServer?.runMainThread {
-                    effect(context, e)?.toVanilla?.apply(e::addPotionEffect)
+            for ((from, target) in targets) {
+                if (target is TargetWithWorld && target is TargetWithEffects) target.world.minecraftServer?.runMainThread {
+                    effect(context, target)?.toVanilla?.apply(target::addPotionEffect)
                 }
+                clientInfo(context, from, target)
             }
         }
     }
@@ -103,10 +104,11 @@ data class Velocity(
         targets: ReceiveChannel<Pair<Target, Target>>
     ) {
         GlobalScope.launch {
-            for ((_, e) in targets) {
-                if (e is TargetWithWorld && e is TargetWithMovement) e.world.minecraftServer?.runMainThread {
-                    e.movement += additionalVelocity(context, e)
+            for ((from, target) in targets) {
+                if (target is TargetWithWorld && target is TargetWithMovement) target.world.minecraftServer?.runMainThread {
+                    target.movement += additionalVelocity(context, target)
                 }
+                clientInfo(context, from, target)
             }
         }
     }
@@ -125,12 +127,14 @@ data class Skill(
         targets: ReceiveChannel<Pair<Target, Target>>
     ) {
         GlobalScope.launch {
-            for ((_, e) in targets) {
+            for ((from, target) in targets) {
                 launch {
                     val c = Channel<Pair<Target, Target>>(capacity = Channel.UNLIMITED)
-                    targeting(context, e, c)
+                    targeting(context, target, c)
                     effect(context, c)
                 }
+
+                clientInfo(context, from, target)
             }
         }
     }
@@ -167,19 +171,21 @@ data class MultiEffect(val effects: Array<Effect>) : Effect {
     }
 }
 
-data class Threat(val amount: (context: SkillContext, target: Target) -> Double) : Effect {
+data class Threat(val clientInfo: OnHitInfo? = null, val amount: (context: SkillContext, target: Target) -> Double) :
+    Effect {
     override fun invoke(context: SkillContext, targets: ReceiveChannel<Pair<Target, Target>>) {
         GlobalScope.launch {
             for ((from, target) in targets) {
                 if (from is LivingHolder<*> && target is LivingHolder<*>) context.caster.world.minecraftServer?.runMainThread {
                     DSThreat.apply(target.it, from.it, amount(context, target), DSThreat.THREAT_TYPE.GEN_ATTACKED)
                 }
+                clientInfo(context, from, target)
             }
         }
     }
 }
 
-object Taunt : Effect {
+data class Taunt(val clientInfo: OnHitInfo? = null) : Effect {
     override fun invoke(context: SkillContext, targets: ReceiveChannel<Pair<Target, Target>>) {
         GlobalScope.launch {
             for ((from, target) in targets) {
@@ -187,6 +193,7 @@ object Taunt : Effect {
                     DSThreat.apply(target.it, from.it, Double.MAX_VALUE, DSThreat.THREAT_TYPE.GEN_ATTACKED)
                     DSThreat.apply(target.it, from.it, Double.MAX_VALUE, DSThreat.THREAT_TYPE.GEN_ATTACKED)
                 }
+                clientInfo(context, from, target)
             }
         }
     }
