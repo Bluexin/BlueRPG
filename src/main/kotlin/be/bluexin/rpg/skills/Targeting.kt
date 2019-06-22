@@ -20,6 +20,8 @@
 package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.entities.EntitySkillProjectile
+import be.bluexin.rpg.gear.WeaponAttribute
+import be.bluexin.rpg.stats.get
 import be.bluexin.rpg.util.getEntityLookedAt
 import be.bluexin.rpg.util.offerOrSendAndClose
 import be.bluexin.rpg.util.runMainThread
@@ -146,6 +148,9 @@ data class Raycast(
 
     constructor(range: Double = 3.0, clientInfo: TargetingInfo<Raycast>? = null) : this({ range }, clientInfo)
 }
+
+fun Melee(clientInfo: TargetingInfo<Raycast>? = null) =
+    Raycast(range = { it.caster[WeaponAttribute.RANGE] }, clientInfo = clientInfo)
 
 @Savable
 @NamedDynamic("t:c")
