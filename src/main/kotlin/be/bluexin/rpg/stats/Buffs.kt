@@ -21,6 +21,7 @@ import be.bluexin.rpg.skills.ApplyBuff
 import com.teamwizardry.librarianlib.core.common.RegistrationHandler
 import com.teamwizardry.librarianlib.features.helpers.VariantHelper
 import com.teamwizardry.librarianlib.features.helpers.currentModId
+import net.minecraft.entity.ai.attributes.IAttribute
 import net.minecraft.potion.Potion
 import net.minecraft.potion.PotionEffect
 import net.minecraft.util.ResourceLocation
@@ -73,9 +74,9 @@ enum class Operation {
  */
 data class BuffInfo(
     /**
-     * The stat to apply on
+     * The attribute to apply on
      */
-    val stat: Stat,
+    val attribute: IAttribute,
     /**
      * A **unique** identifier for this effect.
      * An easy way to generate these is trough [some online tools](https://www.uuidgenerator.net/version4).
@@ -90,7 +91,17 @@ data class BuffInfo(
      * @see Operation documentation for more info
      */
     val operation: Operation
-)
+) {
+    /**
+     * @param stat the stat to apply on
+     */
+    constructor(stat: Stat, uuid: String, amountPerLevel: Double, operation: Operation) : this(
+        stat.attribute,
+        uuid,
+        amountPerLevel,
+        operation
+    )
+}
 
 /**
  * Buff type for use in skills and consumables.
@@ -104,7 +115,7 @@ class BuffType(name: String, vararg stats: BuffInfo) : Potion(false, 2293580) {
         setPotionName("$modid.potion." + VariantHelper.toSnakeCase(name))
 
         stats.forEach {
-            registerPotionAttributeModifier(it.stat.attribute, it.uuid, it.amountPerLevel, it.operation.op)
+            registerPotionAttributeModifier(it.attribute, it.uuid, it.amountPerLevel, it.operation.op)
         }
     }
 
