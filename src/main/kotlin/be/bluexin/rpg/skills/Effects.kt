@@ -191,3 +191,17 @@ object Taunt : Effect {
         }
     }
 }
+
+data class Free(
+    val clientInfo: OnHitInfo? = null,
+    val block: (context: SkillContext, from: Target, target: Target) -> Unit
+) : Effect {
+    override fun invoke(context: SkillContext, targets: ReceiveChannel<Pair<Target, Target>>) {
+        GlobalScope.launch {
+            for ((from, target) in targets) {
+                block(context, from, target)
+                clientInfo(context, from, target)
+            }
+        }
+    }
+}
