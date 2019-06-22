@@ -195,40 +195,37 @@ enum class MeleeWeaponType(
     MACE(
         attributes = arrayOf(
             WeaponAttribute.KNOCKBACK to 0.4,
-            WeaponAttribute.ATTACK_SPEED to -2.4,
-            WeaponAttribute.RANGE to 4.0
+            WeaponAttribute.ATTACK_SPEED to -2.4
         )
     ),
     SWORD(
         allowParry = true, attributes = arrayOf(
-            WeaponAttribute.ATTACK_SPEED to -2.4,
-            WeaponAttribute.RANGE to 4.0
+            WeaponAttribute.ATTACK_SPEED to -2.4
         )
     ),
     AXE(
         attributes = arrayOf(
             WeaponAttribute.ANGLE to 120.0,
-            WeaponAttribute.ATTACK_SPEED to -3.2,
-            WeaponAttribute.RANGE to 4.0
+            WeaponAttribute.ATTACK_SPEED to -3.2
         )
     ),
     SWORD_2H(
         twoHander = true, allowBlock = true, attributes = arrayOf(
             WeaponAttribute.ANGLE to 90.0,
             WeaponAttribute.ATTACK_SPEED to -3.2,
-            WeaponAttribute.RANGE to 5.5
+            WeaponAttribute.RANGE to 1.5
         )
     ),
     SPEAR(
         twoHander = true, attributes = arrayOf(
             WeaponAttribute.ATTACK_SPEED to -2.4,
-            WeaponAttribute.RANGE to 7.0
+            WeaponAttribute.RANGE to 3.0
         )
     ),
     BO(
         twoHander = true, allowParry = true, attributes = arrayOf(
             WeaponAttribute.ATTACK_SPEED to -1.6,
-            WeaponAttribute.RANGE to 6.5
+            WeaponAttribute.RANGE to 2.5
         )
     );
 
@@ -274,7 +271,9 @@ data class WAValue(val attribute: WeaponAttribute, val value: Double)
 infix fun WeaponAttribute.to(value: Double) = WAValue(this, value)
 
 enum class WeaponAttribute(uuid: String, attribute: IAttribute? = null) : Stat {
-    RANGE("d11ea045-59f1-4318-9388-d50355a544e2"),
+    RANGE("d11ea045-59f1-4318-9388-d50355a544e2") {
+        override val baseValue: Double get() = 4.0
+    },
     ANGLE("18be9aac-8a1f-4e31-a386-806843161d8d"),
     KNOCKBACK("f2dac0e3-60df-4c8e-934c-25bf2e4b1dac"),
     ATTACK_SPEED("196414ec-f1c4-421f-ae1d-0a1b9742ddfe", SharedMonsterAttributes.ATTACK_SPEED);
