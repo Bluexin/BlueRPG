@@ -104,6 +104,10 @@ open class LivingHolder<T : EntityLivingBase>(living: T) :
             it.velocityChanged = true
         }
 
+    override fun teleport(x: Double, y: Double, Z: Double) {
+        it.attemptTeleport(x, y, z)
+    }
+
     override fun get(stat: Stat) = .0
 }
 
@@ -149,6 +153,13 @@ class ProjectileHolder(projectile: EntitySkillProjectile) : DefaultHolder<Entity
             it.motionZ = value
             it.velocityChanged = true
         }
+
+    override fun teleport(x: Double, y: Double, Z: Double) {
+        it.posX = x
+        it.posY = y
+        it.posZ = z
+        // TODO: this will probably not work without some additional sync, idk
+    }
 }
 
 val EntityLivingBase.holder

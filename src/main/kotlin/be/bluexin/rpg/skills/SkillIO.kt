@@ -109,6 +109,8 @@ interface TargetWithMovement : Target {
         set(value) {
             movement = vec(motionX, motionY, value)
         }
+
+    fun teleport(x: Double, y: Double, Z: Double)
 }
 
 interface TargetWithCollision : Target {
