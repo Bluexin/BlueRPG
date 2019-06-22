@@ -182,7 +182,6 @@ class PlayerClassCollection(
     operator fun set(skill: ResourceLocation, value: Int): Boolean {
         if (value < 0 || value > 3) return false
         if (skill !in this.skills && classesSequence.none { it?.skills?.contains(skill) == true }) return false
-        // TODO: skill tiers... or not?
 
         val deltaPoints = value - this[skill]
         if (deltaPoints > skillPoints) return false
@@ -198,8 +197,8 @@ class PlayerClassCollection(
             skillPoints -= deltaPoints
             this.checkAvailableSkills()
             this.checkSelectedSkills()
+            // TODO: post change event (confirm)
             this.sync()
-            // TODO: refresh passive
             true
         } else false
     }
