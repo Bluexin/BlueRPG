@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg
 
+import be.bluexin.rpg.classes.playerClass
 import be.bluexin.rpg.gear.RarityConfiguration
 import be.bluexin.rpg.skills.SkillContext
 import be.bluexin.rpg.skills.SkillRegistry
@@ -120,8 +121,34 @@ object CommandCast : CommandBase() {
 
     }
 
-    override fun checkPermission(server: MinecraftServer, sender: ICommandSender) =
-        sender is Entity && super.checkPermission(server, sender)
-
     override fun getAliases() = listOf("cast")
+}
+
+object CommandReset : CommandBase() {
+    override fun getName() = "bluerpgreset"
+
+    override fun execute(server: MinecraftServer, sender: ICommandSender, args: Array<String>) {
+        if (args.isEmpty()) throw WrongUsageException(getUsage(sender))
+        val target = getPlayer(server, sender, args[0])
+        sender.sendMessage(TextComponentTranslation("bluerpg.command.reset.success", target.displayName))
+        target.playerClass.reset()
+    }
+
+    override fun getUsage(sender: ICommandSender) = "bluerpg.command.reset.usage"
+
+    override fun getRequiredPermissionLevel() = 2
+
+    override fun getTabCompletions(
+        server: MinecraftServer,
+        sender: ICommandSender,
+        args: Array<String>,
+        targetPos: BlockPos?
+    ): MutableList<String> {
+        return when (args.size) {
+            1 -> getListOfStringsMatchingLastWord(args, *server.onlinePlayerNames)
+            2 -> getListOfStringsMatchingLastWord(args, SkillRegistry.keys)
+            else -> super.getTabCompletions(server, sender, args, targetPos)
+        }
+
+    }
 }

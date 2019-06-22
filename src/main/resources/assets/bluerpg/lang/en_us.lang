@@ -54,6 +54,8 @@ bluerpg.command.cast.success=Cast %1$s level %2$d from %3$s
 bluerpg.command.cast.targets=%d targets
 bluerpg.command.noperms=Insufficient permissions to run this command
 bluerpg.command.reload.success=Reloaded formulae. Check the console for errors.
+bluerpg.command.reset.success=Reset %d's class & skill data.
+bluerpg.command.reset.usage=/bluerpgreset <target>
 
 # Broadcast
 rpg.broadcast.item=Congratulations! %1$s obtained %2$s

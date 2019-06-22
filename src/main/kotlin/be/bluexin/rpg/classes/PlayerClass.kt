@@ -252,6 +252,12 @@ class PlayerClassCollection(
         sync()
     }
 
+    fun reset() = batch {
+        repeat(3) {
+            this[it] = null
+        }
+    }
+
     companion object {
         @Key
         val KEY = ResourceLocation(BlueRPG.MODID, "player_class")
