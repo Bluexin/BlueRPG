@@ -76,7 +76,7 @@ data class Damage(
 @NamedDynamic("e:b")
 data class ApplyBuff(
     val clientInfo: OnHitInfo? = null,
-    val effect: (context: SkillContext, target: TargetWithEffects) -> Buff
+    val effect: (context: SkillContext, target: TargetWithEffects) -> Buff?
 ) : Effect {
     override fun invoke(
         context: SkillContext,
@@ -85,7 +85,7 @@ data class ApplyBuff(
         GlobalScope.launch {
             for ((_, e) in targets) {
                 if (e is TargetWithWorld && e is TargetWithEffects) e.world.minecraftServer?.runMainThread {
-                    e.addPotionEffect(effect(context, e).toVanilla)
+                    effect(context, e)?.toVanilla?.apply(e::addPotionEffect)
                 }
             }
         }
