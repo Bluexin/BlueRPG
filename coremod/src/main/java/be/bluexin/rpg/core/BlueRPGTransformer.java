@@ -227,7 +227,7 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
         boolean didAnything = findMethodAndTransform(node, sig, action);
 
         if (didAnything) {
-            ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+            ClassWriter writer = new SafeClassWriter(ClassWriter.COMPUTE_FRAMES);
             node.accept(writer);
             return writer.toByteArray();
         }
@@ -600,6 +600,24 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
 
         public boolean matches(FieldNode field) {
             return matches(field.name, field.desc);
+        }
+    }
+
+    /**
+     * Ugly workaround, I hate this
+     */
+    public static class SafeClassWriter extends ClassWriter {
+        public SafeClassWriter(int flags) {
+            super(flags);
+        }
+
+        public SafeClassWriter(ClassReader classReader, int flags) {
+            super(classReader, flags);
+        }
+
+        @Override
+        protected String getCommonSuperClass(String type1, String type2) {
+            return "java/lang/Object";
         }
     }
 
