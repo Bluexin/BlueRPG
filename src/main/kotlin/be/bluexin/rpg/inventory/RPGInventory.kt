@@ -61,7 +61,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
         eggSlot,
         bagSlots
     ).flatten()
-    val destroyableIndices = armorIndices + eggIndex
+    val destroyableIndices = armorIndices + offHandIndex
 
     val skills = Array(5) { ItemStack.EMPTY }
 
