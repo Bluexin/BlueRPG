@@ -19,8 +19,8 @@ package be.bluexin.rpg.gear
 
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.CommonProxy
+import be.bluexin.rpg.devutil.random
 import be.bluexin.rpg.stats.stats
-import be.bluexin.rpg.util.random
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
@@ -362,7 +362,7 @@ object NameGenerator {
         val stats = iss.stats ?: return "Error: Missing Stats"
         if (stats.rarity?.ordinal ?: 0 >= Rarity.LEGENDARY.ordinal) return generateLegendary(player).wrapped(stats.rarity!!)
         val item = iss.item
-        if (item is ItemArmor) return generateArmor(item).wrapped(stats.rarity ?: Rarity.COMMON)
+        if (item is ArmorItem) return generateArmor(item).wrapped(stats.rarity ?: Rarity.COMMON)
         if (item is IRPGGear) return generateWeapon(item.type).wrapped(stats.rarity ?: Rarity.COMMON)
 
         return "Error: Unknown Item ${iss.item}"
@@ -376,7 +376,7 @@ object NameGenerator {
         return "${player.displayNameString}'s ${fix[NamePart.PREFIX_LEGENDARY]?.random()}${fix[NamePart.SUFFIX_LEGENDARY]?.random()}"
     }
 
-    private fun generateArmor(gear: ItemArmor): String {
+    private fun generateArmor(gear: ArmorItem): String {
         return "${fix[NamePart.PREFIX]?.random()} ${armorCores[gear.gearSlot]?.random()} of ${fix[NamePart.SUFFIX]?.random()}"
     }
 

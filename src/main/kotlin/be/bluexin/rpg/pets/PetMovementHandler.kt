@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,9 +17,9 @@
 
 package be.bluexin.rpg.pets
 
-import be.bluexin.rpg.util.Localizable
-import be.bluexin.rpg.util.RNG
-import be.bluexin.rpg.util.delegate
+import be.bluexin.rpg.devutil.Localizable
+import be.bluexin.rpg.devutil.RNG
+import be.bluexin.rpg.devutil.delegate
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.EntityAISwimming

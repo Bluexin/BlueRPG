@@ -18,10 +18,10 @@
 package be.bluexin.rpg.gear
 
 import be.bluexin.rpg.CommonEventHandler
-import be.bluexin.rpg.items.IUsable
+import be.bluexin.rpg.devutil.IUsable
+import be.bluexin.rpg.devutil.ItemCapabilityWrapper
+import be.bluexin.rpg.devutil.set
 import be.bluexin.rpg.stats.*
-import be.bluexin.rpg.util.ItemCapabilityWrapper
-import be.bluexin.rpg.util.set
 import be.bluexin.saomclib.onServer
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
@@ -152,7 +152,7 @@ interface IRPGGear : IUsable<ItemStack> { // TODO: use ISpecialArmor
     fun createEntity(world: World, location: Entity, itemstack: ItemStack): Entity? {
         if (CommonEventHandler.autoIdentifyDrop) {
             val stats = itemstack.stats!!
-            if (!stats.generated) stats.generate(world, null, location.positionVector)
+            if (!stats.generated) stats.generate(world, null)
         }
         return RPGItemEntity(world, location, itemstack)
     }

@@ -22,18 +22,17 @@ package be.bluexin.rpg
 import be.bluexin.rpg.classes.PlayerClass
 import be.bluexin.rpg.classes.PlayerClassRegistry
 import be.bluexin.rpg.classes.playerClass
-import be.bluexin.rpg.containers.RPGContainer
-import be.bluexin.rpg.containers.RPGEnderChestContainer
+import be.bluexin.rpg.devutil.Textures
+import be.bluexin.rpg.devutil.get
 import be.bluexin.rpg.events.CreatePlayerContainerEvent
 import be.bluexin.rpg.events.CreatePlayerInventoryEvent
 import be.bluexin.rpg.events.LivingEquipmentPostChangeEvent
 import be.bluexin.rpg.events.OpenEnderChestEvent
 import be.bluexin.rpg.gear.*
-import be.bluexin.rpg.gui.GuiRpgInventory
-import be.bluexin.rpg.gui.Textures
+import be.bluexin.rpg.inventory.GuiRpgInventory
+import be.bluexin.rpg.inventory.RPGEnderChestContainer
 import be.bluexin.rpg.inventory.RPGInventory
-import be.bluexin.rpg.items.DynItem
-import be.bluexin.rpg.items.dynamicData
+import be.bluexin.rpg.inventory.RPGInventoryContainer
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.RenderEggItem
 import be.bluexin.rpg.pets.eggData
@@ -42,8 +41,8 @@ import be.bluexin.rpg.skills.SkillItem
 import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.skills.cooldowns
 import be.bluexin.rpg.stats.*
-import be.bluexin.rpg.util.Resources
-import be.bluexin.rpg.util.get
+import be.bluexin.rpg.utilities.DynItem
+import be.bluexin.rpg.utilities.dynamicData
 import be.bluexin.saomclib.onServer
 import com.saomc.saoui.GLCore
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
@@ -91,6 +90,7 @@ import net.minecraftforge.fml.relauncher.SideOnly
 import org.lwjgl.opengl.GL11
 import kotlin.math.min
 
+// TODO: Split by feature
 @Mod.EventBusSubscriber(modid = BlueRPG.MODID)
 object CommonEventHandler {
 
@@ -158,7 +158,7 @@ object CommonEventHandler {
             equipmentAndArmor.forEach {
                 val item = it.item
                 if (item is IRPGGear) {
-                    if (item.gearSlot == event.slot && (item is ItemArmor || item is ItemOffHand)) {
+                    if (item.gearSlot == event.slot && (item is ArmorItem || item is OffHandItem)) {
                         val stats = it.stats!!
                         if (stats.bound == null && stats.binding == Binding.BOE) it.stats!!.bindTo(this)
                     }
@@ -285,7 +285,7 @@ object CommonEventHandler {
     @JvmStatic
     fun playerContainerCreated(event: CreatePlayerContainerEvent) {
         if (event.player !is FakePlayer) event.container =
-            RPGContainer(event.player, event.container as ContainerPlayer).impl
+            RPGInventoryContainer(event.player, event.container as ContainerPlayer).impl
     }
 
     fun loadInteractionLimit() {
@@ -380,7 +380,7 @@ object ClientEventHandler {
     @SubscribeEvent
     @JvmStatic
     fun onTextureStitchEvent(event: TextureStitchEvent) {
-        event.map.registerSprite(Resources.PARTICLE)
+        event.map.registerSprite(Textures.PARTICLE)
     }
 
     @SubscribeEvent
@@ -420,7 +420,7 @@ object ClientEventHandler {
         val g = event.gui
         when (g) {
             is GuiInventory -> event.gui =
-                GuiRpgInventory((g.inventorySlots as ContainerImpl).container as RPGContainer)
+                GuiRpgInventory((g.inventorySlots as ContainerImpl).container as RPGInventoryContainer)
         }
     }
 

@@ -20,16 +20,16 @@ package be.bluexin.rpg
 import be.bluexin.rpg.classes.PlayerClassCollection
 import be.bluexin.rpg.classes.PlayerClassRegistry
 import be.bluexin.rpg.classes.playerClass
-import be.bluexin.rpg.containers.ContainerEditor
+import be.bluexin.rpg.devutil.get
 import be.bluexin.rpg.inventory.RPGInventory
-import be.bluexin.rpg.items.DynamicData
 import be.bluexin.rpg.pets.EggData
 import be.bluexin.rpg.skills.SkillData
 import be.bluexin.rpg.skills.SkillItem.skill
 import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.skills.cooldowns
 import be.bluexin.rpg.stats.*
-import be.bluexin.rpg.util.get
+import be.bluexin.rpg.utilities.DynamicData
+import be.bluexin.rpg.utilities.EditorContainer
 import com.teamwizardry.librarianlib.features.autoregister.PacketRegister
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
 import com.teamwizardry.librarianlib.features.kotlin.Minecraft
@@ -42,6 +42,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
 import net.minecraftforge.fml.relauncher.Side
 
+// TODO: Split by feature
 @PacketRegister(Side.SERVER)
 class PacketRaiseStat(stat: PrimaryStat, amount: Int) : PacketBase() {
     @Save
@@ -80,7 +81,7 @@ class PacketSetEditorStats(pos: BlockPos, stats: StatCapability?) : PacketBase()
     override fun handle(ctx: MessageContext) {
         val player = ctx.serverHandler.player
         val te = if (player.world.isBlockLoaded(pos)) player.world.getTileEntity(pos) else return
-        if (te != null && ((player.openContainer as? ContainerImpl)?.container as? ContainerEditor)?.te == te) {
+        if (te != null && ((player.openContainer as? ContainerImpl)?.container as? EditorContainer)?.te == te) {
             when (stats) {
                 is TokenStats -> te.tokenStats = stats as TokenStats
                 is GearStats -> te.gearStats = stats as GearStats
@@ -107,7 +108,7 @@ class PacketSaveLoadEditorItem(pos: BlockPos, saving: Boolean) : PacketBase() {
     override fun handle(ctx: MessageContext) {
         val player = ctx.serverHandler.player
         val te = if (player.world.isBlockLoaded(pos)) player.world.getTileEntity(pos) else return
-        if (te != null && ((player.openContainer as? ContainerImpl)?.container as? ContainerEditor)?.te == te) {
+        if (te != null && ((player.openContainer as? ContainerImpl)?.container as? EditorContainer)?.te == te) {
             if (saving) te.saveStats()
             else te.loadStats()
         }

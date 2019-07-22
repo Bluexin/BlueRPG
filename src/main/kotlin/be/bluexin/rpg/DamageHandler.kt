@@ -17,15 +17,15 @@
 
 package be.bluexin.rpg
 
-import be.bluexin.rpg.gear.ItemMeleeWeapon
+import be.bluexin.rpg.devutil.RNG
+import be.bluexin.rpg.devutil.allowBlock
+import be.bluexin.rpg.devutil.allowParry
+import be.bluexin.rpg.gear.MeleeWeaponItem
 import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.SecondaryStat
 import be.bluexin.rpg.stats.get
 import be.bluexin.rpg.stats.mana
-import be.bluexin.rpg.util.RNG
-import be.bluexin.rpg.util.allowBlock
-import be.bluexin.rpg.util.allowParry
 import be.bluexin.saomclib.capabilities.getPartyCapability
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.config.ConfigIntRange
@@ -136,7 +136,7 @@ object DamageHandler {
                 val t = player.entityData
                 var damage = event.amount.toDouble()
 
-                if (player.heldItemMainhand.item is ItemMeleeWeapon) {
+                if (player.heldItemMainhand.item is MeleeWeaponItem) {
                     val minD = player[FixedStat.BASE_DAMAGE]
                     val maxD = player[FixedStat.MAX_DAMAGE]
                     val r = max(1.0, maxD - minD)

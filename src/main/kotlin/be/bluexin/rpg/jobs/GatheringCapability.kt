@@ -18,7 +18,7 @@
 package be.bluexin.rpg.jobs
 
 import be.bluexin.rpg.BlueRPG
-import be.bluexin.rpg.util.get
+import be.bluexin.rpg.devutil.get
 import be.bluexin.saomclib.capabilities.AbstractCapability
 import be.bluexin.saomclib.capabilities.Key
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler

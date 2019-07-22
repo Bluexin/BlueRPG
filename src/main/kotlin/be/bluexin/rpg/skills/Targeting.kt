@@ -19,12 +19,11 @@
 
 package be.bluexin.rpg.skills
 
-import be.bluexin.rpg.entities.EntitySkillProjectile
+import be.bluexin.rpg.devutil.getEntityLookedAt
+import be.bluexin.rpg.devutil.offerOrSendAndClose
+import be.bluexin.rpg.devutil.runMainThread
 import be.bluexin.rpg.gear.WeaponAttribute
 import be.bluexin.rpg.stats.get
-import be.bluexin.rpg.util.getEntityLookedAt
-import be.bluexin.rpg.util.offerOrSendAndClose
-import be.bluexin.rpg.util.runMainThread
 import com.google.common.base.Predicate
 import com.teamwizardry.librarianlib.features.helpers.aabb
 import com.teamwizardry.librarianlib.features.kotlin.minus
@@ -64,7 +63,7 @@ data class Projectile(
         if (from is TargetWithWorld && from is TargetWithPosition) from.world.minecraftServer!!.runMainThread {
             val r = Channel<Target>(Channel.UNLIMITED)
             val (velocity, inaccuracy, condition, precise, passtrough, width, height) = args(context)
-            val p = EntitySkillProjectile(
+            val p = SkillProjectileEntity(
                 from.world,
                 context,
                 from,

@@ -17,7 +17,7 @@
 
 package be.bluexin.rpg.skills
 
-import be.bluexin.rpg.util.RNG
+import be.bluexin.rpg.devutil.RNG
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable
 import net.minecraft.entity.EntityLivingBase

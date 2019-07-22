@@ -18,11 +18,11 @@
 package be.bluexin.rpg.skills.glitter
 
 import be.bluexin.rpg.BlueRPG
-import be.bluexin.rpg.entities.EntitySkillProjectile
+import be.bluexin.rpg.devutil.RNG
+import be.bluexin.rpg.devutil.randomNormal
+import be.bluexin.rpg.skills.SkillProjectileEntity
 import be.bluexin.rpg.skills.glitter.ext.EasingInOut
 import be.bluexin.rpg.skills.glitter.ext.LifetimeColorInterpBinding
-import be.bluexin.rpg.util.RNG
-import be.bluexin.rpg.util.randomNormal
 import com.teamwizardry.librarianlib.features.animator.Easing
 import com.teamwizardry.librarianlib.features.helpers.vec
 import com.teamwizardry.librarianlib.features.kotlin.*
@@ -45,7 +45,7 @@ object ProjectileCore : ParticleSystem() {
 
     private val rng = Random(RNG.nextLong())
 
-    fun EntitySkillProjectile.renderParticles(store: MutableList<DoubleArray>) {
+    fun SkillProjectileEntity.renderParticles(store: MutableList<DoubleArray>) {
         val pos = positionVector + vec(0, height / 2, 0)
         val motionVec = motionVec
         val motionPartial = motionVec / 6

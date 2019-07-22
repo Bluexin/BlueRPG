@@ -18,15 +18,13 @@
 package be.bluexin.rpg.gear
 
 import be.bluexin.rpg.BlueRPG
-import be.bluexin.rpg.entities.EntityRpgArrow
-import be.bluexin.rpg.entities.EntityWandProjectile
-import be.bluexin.rpg.entities.RpgProjectile
+import be.bluexin.rpg.devutil.Localizable
+import be.bluexin.rpg.devutil.RNG
+import be.bluexin.rpg.devutil.RpgProjectile
 import be.bluexin.rpg.gear.Rarity.*
 import be.bluexin.rpg.stats.PrimaryStat
 import be.bluexin.rpg.stats.SecondaryStat
 import be.bluexin.rpg.stats.Stat
-import be.bluexin.rpg.util.Localizable
-import be.bluexin.rpg.util.RNG
 import com.teamwizardry.librarianlib.features.kotlin.plus
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.SharedMonsterAttributes
@@ -167,10 +165,10 @@ enum class ArmorType(
     PLATE(ItemArmor.ArmorMaterial.IRON);
 
     override fun invoke(i: Int) = when (i) {
-        0 -> ItemArmor[this, EntityEquipmentSlot.FEET]
-        1 -> ItemArmor[this, EntityEquipmentSlot.LEGS]
-        2 -> ItemArmor[this, EntityEquipmentSlot.CHEST]
-        3 -> ItemArmor[this, EntityEquipmentSlot.HEAD]
+        0 -> ArmorItem[this, EntityEquipmentSlot.FEET]
+        1 -> ArmorItem[this, EntityEquipmentSlot.LEGS]
+        2 -> ArmorItem[this, EntityEquipmentSlot.CHEST]
+        3 -> ArmorItem[this, EntityEquipmentSlot.HEAD]
         else -> throw IllegalArgumentException("Invalid index: $i")
     }
 
@@ -229,7 +227,7 @@ enum class MeleeWeaponType(
         )
     );
 
-    override fun invoke(i: Int) = ItemMeleeWeapon[this]
+    override fun invoke(i: Int) = MeleeWeaponItem[this]
 
     init {
         @Suppress("LeakingThis")
@@ -242,10 +240,10 @@ enum class RangedWeaponType(
     override val twoHander: Boolean = false,
     val sound: SoundEvent? = null
 ) : WeaponType {
-    BOW(::EntityRpgArrow, twoHander = true),
-    WAND(::EntityWandProjectile);
+    BOW(::RpgArrowEntity, twoHander = true),
+    WAND(::WandProjectileEntity);
 
-    override fun invoke(i: Int) = ItemRangedWeapon[this]
+    override fun invoke(i: Int) = RangedWeaponItem[this]
 
     init {
         @Suppress("LeakingThis")
@@ -258,7 +256,7 @@ enum class OffHandType(override val allowBlock: Boolean = false, override val al
     PARRY_DAGGER(allowParry = true),
     FOCUS;
 
-    override fun invoke(i: Int) = ItemOffHand[this]
+    override fun invoke(i: Int) = OffHandItem[this]
 
     init {
         @Suppress("LeakingThis")

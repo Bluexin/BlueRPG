@@ -17,7 +17,7 @@
 
 package be.bluexin.rpg.gear
 
-import be.bluexin.rpg.skills.glitter.RaritySystem.renderParticles
+import be.bluexin.rpg.gear.RarityGlitter.renderParticles
 import be.bluexin.saomclib.onClient
 import com.teamwizardry.librarianlib.features.base.entity.ItemEntityMod
 import net.minecraft.entity.Entity

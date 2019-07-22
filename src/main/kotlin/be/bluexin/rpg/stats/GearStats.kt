@@ -18,9 +18,9 @@
 package be.bluexin.rpg.stats
 
 import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.devutil.RNG
+import be.bluexin.rpg.devutil.random
 import be.bluexin.rpg.gear.*
-import be.bluexin.rpg.util.RNG
-import be.bluexin.rpg.util.random
 import be.bluexin.saomclib.capabilities.Key
 import be.bluexin.saomclib.message
 import be.bluexin.saomclib.onServer
@@ -38,7 +38,6 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagInt
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.Vec3d
 import net.minecraft.util.text.TextComponentTranslation
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.Capability
@@ -94,7 +93,7 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
     @Save
     var requiredValue: Int = 0
 
-    fun generate(world: World, player: EntityPlayer?, pos: Vec3d = player?.positionVector!!) {
+    fun generate(world: World, player: EntityPlayer?) {
         world onServer {
             val gear = itemStackIn.item as? IRPGGear ?: return
             this.stats.clear()
@@ -102,12 +101,12 @@ class GearStats(val itemStackIn: ItemStack) : StatCapability {
             val stats = rarity!!.rollStats()
             stats.forEach { this.stats[it] += it.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot) }
             when (gear) {
-                is ItemArmor -> {
+                is ArmorItem -> {
                     this.stats[FixedStat.HEALTH] += FixedStat.HEALTH.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
                     this.stats[FixedStat.PSYCHE] += FixedStat.PSYCHE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
                     this.stats[FixedStat.ARMOR] += FixedStat.ARMOR.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
                 }
-                is ItemOffHand -> {
+                is OffHandItem -> {
                     this.stats[FixedStat.HEALTH] += FixedStat.HEALTH.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
                     this.stats[FixedStat.PSYCHE] += FixedStat.PSYCHE.getRoll(ilvl, rarity!!, gear.type, gear.gearSlot)
                     when (gear.type) {

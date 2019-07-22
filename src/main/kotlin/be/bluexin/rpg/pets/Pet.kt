@@ -17,7 +17,7 @@
 
 package be.bluexin.rpg.pets
 
-import be.bluexin.rpg.util.createEnumKey
+import be.bluexin.rpg.devutil.createEnumKey
 import be.bluexin.saomclib.onServer
 import be.bluexin.saomclib.profile
 import com.teamwizardry.librarianlib.features.base.entity.LivingEntityMod

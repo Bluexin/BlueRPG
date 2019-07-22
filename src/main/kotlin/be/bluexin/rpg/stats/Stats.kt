@@ -18,10 +18,9 @@
 package be.bluexin.rpg.stats
 
 import be.bluexin.rpg.BlueRPG
-import be.bluexin.rpg.events.StatChangeEvent
+import be.bluexin.rpg.devutil.fire
 import be.bluexin.rpg.gear.GearType
 import be.bluexin.rpg.gear.Rarity
-import be.bluexin.rpg.util.fire
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable

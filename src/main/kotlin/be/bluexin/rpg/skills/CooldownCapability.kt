@@ -20,9 +20,9 @@ package be.bluexin.rpg.skills
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.PacketCooldown
 import be.bluexin.rpg.PacketSetUseTime
+import be.bluexin.rpg.devutil.get
 import be.bluexin.rpg.inventory.RPGInventory
 import be.bluexin.rpg.skills.SkillItem.skill
-import be.bluexin.rpg.util.get
 import be.bluexin.saomclib.capabilities.AbstractEntityCapability
 import be.bluexin.saomclib.capabilities.Key
 import be.bluexin.saomclib.onServer

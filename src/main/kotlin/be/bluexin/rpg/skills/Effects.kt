@@ -18,8 +18,8 @@
 package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.DamageHandler
+import be.bluexin.rpg.devutil.runMainThread
 import be.bluexin.rpg.stats.Buff
-import be.bluexin.rpg.util.runMainThread
 import com.teamwizardry.librarianlib.features.kotlin.plus
 import com.teamwizardry.librarianlib.features.saving.NamedDynamic
 import com.teamwizardry.librarianlib.features.saving.Savable

@@ -19,9 +19,7 @@ package be.bluexin.rpg.stats
 
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.classes.playerClass
-import be.bluexin.rpg.events.ExperienceChangeEvent
-import be.bluexin.rpg.events.LevelUpEvent
-import be.bluexin.rpg.util.fire
+import be.bluexin.rpg.devutil.fire
 import be.bluexin.saomclib.capabilities.AbstractCapability
 import be.bluexin.saomclib.capabilities.AbstractEntityCapability
 import be.bluexin.saomclib.capabilities.Key

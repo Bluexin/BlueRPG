@@ -19,7 +19,7 @@ package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.classes.playerClass
-import be.bluexin.rpg.util.get
+import be.bluexin.rpg.devutil.get
 import com.teamwizardry.librarianlib.features.base.ICustomTexturePath
 import com.teamwizardry.librarianlib.features.base.IExtraVariantHolder
 import com.teamwizardry.librarianlib.features.base.item.ItemMod

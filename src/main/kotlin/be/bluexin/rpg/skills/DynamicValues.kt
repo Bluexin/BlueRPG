@@ -18,10 +18,10 @@
 package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.devutil.RNG
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.PrimaryStat
 import be.bluexin.rpg.stats.SecondaryStat
-import be.bluexin.rpg.util.RNG
 import com.google.gson.Gson
 import com.google.gson.TypeAdapter
 import com.google.gson.TypeAdapterFactory

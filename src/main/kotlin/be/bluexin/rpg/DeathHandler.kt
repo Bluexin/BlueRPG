@@ -17,10 +17,10 @@
 
 package be.bluexin.rpg
 
+import be.bluexin.rpg.devutil.RNG
+import be.bluexin.rpg.devutil.get
+import be.bluexin.rpg.devutil.set
 import be.bluexin.rpg.inventory.RPGInventory
-import be.bluexin.rpg.util.RNG
-import be.bluexin.rpg.util.get
-import be.bluexin.rpg.util.set
 import com.teamwizardry.librarianlib.features.config.ConfigDoubleRange
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
 import com.teamwizardry.librarianlib.features.kotlin.isNotEmpty

@@ -17,10 +17,13 @@
 
 package be.bluexin.rpg
 
+import be.bluexin.rpg.devutil.BlueRPGDataFixer
 import be.bluexin.rpg.modplugins.CNPCEventHandler
 import be.bluexin.rpg.modplugins.SAOUIEventHandler
 import be.bluexin.rpg.pets.AWIntegration
-import be.bluexin.rpg.util.BlueRPGDataFixer
+import be.bluexin.rpg.utilities.CastCommand
+import be.bluexin.rpg.utilities.Command
+import be.bluexin.rpg.utilities.ResetCommand
 import com.saomc.saoui.SAOCore
 import moe.plushie.armourers_workshop.common.lib.LibModInfo
 import net.minecraftforge.fml.common.Loader
@@ -84,8 +87,8 @@ object BlueRPG {
     @Mod.EventHandler
     fun serverStart(event: FMLServerStartingEvent) {
         event.registerServerCommand(Command)
-        event.registerServerCommand(CommandCast)
-        event.registerServerCommand(CommandReset)
+        event.registerServerCommand(CastCommand)
+        event.registerServerCommand(ResetCommand)
         if (event.server.isDedicatedServer) BlueRPGDataFixer.setup(event.server.dataFixer)
         // TODO: register fixer for client & server here (was I drunk?)
     }

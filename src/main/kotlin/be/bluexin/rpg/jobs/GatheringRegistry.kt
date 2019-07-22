@@ -18,8 +18,8 @@
 package be.bluexin.rpg.jobs
 
 import be.bluexin.rpg.BlueRPG
-import be.bluexin.rpg.util.RNG
-import be.bluexin.rpg.util.buildRegistry
+import be.bluexin.rpg.devutil.RNG
+import be.bluexin.rpg.devutil.buildRegistry
 import com.teamwizardry.librarianlib.features.kotlin.fromNBT
 import com.teamwizardry.librarianlib.features.kotlin.get
 import com.teamwizardry.librarianlib.features.kotlin.tagCompound

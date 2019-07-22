@@ -18,11 +18,11 @@
 package be.bluexin.rpg.skills.glitter
 
 import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.devutil.RNG
+import be.bluexin.rpg.devutil.randomNormal
 import be.bluexin.rpg.skills.glitter.ext.EasingInOut
 import be.bluexin.rpg.skills.glitter.ext.LifetimeColorInterpBinding
 import be.bluexin.rpg.skills.glitter.ext.ScaledBinding
-import be.bluexin.rpg.util.RNG
-import be.bluexin.rpg.util.randomNormal
 import com.teamwizardry.librarianlib.core.client.ClientTickHandler
 import com.teamwizardry.librarianlib.features.helpers.vec
 import com.teamwizardry.librarianlib.features.kotlin.times

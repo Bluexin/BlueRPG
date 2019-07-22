@@ -19,28 +19,19 @@
 
 package be.bluexin.rpg
 
-import be.bluexin.rpg.blocks.BlockCaster
-import be.bluexin.rpg.blocks.BlockEditor
-import be.bluexin.rpg.blocks.BlockGatheringNode
 import be.bluexin.rpg.classes.PlayerClassCollection
 import be.bluexin.rpg.classes.PlayerClassRegistry
-import be.bluexin.rpg.containers.ContainerEditor
-import be.bluexin.rpg.containers.RPGEnderChestContainer
-import be.bluexin.rpg.entities.*
+import be.bluexin.rpg.devutil.AutoCapabilityStorage
+import be.bluexin.rpg.devutil.BlueRPGDataFixer
+import be.bluexin.rpg.devutil.registerDataSerializer
 import be.bluexin.rpg.gear.*
-import be.bluexin.rpg.items.DebugExpItem
-import be.bluexin.rpg.items.DebugStatsItem
-import be.bluexin.rpg.items.DynItem
-import be.bluexin.rpg.items.DynamicData
+import be.bluexin.rpg.inventory.RPGEnderChestContainer
+import be.bluexin.rpg.jobs.GatheringNodeBlock
 import be.bluexin.rpg.pets.*
-import be.bluexin.rpg.skills.CooldownCapability
-import be.bluexin.rpg.skills.Keybinds
-import be.bluexin.rpg.skills.SkillItem
+import be.bluexin.rpg.skills.*
 import be.bluexin.rpg.skills.glitter.TrailSystem
 import be.bluexin.rpg.stats.*
-import be.bluexin.rpg.util.AutoCapabilityStorage
-import be.bluexin.rpg.util.BlueRPGDataFixer
-import be.bluexin.rpg.util.registerDataSerializer
+import be.bluexin.rpg.utilities.*
 import be.bluexin.saomclib.capabilities.CapabilitiesHandler
 import com.teamwizardry.librarianlib.features.base.ModCreativeTab
 import com.teamwizardry.librarianlib.features.kotlin.Minecraft
@@ -68,6 +59,7 @@ import net.minecraftforge.fml.relauncher.SideOnly
 import java.io.File
 import java.lang.ref.WeakReference
 
+// TODO: Split by feature
 open class CommonProxy : CoroutineScope {
 
     private val job = Job()
@@ -131,30 +123,30 @@ open class CommonProxy : CoroutineScope {
     private fun classLoadItems() {
         object : ModCreativeTab() {
             override val iconStack: ItemStack
-                get() = ItemStack(ItemGearToken[TokenType.TOKEN])
+                get() = ItemStack(GearTokenItem[TokenType.TOKEN])
 
             init {
                 registerDefaultTab()
             }
         }
-        ItemGearToken
-        DebugStatsItem
-        DebugExpItem
-        ItemArmor
-        ItemMeleeWeapon
-        ItemRangedWeapon
-        ItemOffHand
+        GearTokenItem
+        StatsDebugItem
+        ExpDebugItem
+        ArmorItem
+        MeleeWeaponItem
+        RangedWeaponItem
+        OffHandItem
         SkillItem
         DynItem.Companion
 
-        BlockEditor
-        ContainerEditor
-        BlockCaster
-        BlockGatheringNode
+        EditorBlock
+        EditorContainer
+        CasterBlock
+        GatheringNodeBlock
 
         EggItem
 
-        EntitySkillProjectile.Companion // This is needed for it's custom serializer
+        SkillProjectileEntity.Companion // This is needed for it's custom serializer
         RPGEnderChestContainer.Companion // Classloading FTW
     }
 
@@ -162,7 +154,7 @@ open class CommonProxy : CoroutineScope {
         var id = 0
         EntityRegistry.registerModEntity(
             ResourceLocation(BlueRPG.MODID, "entity_rpg_arrow"),
-            EntityRpgArrow::class.java,
+            RpgArrowEntity::class.java,
             "entity_rpg_arrow",
             ++id,
             BlueRPG,
@@ -172,7 +164,7 @@ open class CommonProxy : CoroutineScope {
         )
         EntityRegistry.registerModEntity(
             ResourceLocation(BlueRPG.MODID, "entity_wand_projectile"),
-            EntityWandProjectile::class.java,
+            WandProjectileEntity::class.java,
             "entity_wand_projectile",
             ++id,
             BlueRPG,
@@ -182,7 +174,7 @@ open class CommonProxy : CoroutineScope {
         )
         EntityRegistry.registerModEntity(
             ResourceLocation(BlueRPG.MODID, "entity_skill_projectile"),
-            EntitySkillProjectile::class.java,
+            SkillProjectileEntity::class.java,
             "entity_skill_projectile",
             ++id,
             BlueRPG,
@@ -270,9 +262,9 @@ class ClientProxy : CommonProxy() {
     }
 
     private fun registerEntityRenderers() {
-        RenderingRegistry.registerEntityRenderingHandler(EntityRpgArrow::class.java, ::RenderRpgArrow)
-        RenderingRegistry.registerEntityRenderingHandler(EntityWandProjectile::class.java, ::RenderWandProjectile)
-        RenderingRegistry.registerEntityRenderingHandler(EntitySkillProjectile::class.java, ::RenderSkillProjectile)
+        RenderingRegistry.registerEntityRenderingHandler(RpgArrowEntity::class.java, ::RpgArrowRender)
+        RenderingRegistry.registerEntityRenderingHandler(WandProjectileEntity::class.java, ::WandProjectileRender)
+        RenderingRegistry.registerEntityRenderingHandler(SkillProjectileEntity::class.java, ::SkillProjectileRender)
         RenderingRegistry.registerEntityRenderingHandler(EntityPet::class.java, ::RenderPet)
         RenderingRegistry.registerEntityRenderingHandler(RPGItemEntity::class.java) {
             RenderEntityItem(

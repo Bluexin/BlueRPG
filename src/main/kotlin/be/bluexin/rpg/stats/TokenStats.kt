@@ -19,8 +19,8 @@ package be.bluexin.rpg.stats
 
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.gear.Binding
+import be.bluexin.rpg.gear.GearTokenItem
 import be.bluexin.rpg.gear.GearTypeGenerator
-import be.bluexin.rpg.gear.ItemGearToken
 import be.bluexin.rpg.gear.Rarity
 import be.bluexin.saomclib.capabilities.Key
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
@@ -33,7 +33,6 @@ import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
@@ -56,8 +55,8 @@ class TokenStats(val itemStackIn: ItemStack) : StatCapability {
     @Save
     var levelReq = 1
 
-    fun open(world: World, player: EntityPlayer?, pos: Vec3d = player!!.positionVector): ItemStack {
-        val token = itemStackIn.item as? ItemGearToken ?: return itemStackIn
+    fun open(world: World, player: EntityPlayer?): ItemStack {
+        val token = itemStackIn.item as? GearTokenItem ?: return itemStackIn
         val rarity = this.rarity ?: token.type.generateRarity()
         val iss = ItemStack(GearTypeGenerator().item)
         val stats = iss.stats ?: throw IllegalStateException("Missing capability!")
@@ -65,7 +64,7 @@ class TokenStats(val itemStackIn: ItemStack) : StatCapability {
         stats.ilvl = this.ilvl
         stats.levelReq = this.levelReq
         stats.binding = this.binding
-        stats.generate(world, player, pos)
+        stats.generate(world, player)
 
         if (player?.isCreative != true) itemStackIn.shrink(1)
         return iss

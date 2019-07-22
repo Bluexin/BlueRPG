@@ -19,13 +19,13 @@ package be.bluexin.rpg.skills
 
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.classes.playerClass
+import be.bluexin.rpg.devutil.*
 import be.bluexin.rpg.gear.GearType
 import be.bluexin.rpg.gear.Rarity
 import be.bluexin.rpg.stats.SecondaryStat
 import be.bluexin.rpg.stats.Stat
 import be.bluexin.rpg.stats.get
 import be.bluexin.rpg.stats.mana
-import be.bluexin.rpg.util.*
 import be.bluexin.saomclib.onServer
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken

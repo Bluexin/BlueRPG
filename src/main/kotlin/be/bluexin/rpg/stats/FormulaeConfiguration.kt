@@ -19,10 +19,10 @@ package be.bluexin.rpg.stats
 
 import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.CommonProxy
+import be.bluexin.rpg.devutil.GearTypeDeserializer
+import be.bluexin.rpg.devutil.Roll
+import be.bluexin.rpg.devutil.StatDeserializer
 import be.bluexin.rpg.gear.*
-import be.bluexin.rpg.util.GearTypeDeserializer
-import be.bluexin.rpg.util.Roll
-import be.bluexin.rpg.util.StatDeserializer
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer

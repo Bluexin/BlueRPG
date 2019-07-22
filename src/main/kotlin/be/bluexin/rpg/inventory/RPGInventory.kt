@@ -17,10 +17,10 @@
 
 package be.bluexin.rpg.inventory
 
-import be.bluexin.rpg.gear.ItemOffHand
+import be.bluexin.rpg.devutil.offset
+import be.bluexin.rpg.gear.OffHandItem
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.petStorage
-import be.bluexin.rpg.util.offset
 import com.teamwizardry.librarianlib.features.kotlin.asNonnullListWithDefault
 import com.teamwizardry.librarianlib.features.kotlin.clamp
 import com.teamwizardry.librarianlib.features.kotlin.isNotEmpty
@@ -278,7 +278,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
             in rpgHotbarIndices -> true
             in realMainIndices -> true
             in armorIndices -> stack.item is ItemArmor
-            offHandIndex -> stack.item is ItemOffHand
+            offHandIndex -> stack.item is OffHandItem
             eggIndex -> stack.item === EggItem
             in bagIndices -> false
             else -> false

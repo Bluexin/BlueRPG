@@ -17,7 +17,6 @@
 
 package be.bluexin.rpg.skills
 
-import be.bluexin.rpg.entities.EntitySkillProjectile
 import be.bluexin.rpg.stats.Stat
 import be.bluexin.rpg.stats.get
 import be.bluexin.saomclib.capabilities.getPartyCapability
@@ -116,7 +115,7 @@ class PlayerHolder(player: EntityPlayer) : LivingHolder<EntityPlayer>(player), T
     override fun get(stat: Stat) = it[stat]
 }
 
-class ProjectileHolder(projectile: EntitySkillProjectile) : DefaultHolder<EntitySkillProjectile>(projectile),
+class ProjectileHolder(projectile: SkillProjectileEntity) : DefaultHolder<SkillProjectileEntity>(projectile),
     TargetWithPosition, TargetWithWorld,
     TargetWithMovement, TargetWithCollision, TargetWithBoundingBox {
     override val pos: Vec3d get() = it.positionVector

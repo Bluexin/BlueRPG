@@ -18,14 +18,13 @@
 package be.bluexin.rpg.classes
 
 import be.bluexin.rpg.BlueRPG
-import be.bluexin.rpg.events.SkillChangeEvent
-import be.bluexin.rpg.gui.ClassesGui
+import be.bluexin.rpg.devutil.*
 import be.bluexin.rpg.inventory.RPGInventory
+import be.bluexin.rpg.skills.SkillChangeEvent
 import be.bluexin.rpg.skills.SkillData
 import be.bluexin.rpg.skills.SkillItem
 import be.bluexin.rpg.skills.SkillRegistry
 import be.bluexin.rpg.stats.Stat
-import be.bluexin.rpg.util.*
 import be.bluexin.saomclib.capabilities.AbstractEntityCapability
 import be.bluexin.saomclib.capabilities.Key
 import com.google.gson.GsonBuilder
