@@ -108,8 +108,8 @@ val ItemStack.dynamicData
 @Savable
 @NamedDynamic(resourceLocation = "b:dd")
 data class DynamicData(
-    @Save var primaryColor: Int = 0,
-    @Save var secondaryColor: Int = 0
+    @Save var primaryColor: Int = 0xe90d0d,
+    @Save var secondaryColor: Int = 0x0e61e9
 ) : StatCapability {
     fun loadFrom(stack: ItemStack, other: DynamicData) {
         val tag = stack.tagCompound
