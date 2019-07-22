@@ -5,6 +5,7 @@ rpg.display.stat=%1$s: %2$d
 rpg.display.level=Level %d
 rpg.display.levelreq=Requires level: %d
 rpg.display.itemlevel=Item Level: %d
+rpg.display.plevel=Level %1$d (%2$s)
 rpg.display.exp.short=%f%%
 rpg.display.exp.long=%1$d/%2$d
 rpg.display.shift=§8(hold shift for details)§r

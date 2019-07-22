@@ -19,10 +19,7 @@ package be.bluexin.rpg.gui
 
 import be.bluexin.rpg.classes.playerClass
 import be.bluexin.rpg.containers.RPGContainer
-import be.bluexin.rpg.stats.FixedStat
-import be.bluexin.rpg.stats.PrimaryStat
-import be.bluexin.rpg.stats.SecondaryStat
-import be.bluexin.rpg.stats.Stat
+import be.bluexin.rpg.stats.*
 import com.teamwizardry.librarianlib.features.gui.component.GuiComponentEvents
 import com.teamwizardry.librarianlib.features.gui.components.ComponentRect
 import com.teamwizardry.librarianlib.features.gui.components.ComponentSprite
@@ -87,6 +84,29 @@ class GuiRpgInventory(private val ct: RPGContainer) : GuiContainerBase(ct, 258, 
 
     private fun buildStatPanel() = ComponentScrollList(120, 10, 10, 10).apply {
         val textColor = Color.WHITE
+
+        _add(ComponentVoid(0, 0).apply {
+            val l = ct.player.stats.level
+            add(ComponentText(0, 0).apply {
+                text {
+                    "rpg.display.plevel".localize(
+                        l.level_a,
+                        "rpg.display.exp.short".localize((10000 * l.progression).toInt() / 100f)
+                    )
+                }
+                color(textColor)
+                shadow(true)
+            }, ComponentRect(0, -1, 100, 10).apply {
+                color(Color(0, 0, 0, 0))
+                render.tooltip {
+                    listOf(
+                        "rpg.display.exp.long".localize(l.exp_a, l.toNext)
+                    )
+                }
+            })
+        })
+        _add(ComponentVoid(0, 0))
+
         val f = { stat: Stat ->
             val att: IAttributeInstance? = ct.player.getEntityAttribute(stat.attribute)
             val base = att?.baseValue ?: .0
