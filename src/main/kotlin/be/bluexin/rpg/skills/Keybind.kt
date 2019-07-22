@@ -32,7 +32,6 @@ import net.minecraftforge.fml.relauncher.SideOnly
 import org.lwjgl.input.Keyboard
 import java.util.*
 
-
 @SideOnly(Side.CLIENT)
 @Mod.EventBusSubscriber(modid = BlueRPG.MODID, value = [Side.CLIENT])
 object Keybinds {

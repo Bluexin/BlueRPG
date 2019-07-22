@@ -98,7 +98,7 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
     }
 
     override fun getNBTShareTag(stack: ItemStack): NBTTagCompound? {
-        val nbt = super.getNBTShareTag(stack) ?: NBTTagCompound()
+        val nbt = super.getNBTShareTag(stack)?.copy() ?: NBTTagCompound()
         val cap = stack.tokenStats ?: return nbt
         val capNbt = TokenStats.Storage.writeNBT(TokenStats.Capability, cap, null)
         nbt.setTag("capabilities", capNbt)
@@ -106,9 +106,10 @@ class ItemGearToken private constructor(val type: TokenType) : ItemMod("gear_tok
     }
 
     override fun readNBTShareTag(stack: ItemStack, nbt: NBTTagCompound?) {
-        super.readNBTShareTag(stack, nbt)
         val capNbt = nbt?.getCompoundTag("capabilities") ?: return
         val cap = stack.tokenStats ?: return
         TokenStats.Storage.readNBT(TokenStats.Capability, cap, null, capNbt)
+        nbt.removeTag("capabilities")
+        super.readNBTShareTag(stack, if (nbt.isEmpty) null else nbt)
     }
 }

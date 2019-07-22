@@ -117,18 +117,25 @@ interface IRPGGear : IUsable<ItemStack> { // TODO: use ISpecialArmor
         return ItemCapabilityWrapper(GearStats(stack), GearStats.Capability)
     }
 
-    fun addNBTShare(stack: ItemStack, nbt: NBTTagCompound): NBTTagCompound {
+    fun addNBTShare(stack: ItemStack, _nbt: NBTTagCompound): NBTTagCompound {
+        val nbt = _nbt.copy()
         val cap = stack.stats ?: return nbt
         if (cap.generated) nbt.setTag("capabilities", GearStats.Storage.writeNBT(GearStats.Capability, cap, null))
         else nbt.setTag("capabilities", GearStats.Storage.writeNBT(GearStats.Capability, GearStats(stack), null))
         return nbt
     }
 
-    fun readNBTShare(stack: ItemStack, nbt: NBTTagCompound?) {
-        val capNbt = nbt?.getCompoundTag("capabilities") ?: return
-        val cap = stack.stats ?: return
+    fun readNBTShare(stack: ItemStack, _nbt: NBTTagCompound?): NBTTagCompound? {
+        var nbt = _nbt
+        val capNbt = nbt?.getCompoundTag("capabilities") ?: return nbt
+        nbt.removeTag("capabilities")
+        if (nbt.isEmpty) nbt = null
+        val cap = stack.stats ?: return nbt
         GearStats.Storage.readNBT(GearStats.Capability, cap, null, capNbt)
+        return nbt
     }
+
+    fun getShareTag() = true
 
     fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand) =
         this(playerIn.getHeldItem(handIn), worldIn, playerIn)

@@ -74,10 +74,10 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) :
     override fun getNBTShareTag(stack: ItemStack): NBTTagCompound? =
         super.addNBTShare(stack, super.getNBTShareTag(stack) ?: NBTTagCompound())
 
-    override fun readNBTShareTag(stack: ItemStack, nbt: NBTTagCompound?) {
-        super.readNBTShareTag(stack, nbt)
-        if (nbt != null) super.readNBTShare(stack, nbt)
-    }
+    override fun readNBTShareTag(stack: ItemStack, nbt: NBTTagCompound?) =
+        super.readNBTShareTag(stack, super.readNBTShare(stack, nbt))
+
+    override fun getShareTag() = super<IRPGGear>.getShareTag()
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
@@ -102,10 +102,6 @@ class ItemMeleeWeapon private constructor(override val type: MeleeWeaponType) :
                 FixedStat.BASE_DAMAGE.longName()
             )
         )
-
-    override fun getShareTag(): Boolean {
-        return true
-    }
 
     override fun getMaxDamage(stack: ItemStack) = super<IRPGGear>.getMaxDamage(stack)
 

@@ -28,7 +28,7 @@ import net.minecraftforge.common.util.CompoundDataFixer
 import net.minecraftforge.common.util.ModFixs
 
 object BlueRPGDataFixer {
-    private const val DATA_VERSION = 3
+    private const val DATA_VERSION = 4
     private lateinit var fixer: ModFixs
 
     fun setup(fixer: DataFixer) {
@@ -36,6 +36,7 @@ object BlueRPGDataFixer {
 
         this.fixer.registerFix(FixTypes.PLAYER, PlayerCaps001())
         this.fixer.registerFix(FixTypes.PLAYER, PlayerClasses001())
+        this.fixer.registerFix(FixTypes.ITEM_INSTANCE, GearCaps001())
     }
 
     private class PlayerCaps001 : IFixableData {
@@ -62,5 +63,14 @@ object BlueRPGDataFixer {
         }
 
         override fun getFixVersion() = 3
+    }
+
+    private class GearCaps001 : IFixableData {
+        override fun fixTagCompound(compound: NBTTagCompound): NBTTagCompound {
+            (compound["tag"] as? NBTTagCompound)?.removeTag("capabilities")
+            return compound
+        }
+
+        override fun getFixVersion() = 4
     }
 }

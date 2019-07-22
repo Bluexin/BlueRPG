@@ -63,10 +63,8 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
     override fun getNBTShareTag(stack: ItemStack): NBTTagCompound? =
         super.addNBTShare(stack, super.getNBTShareTag(stack) ?: NBTTagCompound())
 
-    override fun readNBTShareTag(stack: ItemStack, nbt: NBTTagCompound?) {
-        super.readNBTShareTag(stack, nbt)
-        if (nbt != null) super.readNBTShare(stack, nbt)
-    }
+    override fun readNBTShareTag(stack: ItemStack, nbt: NBTTagCompound?) =
+        super.readNBTShareTag(stack, super.readNBTShare(stack, nbt))
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
@@ -96,9 +94,7 @@ class ItemRangedWeapon private constructor(override val type: RangedWeaponType) 
     override fun getUnlocalizedNameInefficientlyTrick(stack: ItemStack): String =
         super.getUnlocalizedNameInefficiently(stack)
 
-    override fun getShareTag(): Boolean {
-        return true
-    }
+    override fun getShareTag() = super<IRPGGear>.getShareTag()
 
     override fun getMaxDamage(stack: ItemStack) = super<IRPGGear>.getMaxDamage(stack)
 
