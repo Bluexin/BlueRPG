@@ -45,14 +45,14 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
     val rpgHotbar = MutableList(4) { ItemStack.EMPTY }
     val rpgHotbarIndices = rpgHotbar.indices
     val realMainInventory = MutableList(65) { ItemStack.EMPTY }
-    val realMainIndices = realMainInventory.indices offset rpgHotbarIndices.endInclusive + 1
-    val armorIndices = armorInventory.indices offset realMainIndices.endInclusive + 1
-    val offHandIndex = armorIndices.endInclusive + 1
+    val realMainIndices = realMainInventory.indices offset rpgHotbarIndices.last + 1
+    val armorIndices = armorInventory.indices offset realMainIndices.last + 1
+    val offHandIndex = armorIndices.last + 1
     val eggSlot = MutableList(1) { ItemStack.EMPTY }
     val eggIndex = offHandIndex + 1
     val bagSlots = MutableList(3) { ItemStack.EMPTY }
     val bagIndices = bagSlots.indices offset eggIndex + 1
-    val allIndices = 0..bagIndices.endInclusive
+    val allIndices = 0..bagIndices.last
     val allAsSequence = sequenceOf(
         rpgHotbar,
         realMainInventory,
@@ -84,7 +84,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
     }
 
     override fun getSizeInventory(): Int {
-        return allIndices.endInclusive + 1
+        return allIndices.last + 1
     }
 
     override fun getCurrentItem() = this.mainInventory[currentItem]
@@ -156,7 +156,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
             if (!this.rpgHotbar[l].isItemEnchanted) return l
         }
 
-        return this.currentItem.clamp(rpgHotbarIndices.start, rpgHotbarIndices.endInclusive)
+        return this.currentItem.clamp(rpgHotbarIndices.first, rpgHotbarIndices.last)
     }
 
     @SideOnly(Side.CLIENT)
@@ -166,7 +166,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
     }
 
     override fun getFirstEmptyStack() =
-        this.realMainInventory.indexOfFirst(ItemStack::isEmpty).let { if (it >= 0) it + this.realMainIndices.start else it }
+        this.realMainInventory.indexOfFirst(ItemStack::isEmpty).let { if (it >= 0) it + this.realMainIndices.first else it }
 
     override fun fillStackedContents(helper: RecipeItemHelper, includeOffHand: Boolean) {
         for (itemstack in this.rpgHotbar) helper.accountStack(itemstack)
@@ -196,8 +196,8 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
 
                     when {
                         index >= 0 -> {
-                            this.realMainInventory[index - this.realMainIndices.start] = stack.copy()
-                            this.realMainInventory[index - this.realMainIndices.start].animationsToGo = 5
+                            this.realMainInventory[index - this.realMainIndices.first] = stack.copy()
+                            this.realMainInventory[index - this.realMainIndices.first].animationsToGo = 5
                             stack.count = 0
                             true
                         }
@@ -245,7 +245,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
                     !it.isItemEnchanted &&
                     !it.hasDisplayName() &&
                     this.stackEqualExact(stack, it)
-        }.let { if (it >= 0) it + this.realMainIndices.start else it }
+        }.let { if (it >= 0) it + this.realMainIndices.first else it }
     }
 
     override fun decrementAnimations() {
@@ -271,7 +271,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
     @SideOnly(Side.CLIENT)
     override fun getSlotFor(stack: ItemStack) = this.realMainInventory.indexOfFirst {
         it.isNotEmpty && this.stackEqualExact(stack, it)
-    }.let { if (it >= 0) it + this.realMainIndices.start else it }
+    }.let { if (it >= 0) it + this.realMainIndices.first else it }
 
     override fun isItemValidForSlot(index: Int, stack: ItemStack): Boolean {
         return when (index) {
@@ -293,7 +293,7 @@ class RPGInventory(playerIn: EntityPlayer) : InventoryPlayer(playerIn) {
         override fun get(index: Int): ItemStack = when {
             index in rpgHotbarIndices -> rpgHotbar[index]
             player.isCreative -> realMainInventory[index - rpgHotbar.size]
-            else -> skills[index - rpgHotbarIndices.endInclusive - 1]
+            else -> skills[index - rpgHotbarIndices.last - 1]
         }
 
         override fun set(index: Int, element: ItemStack): ItemStack = when {

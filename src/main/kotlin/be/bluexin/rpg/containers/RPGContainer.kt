@@ -54,15 +54,18 @@ class RPGContainer(player: EntityPlayer, original: ContainerPlayer) : ContainerB
     init {
         addSlots(invPlayer)
 
-        transferRule().from(invPlayer.main).deposit(invPlayer.egg).deposit(invPlayer.armor).deposit(invPlayer.hotbar)
-        transferRule().from(invPlayer.hotbar).deposit(invPlayer.egg).deposit(invPlayer.armor).deposit(invPlayer.main)
-        transferRule().from(invPlayer.egg).from(invPlayer.armor).deposit(invPlayer.main).deposit(invPlayer.hotbar)
+        transferRule().from(invPlayer.main).deposit(invPlayer.egg).deposit(invPlayer.armor).deposit(invPlayer.offhand)
+            .deposit(invPlayer.hotbar)
+        transferRule().from(invPlayer.hotbar).deposit(invPlayer.egg).deposit(invPlayer.armor).deposit(invPlayer.offhand)
+            .deposit(invPlayer.main)
+        transferRule().from(invPlayer.egg).from(invPlayer.armor).from(invPlayer.offhand).deposit(invPlayer.main)
+            .deposit(invPlayer.hotbar)
 
         RPGContainerImpl(original)
     }
 
     companion object {
-        val NAME = ResourceLocation(BlueRPG.MODID, "container_rpg_player")
+        private val NAME = ResourceLocation(BlueRPG.MODID, "container_rpg_player")
 
         init {
             GuiHandler.registerBasicContainer(
@@ -79,16 +82,16 @@ class RPGContainer(player: EntityPlayer, original: ContainerPlayer) : ContainerB
 
         val rInventory = player.inventory as RPGInventory
         val armor = slots[rInventory.armorIndices]
-        val head = slots[rInventory.armorIndices.start + EntityEquipmentSlot.HEAD.index].apply {
+        val head = slots[rInventory.armorIndices.first + EntityEquipmentSlot.HEAD.index].apply {
             type = SlotTypeEquipment(player, EntityEquipmentSlot.HEAD)
         }
-        val chest = slots[rInventory.armorIndices.start + EntityEquipmentSlot.CHEST.index].apply {
+        val chest = slots[rInventory.armorIndices.first + EntityEquipmentSlot.CHEST.index].apply {
             type = SlotTypeEquipment(player, EntityEquipmentSlot.CHEST)
         }
-        val legs = slots[rInventory.armorIndices.start + EntityEquipmentSlot.LEGS.index].apply {
+        val legs = slots[rInventory.armorIndices.first + EntityEquipmentSlot.LEGS.index].apply {
             type = SlotTypeEquipment(player, EntityEquipmentSlot.LEGS)
         }
-        val feet = slots[rInventory.armorIndices.start + EntityEquipmentSlot.FEET.index].apply {
+        val feet = slots[rInventory.armorIndices.first + EntityEquipmentSlot.FEET.index].apply {
             type = SlotTypeEquipment(player, EntityEquipmentSlot.FEET)
         }
 
@@ -163,7 +166,7 @@ class RPGContainer(player: EntityPlayer, original: ContainerPlayer) : ContainerB
                 (if (player.isCreative) vanillaSlots.inventorySlots else ourSlots).iterator()
 
             override fun get(index: Int): Slot =
-                (if (player.isCreative) vanillaSlots.inventorySlots else ourSlots).get(index)
+                (if (player.isCreative) vanillaSlots.inventorySlots else ourSlots)[index]
 
             override fun forEach(action: Consumer<in Slot>?) =
                 (if (player.isCreative) vanillaSlots.inventorySlots else ourSlots).forEach(action)
