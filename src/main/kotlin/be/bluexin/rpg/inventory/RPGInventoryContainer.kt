@@ -69,7 +69,7 @@ class RPGInventoryContainer(player: EntityPlayer, original: ContainerPlayer) : C
                 NAME, { player, _, _ ->
                     (player.inventoryContainer as ContainerImpl).container as RPGInventoryContainer
                 }, { _, container ->
-                    GuiRpgInventory(container)
+                    RpgInventoryGui(container)
                 }
             )
         }

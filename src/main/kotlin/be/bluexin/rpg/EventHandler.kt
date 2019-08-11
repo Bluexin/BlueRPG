@@ -29,10 +29,10 @@ import be.bluexin.rpg.events.CreatePlayerInventoryEvent
 import be.bluexin.rpg.events.LivingEquipmentPostChangeEvent
 import be.bluexin.rpg.events.OpenEnderChestEvent
 import be.bluexin.rpg.gear.*
-import be.bluexin.rpg.inventory.GuiRpgInventory
 import be.bluexin.rpg.inventory.RPGEnderChestContainer
 import be.bluexin.rpg.inventory.RPGInventory
 import be.bluexin.rpg.inventory.RPGInventoryContainer
+import be.bluexin.rpg.inventory.RpgInventoryGui
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.RenderEggItem
 import be.bluexin.rpg.pets.eggData
@@ -102,8 +102,10 @@ object CommonEventHandler {
         event.player.world onServer {
             val stats = event.player.stats
             if (stats.dirty) stats.sync()
-            if (event.player.health > event.player.maxHealth) event.player.health = event.player.maxHealth
-            if (event.player.mana > event.player.maxMana) event.player.mana = event.player.maxMana
+            if (event.player.ticksExisted > 10) {
+                if (event.player.health > event.player.maxHealth) event.player.health = event.player.maxHealth
+                if (event.player.mana > event.player.maxMana) event.player.mana = event.player.maxMana
+            }
             val time = event.player.world.totalWorldTime
             if (time % 10 == 0L) {
                 event.player.playerClass.iterator().asSequence().mapNotNull { SkillRegistry[it.key] to it.value }
@@ -420,7 +422,7 @@ object ClientEventHandler {
         val g = event.gui
         when (g) {
             is GuiInventory -> event.gui =
-                GuiRpgInventory((g.inventorySlots as ContainerImpl).container as RPGInventoryContainer)
+                RpgInventoryGui((g.inventorySlots as ContainerImpl).container as RPGInventoryContainer)
         }
     }
 

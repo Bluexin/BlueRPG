@@ -71,7 +71,7 @@ val kotlin_version: String by extra
 dependencies {
     api(project(":coremod"))
     contained(project(":coremod"))
-    implementation("com.saomc:saoui:1.12.2-2.0.0.13-SNAPSHOT:deobf") {
+    implementation("com.saomc:saoui:1.12.2-2.0.0.14-SNAPSHOT:deobf") {
         exclude(group = "com.teamwizardry.librarianlib")
     }
 

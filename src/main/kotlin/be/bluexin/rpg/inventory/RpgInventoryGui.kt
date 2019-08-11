@@ -41,7 +41,7 @@ import net.minecraft.client.gui.inventory.GuiContainerCreative
 import net.minecraft.entity.ai.attributes.IAttributeInstance
 import java.awt.Color
 
-class GuiRpgInventory(private val ct: RPGInventoryContainer) : GuiContainerBase(ct, 258, 250) {
+class RpgInventoryGui(private val ct: RPGInventoryContainer) : GuiContainerBase(ct, 258, 250) {
     init {
         val bg = ComponentVoid(0, 0)
         mainComponents.add(bg)

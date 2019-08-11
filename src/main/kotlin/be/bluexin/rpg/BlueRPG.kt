@@ -24,6 +24,7 @@ import be.bluexin.rpg.pets.AWIntegration
 import be.bluexin.rpg.utilities.CastCommand
 import be.bluexin.rpg.utilities.Command
 import be.bluexin.rpg.utilities.ResetCommand
+import be.bluexin.saomclib.SAOMCLib
 import com.saomc.saoui.SAOCore
 import moe.plushie.armourers_workshop.common.lib.LibModInfo
 import net.minecraftforge.fml.common.Loader
@@ -48,7 +49,7 @@ object BlueRPG {
     const val MODID = "bluerpg"
     const val NAME = "Blue's RPG"
     const val VERSION = "GRADLE:VERSION"
-    const val DEPS = "required-after:saomclib@[1.2.1,);required-after:librarianlib@[4.16,)" +
+    const val DEPS = "required-after:saomclib@[${SAOMCLib.VERSION},);required-after:librarianlib@[4.16,)" +
             ";required-after:forge@[14.23.4.2718,);" // No dep on saoui cuz it's client-only
 
     val LOGGER: Logger = LogManager.getLogger(MODID)
