@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ object EggItem : ItemMod("egg") {
                     tag.getCompoundTag("EntityTag").getCompoundTag("auto"),
                     false
                 )
-                if (data.isHatched) {
+                if (data.isHatched && !player.combatTracker.inCombat) {
                     val p = petStorage.petEntity
                     if (p?.isDead != false) {
                         val blockpos = player.position

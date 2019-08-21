@@ -103,48 +103,94 @@ public class BlueRPGTransformer implements IClassTransformer, Opcodes {
                 "$SwitchMap$net$minecraft$inventory$EntityEquipmentSlot$Type",
                 "[I"
         );
-        return transform(basicClass, onUpdate, "EntityLivingBase post equipment change hook", combine(
-                (node) -> {
-                    boolean ok = node.getOpcode() == GETSTATIC && switchLookup.matches((FieldInsnNode) node);
-                    if (!ok) return false;
+        // Lnet/minecraft/entity/EntityLivingBase;sendEnterCombat()V
+        final MethodSignature startCombat = new MethodSignature("sendEnterCombat", "func_152111_bt", "()V");
+        // Lnet/minecraft/entity/EntityLivingBase;sendEndCombat()V
+        final MethodSignature endCombat = new MethodSignature("sendEndCombat", "func_152112_bu", "()V");
+        final MethodSignature init = new MethodSignature("<init>", "<init>", "(" + WORLD + ")V");
+        final String COMBAT_TRACKER = "Lnet/minecraft/util/CombatTracker;";
+        final FieldSignature combatTracker = new FieldSignature("combatTracker", "field_94063_bt", COMBAT_TRACKER);
 
-                    ok = false;
-                    AbstractInsnNode prev = node;
-                    for (int i = 0; !ok && i < 5; i++) {
-                        prev = prev.getPrevious();
-                        ok = prev.getOpcode() == INVOKEVIRTUAL;
-                    }
-                    return ok;
-                },
-                (method, node) -> {
-                    InsnList l = new InsnList();
-                    LabelNode newLabel = new LabelNode();
-                    l.add(newLabel);
-                    l.add(new VarInsnNode(ALOAD, 0));
-                    l.add(new VarInsnNode(ALOAD, 5));
-                    l.add(new MethodInsnNode(INVOKESTATIC, ASM_HOOKS, "equipmentPostChangeHook",
-                            "(Lnet/minecraft/entity/EntityLivingBase;Lnet/minecraft/inventory/EntityEquipmentSlot;)V", false));
+        return transform(transform(transform(transform(basicClass,
+                onUpdate, "EntityLivingBase post equipment change hook", combine(
+                        (node) -> {
+                            boolean ok = node.getOpcode() == GETSTATIC && switchLookup.matches((FieldInsnNode) node);
+                            if (!ok) return false;
 
-                    AbstractInsnNode next = node.getNext();
-                    while (!(next instanceof LookupSwitchInsnNode)) next = next.getNext();
+                            ok = false;
+                            AbstractInsnNode prev = node;
+                            for (int i = 0; !ok && i < 5; i++) {
+                                prev = prev.getPrevious();
+                                ok = prev.getOpcode() == INVOKEVIRTUAL;
+                            }
+                            return ok;
+                        },
+                        (method, node) -> {
+                            InsnList l = new InsnList();
+                            LabelNode newLabel = new LabelNode();
+                            l.add(newLabel);
+                            l.add(new VarInsnNode(ALOAD, 0));
+                            l.add(new VarInsnNode(ALOAD, 5));
+                            l.add(new MethodInsnNode(INVOKESTATIC, ASM_HOOKS, "equipmentPostChangeHook",
+                                    "(Lnet/minecraft/entity/EntityLivingBase;Lnet/minecraft/inventory/EntityEquipmentSlot;)V", false));
 
-                    LookupSwitchInsnNode sw = (LookupSwitchInsnNode) next;
-                    LabelNode oldLabel = sw.dflt;
-                    sw.dflt = newLabel;
+                            AbstractInsnNode next = node.getNext();
+                            while (!(next instanceof LookupSwitchInsnNode)) next = next.getNext();
 
-                    method.instructions.insertBefore(oldLabel, l);
+                            LookupSwitchInsnNode sw = (LookupSwitchInsnNode) next;
+                            LabelNode oldLabel = sw.dflt;
+                            sw.dflt = newLabel;
 
-                    while (!(next instanceof LabelNode) || ((LabelNode) next).getLabel() != oldLabel.getLabel()) {
-                        if (next instanceof JumpInsnNode) {
-                            JumpInsnNode j = ((JumpInsnNode) next);
-                            if (j.label.getLabel() == oldLabel.getLabel()) j.label = newLabel;
+                            method.instructions.insertBefore(oldLabel, l);
+
+                            while (!(next instanceof LabelNode) || ((LabelNode) next).getLabel() != oldLabel.getLabel()) {
+                                if (next instanceof JumpInsnNode) {
+                                    JumpInsnNode j = ((JumpInsnNode) next);
+                                    if (j.label.getLabel() == oldLabel.getLabel()) j.label = newLabel;
+                                }
+                                next = next.getNext();
+                            }
+
+                            return true;
+                        })),
+                startCombat, "EntityLivingBase start combat hook", combine(
+                        (node) -> node.getOpcode() == RETURN,
+                        (method, node) -> {
+                            final InsnList l = new InsnList();
+                            l.add(new VarInsnNode(ALOAD, 0));
+                            l.add(new MethodInsnNode(INVOKESTATIC, ASM_HOOKS, "combatStart",
+                                    "(Lnet/minecraft/entity/EntityLivingBase;)V", false));
+
+                            method.instructions.insertBefore(node, l);
+
+                            return true;
+                        })),
+                endCombat, "EntityLivingBase end combat hook", combine(
+                        (node) -> node.getOpcode() == RETURN,
+                        (method, node) -> {
+                            final InsnList l = new InsnList();
+                            l.add(new VarInsnNode(ALOAD, 0));
+                            l.add(new MethodInsnNode(INVOKESTATIC, ASM_HOOKS, "combatEnd",
+                                    "(Lnet/minecraft/entity/EntityLivingBase;)V", false));
+
+                            method.instructions.insertBefore(node, l);
+
+                            return true;
+                        })),
+                init, "EntityLivingBase CombatTracker replacement", combine(
+                        (node) -> node.getOpcode() == PUTFIELD && combatTracker.matches((FieldInsnNode) node),
+                        (method, node) -> {
+                            InsnList l = new InsnList();
+                            l.add(new VarInsnNode(ALOAD, 0));
+                            l.add(new MethodInsnNode(INVOKESTATIC, ASM_HOOKS, "combatTrackerHook",
+                                    "(" + COMBAT_TRACKER + "Lnet/minecraft/entity/EntityLivingBase;)" + COMBAT_TRACKER, false));
+
+                            method.instructions.insertBefore(node, l);
+
+                            return true;
                         }
-                        next = next.getNext();
-                    }
-
-                    return true;
-                }
-        ));
+                )
+        );
     }
 
     private static byte[] transformBEC(byte[] basicClass) {

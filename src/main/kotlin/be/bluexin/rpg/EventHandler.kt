@@ -24,10 +24,8 @@ import be.bluexin.rpg.classes.PlayerClassRegistry
 import be.bluexin.rpg.classes.playerClass
 import be.bluexin.rpg.devutil.Textures
 import be.bluexin.rpg.devutil.get
-import be.bluexin.rpg.events.CreatePlayerContainerEvent
-import be.bluexin.rpg.events.CreatePlayerInventoryEvent
-import be.bluexin.rpg.events.LivingEquipmentPostChangeEvent
-import be.bluexin.rpg.events.OpenEnderChestEvent
+import be.bluexin.rpg.events.*
+import be.bluexin.rpg.extensions.RPGCombatTracker
 import be.bluexin.rpg.gear.*
 import be.bluexin.rpg.inventory.RPGEnderChestContainer
 import be.bluexin.rpg.inventory.RPGInventory
@@ -36,6 +34,7 @@ import be.bluexin.rpg.inventory.RpgInventoryGui
 import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.RenderEggItem
 import be.bluexin.rpg.pets.eggData
+import be.bluexin.rpg.pets.petStorage
 import be.bluexin.rpg.skills.SkillContext
 import be.bluexin.rpg.skills.SkillItem
 import be.bluexin.rpg.skills.SkillRegistry
@@ -48,7 +47,7 @@ import com.saomc.saoui.GLCore
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
 import com.teamwizardry.librarianlib.features.container.GuiHandler
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
-import com.teamwizardry.librarianlib.features.kotlin.Minecraft
+import com.teamwizardry.librarianlib.features.kotlin.Client
 import com.teamwizardry.librarianlib.features.network.PacketHandler
 import net.minecraft.block.Block
 import net.minecraft.client.gui.Gui
@@ -121,6 +120,19 @@ object CommonEventHandler {
             }
 
         }
+    }
+
+    @SubscribeEvent
+    @JvmStatic
+    fun combatEvent(event: CombatEvent) {
+        val e = event.entityLiving
+        if (event.action == CombatEvent.Action.START && e is EntityPlayer) e.petStorage.killPet()
+    }
+
+    @SubscribeEvent
+    @JvmStatic
+    fun skillCastEvent(event: SkillEvent.Cast) {
+        (event.entityLiving.combatTracker as RPGCombatTracker).enterCombat()
     }
 
     @SubscribeEvent
@@ -290,6 +302,12 @@ object CommonEventHandler {
             RPGInventoryContainer(event.player, event.container as ContainerPlayer).impl
     }
 
+    @SubscribeEvent
+    @JvmStatic
+    fun combatTrackerCreated(event: CreateCombatTrackerEvent) {
+        if (event.entityLiving !is FakePlayer) event.tracker = RPGCombatTracker(event.entityLiving)
+    }
+
     fun loadInteractionLimit() {
         var s = interactionLimit
         limitIsWhitelist = !s.startsWith('!')
@@ -427,7 +445,7 @@ object ClientEventHandler {
     }
 
     private fun renderCastBar() {
-        val mc = Minecraft()
+        val mc = Client.minecraft
         val iss = mc.player.activeItemStack
         val charge = if (iss.item == SkillItem) {
             if (iss.maxItemUseDuration > 0) min(1 - mc.player.itemInUseCount / iss.maxItemUseDuration.toFloat(), 1f)
@@ -465,7 +483,7 @@ object ClientEventHandler {
     }
 
     private fun renderManaBar() {
-        val mc = Minecraft()
+        val mc = Client.minecraft
         val mana = mc.player.mana
         val maxMana = mc.player.maxMana
         GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)

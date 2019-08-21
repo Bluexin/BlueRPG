@@ -17,11 +17,13 @@
 
 package be.bluexin.rpg.skills
 
+import be.bluexin.rpg.events.SkillEvent
 import be.bluexin.saomclib.onServer
 import com.teamwizardry.librarianlib.features.saving.Savable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.filter
 import net.minecraft.entity.EntityLivingBase
+import net.minecraftforge.common.MinecraftForge
 
 @Savable
 data class Processor(
@@ -44,6 +46,7 @@ data class Processor(
         } else false
 
     fun cast(context: SkillContext) {
+        if (MinecraftForge.EVENT_BUS.post(SkillEvent.Cast(context, this))) return
         val channel = Channel<Pair<Target, Target>>(capacity = Channel.UNLIMITED)
         targeting(context, context.caster.holder, channel)
         effect(context, condition?.let { c -> channel.filter { c(context, it.second) } } ?: channel)

@@ -114,11 +114,6 @@ object DamageHandler {
     }
 
     operator fun invoke(event: LivingAttackEvent) {
-        val tr = (event.source.trueSource as? EntityLivingBase?)?.combatTracker
-        tr?.inCombat = true
-        tr?.lastDamageTime = event.source.trueSource?.ticksExisted ?: 0
-        tr?.takingDamage = true
-
         /*
         We hit entity.
         Cancel vanilla damage, apply our own with damage from weapon, crit and whatever.
