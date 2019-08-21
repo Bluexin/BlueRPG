@@ -57,6 +57,10 @@ repositories {
         url = uri("https://maven.bluexin.be/repository/releases/")
     }
 //    maven { url "https://kotlin.bintray.com/kotlinx" }
+    maven {
+        name = "Jitpack.io"
+        url = uri("https://jitpack.io")
+    }
 }
 
 val contained by configurations.creating {
