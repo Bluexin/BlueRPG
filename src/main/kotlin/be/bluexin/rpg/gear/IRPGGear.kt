@@ -25,7 +25,7 @@ import be.bluexin.rpg.stats.*
 import be.bluexin.saomclib.onServer
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
-import com.teamwizardry.librarianlib.features.kotlin.Minecraft
+import com.teamwizardry.librarianlib.features.kotlin.Client
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.Minecraft
 import net.minecraft.client.util.ITooltipFlag
@@ -50,7 +50,7 @@ interface IRPGGear : IUsable<ItemStack> { // TODO: use ISpecialArmor
 
     fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
         val stats = stack.stats
-        if (stats?.generated != true) tooltip += "rpg.display.notgenerated".localize(Minecraft().gameSettings.keyBindPickBlock.displayName)
+        if (stats?.generated != true) tooltip += "rpg.display.notgenerated".localize(Client.minecraft.gameSettings.keyBindPickBlock.displayName)
         else {
             val spacer = "rpg.tooltip.spacer".localize()
             tooltip += "rpg.tooltip.desc".localize(
@@ -130,8 +130,7 @@ interface IRPGGear : IUsable<ItemStack> { // TODO: use ISpecialArmor
         val capNbt = nbt?.getCompoundTag("capabilities") ?: return nbt
         nbt.removeTag("capabilities")
         if (nbt.isEmpty) nbt = null
-        val cap = stack.stats ?: return nbt
-        GearStats.Storage.readNBT(GearStats.Capability, cap, null, capNbt)
+        if (!capNbt.isEmpty) GearStats.Storage.readNBT(GearStats.Capability, stack.stats ?: return nbt, null, capNbt)
         return nbt
     }
 
