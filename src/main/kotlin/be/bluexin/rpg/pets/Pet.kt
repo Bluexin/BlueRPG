@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg.pets
 
+import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.devutil.createEnumKey
 import be.bluexin.saomclib.onServer
 import be.bluexin.saomclib.profile
@@ -43,6 +44,7 @@ import net.minecraft.entity.ai.EntityAILookIdle
 import net.minecraft.entity.ai.EntityAIWatchClosest
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.EnumHand
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.MathHelper
 import net.minecraft.world.World
@@ -51,10 +53,10 @@ import net.minecraftforge.fml.relauncher.SideOnly
 import org.lwjgl.opengl.GL11
 import java.util.*
 
-class EntityPet(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
+class PetEntity(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
     private companion object {
-        private val SKIN_DATA = EntityPet::class.createCompoundKey()
-        private val MOVEMENT_TYPE_DATA = EntityPet::class.createEnumKey<PetMovementType>()
+        private val SKIN_DATA = PetEntity::class.createCompoundKey()
+        private val MOVEMENT_TYPE_DATA = PetEntity::class.createEnumKey<PetMovementType>()
     }
 
     @Save
@@ -143,15 +145,15 @@ class EntityPet(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
 }
 
 @SideOnly(Side.CLIENT)
-class RenderPet(renderManager: RenderManager) : RenderLiving<EntityPet>(renderManager, ModelPet(), .4f) {
-    override fun getEntityTexture(entity: EntityPet): ResourceLocation? = null
+class RenderPet(renderManager: RenderManager) : RenderLiving<PetEntity>(renderManager, ModelPet(), .4f) {
+    override fun getEntityTexture(entity: PetEntity): ResourceLocation? = null
 
-    override fun bindEntityTexture(entity: EntityPet) = true
+    override fun bindEntityTexture(entity: PetEntity) = true
 
-    override fun handleRotationFloat(pet: EntityPet, partialTicks: Float) =
+    override fun handleRotationFloat(pet: PetEntity, partialTicks: Float) =
         pet.movementHandler.handleRotationFloat(partialTicks)
 
-    override fun preRenderCallback(pet: EntityPet, partialTicks: Float) =
+    override fun preRenderCallback(pet: PetEntity, partialTicks: Float) =
         pet.movementHandler.preRenderCallback(partialTicks)
 }
 
@@ -169,8 +171,8 @@ class ModelPet : ModelBase() {
     ) {
         this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale, entityIn)
 
-        Minecraft().profile("Render BlueRPG AW Pet") {
-            val skinPointer = (entityIn as? EntityPet)?.skinPointer ?: return
+        Client.minecraft.profile("Render BlueRPG AW Pet") {
+            val skinPointer = (entityIn as? PetEntity)?.skinPointer ?: return
             val distanceSquared = Minecraft.getMinecraft().player.getDistanceSq(
                 entityIn.posX,
                 entityIn.posY,

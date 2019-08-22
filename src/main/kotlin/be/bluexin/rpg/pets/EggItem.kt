@@ -76,7 +76,7 @@ object EggItem : ItemMod("egg") {
         entityWorld: World,
         player: EntityPlayer?,
         stack: ItemStack,
-        targetEntity: EntityPet
+        targetEntity: PetEntity
     ) {
         val minecraftserver = entityWorld.minecraftServer
 
@@ -131,7 +131,7 @@ object EggItem : ItemMod("egg") {
                         val p = petStorage.petEntity
                         if (p?.isDead != false) {
                             val blockpos = player.position
-                            val entity = EntityPet(world)
+                            val entity = PetEntity(world)
                             entity.skinPointer = SkinDescriptor().apply { readFromCompound(tag, "skin") }
                             entity.setPosition(
                                 blockpos.x + .5,

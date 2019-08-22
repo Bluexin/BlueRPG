@@ -37,10 +37,10 @@ class PetStorage : AbstractEntityCapability() {
     @Save
     internal var petID: Int = -1
 
-    private var petEntityRef: WeakReference<EntityPet>? = null
+    private var petEntityRef: WeakReference<PetEntity>? = null
         get() {
             if (field == null && petID > 0) {
-                val p = reference.get()?.world?.getEntityByID(petID) as? EntityPet
+                val p = reference.get()?.world?.getEntityByID(petID) as? PetEntity
                 if (p == null) petID = -1
                 else field = WeakReference(p)
             }
@@ -52,7 +52,7 @@ class PetStorage : AbstractEntityCapability() {
             petID = value?.get()?.entityId ?: -1
         }
 
-    var petEntity: EntityPet?
+    var petEntity: PetEntity?
         get() = petEntityRef?.get()
         set(value) {
             petEntityRef = if (value != null) WeakReference(value) else null

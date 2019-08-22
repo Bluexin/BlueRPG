@@ -34,7 +34,7 @@ import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.utilities.*
 import be.bluexin.saomclib.capabilities.CapabilitiesHandler
 import com.teamwizardry.librarianlib.features.base.ModCreativeTab
-import com.teamwizardry.librarianlib.features.kotlin.Minecraft
+import com.teamwizardry.librarianlib.features.kotlin.Client
 import com.teamwizardry.librarianlib.features.saving.AbstractSaveHandler
 import com.teamwizardry.librarianlib.features.saving.Savable
 import com.teamwizardry.librarianlib.features.saving.Save
@@ -184,7 +184,7 @@ open class CommonProxy : CoroutineScope {
         )
         EntityRegistry.registerModEntity(
             ResourceLocation(BlueRPG.MODID, "entity_pet"),
-            EntityPet::class.java,
+            PetEntity::class.java,
             "entity_pet",
             ++id,
             BlueRPG,
@@ -248,7 +248,7 @@ open class CommonProxy : CoroutineScope {
 @SideOnly(Side.CLIENT)
 class ClientProxy : CommonProxy() {
     override fun preInit(event: FMLPreInitializationEvent) {
-        BlueRPGDataFixer.setup(Minecraft().dataFixer)
+        BlueRPGDataFixer.setup(Client.minecraft.dataFixer)
         super.preInit(event)
 
         TrailSystem.load()
@@ -265,11 +265,11 @@ class ClientProxy : CommonProxy() {
         RenderingRegistry.registerEntityRenderingHandler(RpgArrowEntity::class.java, ::RpgArrowRender)
         RenderingRegistry.registerEntityRenderingHandler(WandProjectileEntity::class.java, ::WandProjectileRender)
         RenderingRegistry.registerEntityRenderingHandler(SkillProjectileEntity::class.java, ::SkillProjectileRender)
-        RenderingRegistry.registerEntityRenderingHandler(EntityPet::class.java, ::RenderPet)
+        RenderingRegistry.registerEntityRenderingHandler(PetEntity::class.java, ::RenderPet)
         RenderingRegistry.registerEntityRenderingHandler(RPGItemEntity::class.java) {
             RenderEntityItem(
                 it,
-                Minecraft().renderItem
+                Client.minecraft.renderItem
             )
         }
     }

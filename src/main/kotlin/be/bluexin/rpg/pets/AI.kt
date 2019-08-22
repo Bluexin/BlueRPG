@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018.  Arnaud 'Bluexin' Solé
+ * Copyright (C) 2019.  Arnaud 'Bluexin' Solé
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ import net.minecraft.util.math.MathHelper
 import net.minecraft.world.World
 
 open class EntityAIFollowOwner(
-    private val pet: EntityPet,
+    private val pet: PetEntity,
     private val followSpeed: Double,
     private var minDist: Float,
     private var maxDist: Float
@@ -142,8 +142,8 @@ open class EntityAIFollowOwner(
     }
 }
 
-open class EntityAIFollowOwnerFlying(entityPet: EntityPet, followSpeedIn: Double, minDistIn: Float, maxDistIn: Float) :
-    EntityAIFollowOwner(entityPet, followSpeedIn, minDistIn, maxDistIn) {
+open class EntityAIFollowOwnerFlying(pet: PetEntity, followSpeedIn: Double, minDistIn: Float, maxDistIn: Float) :
+    EntityAIFollowOwner(pet, followSpeedIn, minDistIn, maxDistIn) {
 
     override fun isTeleportFriendlyBlock(x: Int, z: Int, y: Int, xOffset: Int, zOffset: Int): Boolean {
         val pos = BlockPos(x + xOffset, y - 1, z + zOffset)
@@ -155,7 +155,7 @@ open class EntityAIFollowOwnerFlying(entityPet: EntityPet, followSpeedIn: Double
     }
 }
 
-internal class AISlimeFloat(private val pet: EntityPet) : EntityAIBase() {
+internal class AISlimeFloat(private val pet: PetEntity) : EntityAIBase() {
 
     init {
         this.mutexBits = 5
@@ -180,7 +180,7 @@ internal class AISlimeFloat(private val pet: EntityPet) : EntityAIBase() {
 }
 
 internal class AISlimeBounce(
-    private val pet: EntityPet,
+    private val pet: PetEntity,
     private var minDist: Float,
     private var maxDist: Float
 ) : EntityAIBase() {
@@ -281,7 +281,7 @@ internal class AISlimeBounce(
     }
 }
 
-internal class AIPetFaceOwner(private val pet: EntityPet) : EntityAIBase() {
+internal class AIPetFaceOwner(private val pet: PetEntity) : EntityAIBase() {
     init {
         this.mutexBits = 2
     }

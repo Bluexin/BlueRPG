@@ -29,17 +29,17 @@ import net.minecraft.pathfinding.PathNavigate
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 
-enum class PetMovementType(private val handler: (EntityPet) -> PetMovementHandler) : Localizable {
+enum class PetMovementType(private val handler: (PetEntity) -> PetMovementHandler) : Localizable {
     WALK(::WalkHandler),
     HOP(::HopHandler),
     BOUNCE(::BounceHandler),
     FLOAT(::FloatHandler),
     FLAP(::FlapHandler);
 
-    operator fun invoke(pet: EntityPet) = this.handler(pet)
+    operator fun invoke(pet: PetEntity) = this.handler(pet)
 }
 
-abstract class PetMovementHandler(val pet: EntityPet) {
+abstract class PetMovementHandler(val pet: PetEntity) {
 
     val moveHelper: EntityMoveHelper by pet::getMoveHelper.delegate
     val jumpHelper: EntityJumpHelper by pet::getJumpHelper.delegate
@@ -66,11 +66,11 @@ abstract class PetMovementHandler(val pet: EntityPet) {
     open fun jump() = Unit
 }
 
-open class WalkHandler(pet: EntityPet) : PetMovementHandler(pet) {
+open class WalkHandler(pet: PetEntity) : PetMovementHandler(pet) {
     override fun onLivingUpdate() = Unit
 }
 
-open class HopHandler(pet: EntityPet) : PetMovementHandler(pet) {
+open class HopHandler(pet: PetEntity) : PetMovementHandler(pet) {
     private var jumpTicks: Int = 0
     private var jumpDuration: Int = 0
     private var wasOnGround: Boolean = false
@@ -168,7 +168,7 @@ open class HopHandler(pet: EntityPet) : PetMovementHandler(pet) {
         if (!this.pet.world.isRemote) this.pet.world.setEntityState(this.pet, 1.toByte())
     }
 
-    class HopMoveHelper(private val pet: EntityPet) : EntityMoveHelper(pet) {
+    class HopMoveHelper(private val pet: PetEntity) : EntityMoveHelper(pet) {
         private var nextJumpSpeed: Double = 0.0
 
         fun setMovementSpeed(newSpeed: Double) {
@@ -195,7 +195,7 @@ open class HopHandler(pet: EntityPet) : PetMovementHandler(pet) {
         }
     }
 
-    inner class HopJumpHelper(private val pet: EntityPet) : EntityJumpHelper(pet) {
+    inner class HopJumpHelper(private val pet: PetEntity) : EntityJumpHelper(pet) {
         private var canJump: Boolean = false
 
         val isJumping: Boolean
@@ -227,7 +227,7 @@ open class HopHandler(pet: EntityPet) : PetMovementHandler(pet) {
     }
 }
 
-open class BounceHandler(pet: EntityPet) : PetMovementHandler(pet) {
+open class BounceHandler(pet: PetEntity) : PetMovementHandler(pet) {
     var squishAmount: Float = 0f
     var squishFactor: Float = 0f
     var prevSquishFactor: Float = 0f
@@ -277,7 +277,7 @@ open class BounceHandler(pet: EntityPet) : PetMovementHandler(pet) {
         this.pet.tasks.addTask(5, AISlimeBounce(this.pet, 5f, 3f))
     }
 
-    class BounceMoveHelper(private val pet: EntityPet) : EntityMoveHelper(pet) {
+    class BounceMoveHelper(private val pet: PetEntity) : EntityMoveHelper(pet) {
         private var yRot: Float = 0f
         private var jumpDelay: Int = 0
         private var isAggressive: Boolean = false
@@ -338,13 +338,13 @@ open class BounceHandler(pet: EntityPet) : PetMovementHandler(pet) {
     }
 }
 
-open class FloatHandler(pet: EntityPet) : PetMovementHandler(pet) {
+open class FloatHandler(pet: PetEntity) : PetMovementHandler(pet) {
     override fun onLivingUpdate() {
         // TODO : implement
     }
 }
 
-open class FlapHandler(pet: EntityPet) : PetMovementHandler(pet) {
+open class FlapHandler(pet: PetEntity) : PetMovementHandler(pet) {
     var flap: Float = 0f
     var flapSpeed: Float = 0f
     var oFlapSpeed: Float = 0f
