@@ -126,21 +126,23 @@ object EggItem : ItemMod("egg") {
                     tag.getCompoundTag("EntityTag").getCompoundTag("auto"),
                     false
                 )
-                if (data.isHatched && !player.combatTracker.inCombat) {
-                    val p = petStorage.petEntity
-                    if (p?.isDead != false) {
-                        val blockpos = player.position
-                        val entity = EntityPet(world)
-                        entity.skinPointer = SkinDescriptor().apply { readFromCompound(tag, "skin") }
-                        entity.setPosition(
-                            blockpos.x + .5,
-                            blockpos.y + this.getYOffset(world, blockpos),
-                            blockpos.z + .5
-                        )
-                        entity.setOwner(player)
-                        applyItemEntityDataToEntity(world, player, stack, entity)
-                        world.spawnEntity(entity)
-                        petStorage.petEntity = entity
+                if (data.isHatched) {
+                    if (!player.combatTracker.inCombat) {
+                        val p = petStorage.petEntity
+                        if (p?.isDead != false) {
+                            val blockpos = player.position
+                            val entity = EntityPet(world)
+                            entity.skinPointer = SkinDescriptor().apply { readFromCompound(tag, "skin") }
+                            entity.setPosition(
+                                blockpos.x + .5,
+                                blockpos.y + this.getYOffset(world, blockpos),
+                                blockpos.z + .5
+                            )
+                            entity.setOwner(player)
+                            applyItemEntityDataToEntity(world, player, stack, entity)
+                            world.spawnEntity(entity)
+                            petStorage.petEntity = entity
+                        }
                     }
                     return
                 }
