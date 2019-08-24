@@ -171,8 +171,8 @@ rpg.health.tooltip=This is your life force. When it hits zero, you fall unconcio
 rpg.armor.tooltip=This reduces your incoming damage.
 
 rpg.psyche.tooltip=This is your skill force. It is depleted when you cast skills.
-rpg.regen.tooltip=This value refills your Health every 5 seconds. In combat, it is only 25% as effective.
-rpg.spirit.tooltip=This value refills your Psyche every 5 seconds. In combat, it is only 25% as effective.
+rpg.regen.tooltip=This value refills your Health every 5 seconds. In combat, it is only 20%% as effective.
+rpg.spirit.tooltip=This value refills your Psyche every 5 seconds. In combat, it is only 20%% as effective.
 rpg.reflect.tooltip=A chance to reflect all of the damage back to the damage dealer.
 rpg.block.tooltip=A chance to avoid all damage, but causes a slow on yourself.
 rpg.dodge.tooltip=A chance to dodge an attack, avoiding all damage.
