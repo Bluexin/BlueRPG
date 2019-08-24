@@ -17,14 +17,20 @@
 
 package be.bluexin.rpg.pets
 
-import be.bluexin.rpg.BlueRPG
 import be.bluexin.rpg.devutil.createEnumKey
+import be.bluexin.rpg.skills.glitter.PacketGlitter
+import be.bluexin.rpg.stats.SecondaryStat
+import be.bluexin.rpg.stats.get
 import be.bluexin.saomclib.onServer
 import be.bluexin.saomclib.profile
 import com.teamwizardry.librarianlib.features.base.entity.LivingEntityMod
-import com.teamwizardry.librarianlib.features.kotlin.Minecraft
+import com.teamwizardry.librarianlib.features.config.ConfigDoubleRange
+import com.teamwizardry.librarianlib.features.config.ConfigProperty
+import com.teamwizardry.librarianlib.features.kotlin.Client
 import com.teamwizardry.librarianlib.features.kotlin.createCompoundKey
 import com.teamwizardry.librarianlib.features.kotlin.managedValue
+import com.teamwizardry.librarianlib.features.network.PacketHandler
+import com.teamwizardry.librarianlib.features.network.TargetWatchingEntity
 import com.teamwizardry.librarianlib.features.saving.Save
 import moe.plushie.armourers_workshop.client.config.ConfigHandlerClient
 import moe.plushie.armourers_workshop.client.render.SkinPartRenderData
@@ -37,12 +43,12 @@ import net.minecraft.client.model.ModelBase
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.entity.Entity
-import net.minecraft.entity.IEntityOwnable
-import net.minecraft.entity.SharedMonsterAttributes
+import net.minecraft.entity.*
 import net.minecraft.entity.ai.EntityAILookIdle
 import net.minecraft.entity.ai.EntityAIWatchClosest
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.init.MobEffects
+import net.minecraft.init.SoundEvents
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumHand
 import net.minecraft.util.ResourceLocation
@@ -52,11 +58,17 @@ import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import org.lwjgl.opengl.GL11
 import java.util.*
+import kotlin.math.pow
 
-class PetEntity(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
+class PetEntity(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable, IJumpingMount {
     private companion object {
         private val SKIN_DATA = PetEntity::class.createCompoundKey()
         private val MOVEMENT_TYPE_DATA = PetEntity::class.createEnumKey<PetMovementType>()
+
+        @ConfigDoubleRange(.0, java.lang.Double.MAX_VALUE)
+        @ConfigProperty("general", "Pet mount speed general multiplier")
+        var petMountSpeed = 1.0
+            internal set
     }
 
     @Save
@@ -66,6 +78,9 @@ class PetEntity(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
     internal var skinData by managedValue(SKIN_DATA)
     @Save
     internal var movementType by managedValue(MOVEMENT_TYPE_DATA)
+
+    private var jumpPower = 0f
+    private var mountJumping = false
 
     val isJumping get() = super.isJumping
 
@@ -87,6 +102,7 @@ class PetEntity(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
 
     init {
         setSize(.8f, .8f)
+        aiMoveSpeed = .8f
     }
 
     override fun onAddedToWorld() {
@@ -105,11 +121,12 @@ class PetEntity(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
     override fun applyEntityAttributes() {
         super.applyEntityAttributes()
         this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).baseValue = 35.0
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).baseValue = 0.45
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).baseValue = 0.62
         this.getEntityAttribute(SharedMonsterAttributes.ARMOR).baseValue = 2.0
     }
 
     override fun initEntityAI() {
+        super.initEntityAI()
         this.tasks.addTask(6, EntityAIFollowOwner(this, 1.0, 5f, 3f))
         this.tasks.addTask(10, EntityAIWatchClosest(this, EntityPlayer::class.java, 8.0f))
         this.tasks.addTask(10, EntityAILookIdle(this))
@@ -141,6 +158,122 @@ class PetEntity(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable {
     override fun jump() {
         super.jump()
         this.movementHandler.jump()
+    }
+
+    override fun processInteract(player: EntityPlayer, hand: EnumHand): Boolean {
+        if (this.isBeingRidden || player.petStorage.petEntity != this) return false
+        player.rotationYaw = this.rotationYaw
+        player.rotationPitch = this.rotationPitch
+
+        return player.startRiding(this)
+    }
+
+    override fun addPassenger(passenger: Entity) {
+        super.addPassenger(passenger)
+        passenger.world onServer {
+            PacketHandler.CHANNEL.send(
+                TargetWatchingEntity(this), PacketGlitter(
+                    PacketGlitter.Type.AOE, this.positionVector, 0x82add2, 0x6d8396, .7
+                )
+            )
+        }
+    }
+
+    override fun removePassenger(passenger: Entity) {
+        super.removePassenger(passenger)
+        passenger.world onServer {
+            PacketHandler.CHANNEL.send(
+                TargetWatchingEntity(this), PacketGlitter(
+                    PacketGlitter.Type.AOE, this.positionVector, 0x82add2, 0x6d8396, .35
+                )
+            )
+        }
+    }
+
+    override fun canBeSteered() = this.controllingPassenger is EntityLivingBase
+
+    override fun getControllingPassenger(): Entity? = this.passengers.firstOrNull()
+
+    override fun handleStartJump(p_184775_1_: Int) = Unit
+
+    @SideOnly(Side.CLIENT)
+    override fun setJumpPower(jumpPowerIn: Int) =
+        if (jumpPowerIn >= 90) this.jumpPower = 1.0f
+        else this.jumpPower = 0.4f + 0.4f * jumpPowerIn.toFloat() / 90.0f
+
+    override fun canJump() = this.controllingPassenger != null
+
+    override fun handleStopJump() = Unit
+
+    override fun travel(_strafe: Float, vertical: Float, _forward: Float) {
+        var strafe = _strafe
+        var forward = _forward
+        if (this.isBeingRidden && this.canBeSteered()) {
+            val driver = this.controllingPassenger as EntityLivingBase
+            this.rotationYaw = driver.rotationYaw
+            this.prevRotationYaw = this.rotationYaw
+            this.rotationPitch = driver.rotationPitch * 0.5f
+            this.setRotation(this.rotationYaw, this.rotationPitch)
+            this.renderYawOffset = this.rotationYaw
+            this.rotationYawHead = this.renderYawOffset
+            strafe = driver.moveStrafing * 0.5f
+            forward = driver.moveForward
+
+            if (forward <= 0.0f) forward *= 0.25f
+
+            if (this.jumpPower > 0.0f && !this.mountJumping && this.onGround) {
+                this.motionY = .7 * this.jumpPower
+
+                if (this.isPotionActive(MobEffects.JUMP_BOOST)) {
+                    this.motionY += ((this.getActivePotionEffect(MobEffects.JUMP_BOOST)!!.amplifier + 1).toFloat() * 0.1f).toDouble()
+                }
+
+                this.mountJumping = true
+                this.isAirBorne = true
+
+                if (forward > 0.0f) {
+                    val f = MathHelper.sin(this.rotationYaw * 0.017453292f)
+                    val f1 = MathHelper.cos(this.rotationYaw * 0.017453292f)
+                    this.motionX += (-0.4f * f * this.jumpPower).toDouble()
+                    this.motionZ += (0.4f * f1 * this.jumpPower).toDouble()
+                    this.playSound(SoundEvents.ENTITY_HORSE_JUMP, 0.4f, 1.0f)
+                }
+
+                this.jumpPower = 0.0f
+            }
+
+            this.jumpMovementFactor = this.aiMoveSpeed * 0.1f
+
+            if (this.canPassengerSteer()) {
+                this.aiMoveSpeed =
+                    (this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).attributeValue * driver[SecondaryStat.SPEED] * 1000 * petMountSpeed).toFloat()
+                super.travel(strafe, vertical, forward)
+            } else if (driver is EntityPlayer) {
+                this.motionX = 0.0
+                this.motionY = 0.0
+                this.motionZ = 0.0
+            }
+
+            if (this.onGround) {
+                this.jumpPower = 0.0f
+                this.mountJumping = false
+            }
+
+            this.prevLimbSwingAmount = this.limbSwingAmount
+            val d1 = this.posX - this.prevPosX
+            val d0 = this.posZ - this.prevPosZ
+            var f2 = MathHelper.sqrt(d1 * d1 + d0 * d0) * 4.0f
+
+            if (f2 > 1.0f) {
+                f2 = 1.0f
+            }
+
+            this.limbSwingAmount += (f2 - this.limbSwingAmount) * 0.4f
+            this.limbSwing += this.limbSwingAmount
+        } else {
+            this.jumpMovementFactor = 0.02f
+            super.travel(strafe, vertical, forward)
+        }
     }
 }
 
@@ -178,25 +311,23 @@ class ModelPet : ModelBase() {
                 entityIn.posY,
                 entityIn.posZ
             )
-            if (distanceSquared > Math.pow(ConfigHandlerClient.renderDistanceSkin.toDouble(), 2.0)) return
+            if (distanceSquared > ConfigHandlerClient.renderDistanceSkin.toDouble().pow(2.0)) return
 
             val data = ClientSkinCache.INSTANCE.getSkin(skinPointer) ?: return
             val skinDye = skinPointer.skinDye
 
-            val size = data.parts.size
-            for (i in 0 until size) {
-                val partData = data.parts[i]
-                GL11.glPushMatrix()
-
-                GL11.glEnable(GL11.GL_CULL_FACE)
-                GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
-                GL11.glEnable(GL11.GL_BLEND)
+            GL11.glEnable(GL11.GL_CULL_FACE)
+            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
+            GL11.glEnable(GL11.GL_BLEND)
+            for (partData in data.parts) {
                 val offset = partData.partType.offset
+                GL11.glPushMatrix()
                 GL11.glTranslated(
                     offset.x.toDouble(),
                     -offset.y.toDouble() + 1.45,
                     offset.z.toDouble()
                 ) // y + 1.45 for current head skins to be floor-aligned
+                if (entityIn.isBeingRidden) GL11.glScalef(2f, 2f, 2f)
                 SkinPartRenderer.INSTANCE.renderPart(
                     SkinPartRenderData(
                         partData, SkinRenderData(
@@ -211,13 +342,10 @@ class ModelPet : ModelBase() {
                         )
                     )
                 )
-                GlStateManager.resetColor()
-                GlStateManager.color(1f, 1f, 1f, 1f)
-                GL11.glDisable(GL11.GL_CULL_FACE)
                 GL11.glPopMatrix()
-
-                break
             }
+            GlStateManager.resetColor()
+            GL11.glDisable(GL11.GL_CULL_FACE)
         }
     }
 }

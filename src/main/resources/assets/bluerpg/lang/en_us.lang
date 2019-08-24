@@ -39,7 +39,7 @@ rpg.display.cyclegenerated=Click to toggle generated status
 rpg.display.cyclename=Left click to generate a new random name, right click to unset (will be generated upon identifying)
 rpg.display.cyclepetname=Right click to clear name
 rpg.display.cyclecolor=Right click to clear color
-rpg.display.cyclemovementtype=Click to cycle trough the possible movmeent types
+rpg.display.cyclemovementtype=Click to cycle trough the possible movement types
 
 rpg.display.debug_exp=Use to gain 20 XP
 rpg.display.debug_exp.shift=Use while shifting to gain 100 XP
