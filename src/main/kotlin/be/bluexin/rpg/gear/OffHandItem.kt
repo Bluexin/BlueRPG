@@ -20,15 +20,12 @@ package be.bluexin.rpg.gear
 import be.bluexin.rpg.stats.FixedStat
 import be.bluexin.rpg.stats.GearStats
 import be.bluexin.rpg.stats.stats
-import com.google.common.collect.HashMultimap
-import com.google.common.collect.Multimap
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLiving
 import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.ai.attributes.AttributeModifier
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.EntityEquipmentSlot
 import net.minecraft.item.Item
@@ -55,14 +52,8 @@ class OffHandItem private constructor(override val type: OffHandType) : ItemMod(
         maxStackSize = 1
     }
 
-    override fun getAttributeModifiers(
-        slot: EntityEquipmentSlot,
-        stack: ItemStack
-    ): Multimap<String, AttributeModifier> {
-        return if (stack.tagCompound?.getByte("bluerpg:twohandflag") == 0.toByte())
-            super<IRPGGear>.getAttributeModifiers(slot, stack)
-        else HashMultimap.create<String, AttributeModifier>()
-    }
+    override fun getAttributeModifiers(slot: EntityEquipmentSlot, stack: ItemStack) =
+        super<IRPGGear>.getAttributeModifiers(slot, stack)
 
     override fun initCapabilities(stack: ItemStack, nbt: NBTTagCompound?) =
         super<IRPGGear>.initCapabilities(stack, nbt)

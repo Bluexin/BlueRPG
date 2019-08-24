@@ -257,7 +257,7 @@ fun ItemStack.statsReqMet(player: EntityPlayer): Boolean {
 }
 
 var ItemStack.enabled
-    get() = getNBTByte("bluerpg:disabled") == 0.toByte()
+    get() = getNBTByte("bluerpg:disabled") == 0.toByte() && getNBTByte("bluerpg:twohandflag") == 0.toByte()
     set(value) {
         if (item is IRPGGear) {
             if (value) removeNBTEntry("bluerpg:disabled")
