@@ -60,15 +60,15 @@ import org.lwjgl.opengl.GL11
 import java.util.*
 import kotlin.math.pow
 
+@ConfigDoubleRange(.0, java.lang.Double.MAX_VALUE)
+@ConfigProperty("general", "Pet mount speed general multiplier")
+var petMountSpeed = 1.0
+    internal set
+
 class PetEntity(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable, IJumpingMount {
     private companion object {
         private val SKIN_DATA = PetEntity::class.createCompoundKey()
         private val MOVEMENT_TYPE_DATA = PetEntity::class.createEnumKey<PetMovementType>()
-
-        @ConfigDoubleRange(.0, java.lang.Double.MAX_VALUE)
-        @ConfigProperty("general", "Pet mount speed general multiplier")
-        var petMountSpeed = 1.0
-            internal set
     }
 
     @Save
