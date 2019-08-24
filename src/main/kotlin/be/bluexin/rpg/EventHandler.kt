@@ -35,10 +35,7 @@ import be.bluexin.rpg.pets.EggItem
 import be.bluexin.rpg.pets.RenderEggItem
 import be.bluexin.rpg.pets.eggData
 import be.bluexin.rpg.pets.petStorage
-import be.bluexin.rpg.skills.SkillContext
-import be.bluexin.rpg.skills.SkillItem
-import be.bluexin.rpg.skills.SkillRegistry
-import be.bluexin.rpg.skills.cooldowns
+import be.bluexin.rpg.skills.*
 import be.bluexin.rpg.stats.*
 import be.bluexin.rpg.utilities.DynItem
 import be.bluexin.rpg.utilities.dynamicData
@@ -132,7 +129,7 @@ object CommonEventHandler {
     @SubscribeEvent
     @JvmStatic
     fun skillCastEvent(event: SkillEvent.Cast) {
-        (event.entityLiving.combatTracker as RPGCombatTracker).enterCombat()
+        if (event.skill.trigger != Passive) (event.entityLiving.combatTracker as RPGCombatTracker).enterCombat()
     }
 
     @SubscribeEvent
