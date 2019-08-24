@@ -192,7 +192,7 @@ enum class MeleeWeaponType(
 ) : WeaponType {
     MACE(
         attributes = arrayOf(
-            WeaponAttribute.KNOCKBACK to 0.4,
+            WeaponAttribute.KNOCKBACK to 0.8,
             WeaponAttribute.ATTACK_SPEED to -2.4
         )
     ),
