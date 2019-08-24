@@ -18,6 +18,8 @@
 package be.bluexin.rpg.devutil
 
 import be.bluexin.rpg.BlueRPG
+import be.bluexin.rpg.stats.SecondaryStat
+import com.teamwizardry.librarianlib.features.helpers.getTagList
 import com.teamwizardry.librarianlib.features.kotlin.get
 import com.teamwizardry.librarianlib.features.kotlin.set
 import net.minecraft.nbt.NBTTagCompound
@@ -28,7 +30,7 @@ import net.minecraftforge.common.util.CompoundDataFixer
 import net.minecraftforge.common.util.ModFixs
 
 object BlueRPGDataFixer {
-    private const val DATA_VERSION = 4
+    private const val DATA_VERSION = 5
     private lateinit var fixer: ModFixs
 
     fun setup(fixer: DataFixer) {
@@ -37,6 +39,7 @@ object BlueRPGDataFixer {
         this.fixer.registerFix(FixTypes.PLAYER, PlayerCaps001())
         this.fixer.registerFix(FixTypes.PLAYER, PlayerClasses001())
         this.fixer.registerFix(FixTypes.ITEM_INSTANCE, GearCaps001())
+        this.fixer.registerFix(FixTypes.PLAYER, PlayerBaseStats001())
     }
 
     private class PlayerCaps001 : IFixableData {
@@ -72,5 +75,22 @@ object BlueRPGDataFixer {
         }
 
         override fun getFixVersion() = 4
+    }
+
+    private class PlayerBaseStats001 : IFixableData {
+        override fun fixTagCompound(compound: NBTTagCompound): NBTTagCompound {
+            val l = compound.getTagList("Attributes", NBTTagCompound::class.java) ?: return compound
+
+            val toFix = arrayOf(SecondaryStat.REGEN, SecondaryStat.SPIRIT)
+            l.forEach {
+                it as NBTTagCompound
+                val s = toFix.find { s -> s.attribute.name == it.getString("Name") }
+                if (s != null) it.setDouble("Base", s.baseValue)
+            }
+
+            return compound
+        }
+
+        override fun getFixVersion() = 5
     }
 }

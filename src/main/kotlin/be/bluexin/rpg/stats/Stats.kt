@@ -240,7 +240,7 @@ enum class SecondaryStat(uuid: Array<String>, attribute: IAttribute? = null) : S
     ) {
         override val hasTransform = false
         override fun invoke(from: Int) = from.toDouble()
-        override val baseValue: Double get() = 2.0
+        override val baseValue: Double get() = 5.0
     },
     SPIRIT(
         arrayOf(
@@ -254,7 +254,7 @@ enum class SecondaryStat(uuid: Array<String>, attribute: IAttribute? = null) : S
     ) {
         override val hasTransform = false
         override fun invoke(from: Int) = from.toDouble()
-        override val baseValue: Double get() = 1.0
+        override val baseValue: Double get() = 4.0
     },
     REFLECT(
         arrayOf(
