@@ -19,6 +19,7 @@ import groovy.util.Node
 import groovy.util.NodeList
 import net.minecraftforge.gradle.user.TaskSingleReobf
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import kotlin.concurrent.thread
 
 plugins {
     `java-library`
@@ -27,6 +28,14 @@ plugins {
     kotlin("plugin.noarg")
     id("net.minecraftforge.gradle.forge")
 }
+
+val branch = prop("branch") ?: "git rev-parse --abbrev-ref HEAD".execute(rootDir.absolutePath).lines().last()
+logger.info("On branch $branch")
+
+val versionWithGit = "${branch.replace(
+    '/',
+    '-'
+)}-".takeUnless { branch == "develop" }.orEmpty() + prop("modVersion") + "." + prop("build_number")
 
 allprojects {
     version = prop("modVersion")!!
@@ -221,3 +230,25 @@ publishing {
 fun hasProp(name: String): Boolean = extra.has(name)
 
 fun prop(name: String): String? = extra.properties[name] as? String
+
+fun String.execute(wd: String? = null, ignoreExitCode: Boolean = false): String =
+    split(" ").execute(wd, ignoreExitCode)
+
+fun List<String>.execute(wd: String? = null, ignoreExitCode: Boolean = false): String {
+    val process = ProcessBuilder(this)
+        .also { pb -> wd?.let { pb.directory(File(it)) } }
+        .start()
+    var result = ""
+    val errReader = thread { process.errorStream.bufferedReader().forEachLine { logger.error(it) } }
+    val outReader = thread {
+        process.inputStream.bufferedReader().forEachLine { line ->
+            logger.debug(line)
+            result += line
+        }
+    }
+    process.waitFor()
+    outReader.join()
+    errReader.join()
+    if (process.exitValue() != 0 && !ignoreExitCode) error("Non-zero exit status for `$this`")
+    return result
+}
