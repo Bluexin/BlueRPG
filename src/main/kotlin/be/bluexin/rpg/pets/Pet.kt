@@ -268,6 +268,8 @@ class PetEntity(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable, IJum
             super.travel(strafe, vertical, forward)
         }
     }
+
+    override fun getMountedYOffset() = this.height * .95
 }
 
 @SideOnly(Side.CLIENT)
