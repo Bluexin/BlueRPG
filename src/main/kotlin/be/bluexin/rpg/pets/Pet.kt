@@ -97,6 +97,7 @@ class PetEntity(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable, IJum
     init {
         setSize(.8f, .8f)
         aiMoveSpeed = .8f
+        stepHeight = 1.4f
     }
 
     override fun onAddedToWorld() {
