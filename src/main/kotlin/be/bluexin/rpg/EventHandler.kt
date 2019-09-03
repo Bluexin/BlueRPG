@@ -390,6 +390,18 @@ object CommonEventHandler {
         stats.generateNameIfNeeded(event.entityPlayer)
         if (stats.bound == null && stats.binding == Binding.BOP) stats.bindTo(event.entityPlayer)
     }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    @JvmStatic
+    fun onLivingDrops(e: LivingDropsEvent) {
+        val s = e.drops.asSequence()
+        if (autoOpen) s.filter { it.item.item is GearTokenItem }.forEach {
+            it.item = it.item.tokenStats?.open(e.entity.world, null) ?: it.item
+        }
+        if (autoIdentifyDrop) s.filter { it.item.item is IRPGGear }.forEach {
+            it.item.stats?.generate(e.entity.world, null)
+        }
+    }
 }
 
 @SideOnly(Side.CLIENT)
