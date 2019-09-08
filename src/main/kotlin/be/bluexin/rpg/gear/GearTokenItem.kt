@@ -17,17 +17,14 @@
 
 package be.bluexin.rpg.gear
 
-import be.bluexin.rpg.CommonEventHandler
 import be.bluexin.rpg.devutil.IUsable
 import be.bluexin.rpg.devutil.ItemCapabilityWrapper
 import be.bluexin.rpg.stats.TokenStats
 import be.bluexin.rpg.stats.tokenStats
 import com.teamwizardry.librarianlib.features.base.item.ItemMod
-import com.teamwizardry.librarianlib.features.kotlin.Minecraft
+import com.teamwizardry.librarianlib.features.kotlin.Client
 import com.teamwizardry.librarianlib.features.kotlin.localize
 import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.entity.Entity
-import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -64,34 +61,12 @@ class GearTokenItem private constructor(val type: TokenType) : ItemMod("gear_tok
         return ActionResult.newResult(EnumActionResult.SUCCESS, iss)
     }
 
-    override fun hasCustomEntity(stack: ItemStack) = CommonEventHandler.autoOpen
-
-    override fun createEntity(world: World, location: Entity, itemstack: ItemStack): Entity? {
-        // checking config is done trough #hasCustomEntity
-        val stats = itemstack.tokenStats ?: return super.createEntity(world, location, itemstack)
-        fun makeEntity() =
-            EntityItem(
-                world,
-                location.posX,
-                location.posY,
-                location.posZ,
-                stats.open(world, null)
-            ).apply {
-                motionX = location.motionX
-                motionY = location.motionY
-                motionZ = location.motionZ
-                pickupDelay = (location as EntityItem).pickupDelay
-            }
-        while (itemstack.count > 1) world.spawnEntity(makeEntity())
-        return makeEntity()
-    } // FIXME: this also picks up `/give`, ID'ing a single token from the stack as result (but still giving the tokens, too)
-
     override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
         val stats = stack.tokenStats ?: return
         tooltip.add("rpg.display.itemlevel".localize(stats.ilvl))
         tooltip.add("rpg.display.levelreq".localize(stats.levelReq))
         if (stats.rarity != null) tooltip.add(stats.rarity!!.localized)
-        tooltip.add("rpg.display.open".localize(Minecraft().gameSettings.keyBindPickBlock.displayName))
+        tooltip.add("rpg.display.open".localize(Client.minecraft.gameSettings.keyBindPickBlock.displayName))
     }
 
     override fun initCapabilities(stack: ItemStack, nbt: NBTTagCompound?): ICapabilityProvider? {

@@ -17,6 +17,7 @@
 
 package be.bluexin.rpg.pets
 
+import be.bluexin.rpg.CommonEventHandler.petMountSpeedBonus
 import be.bluexin.rpg.devutil.createEnumKey
 import be.bluexin.rpg.skills.glitter.PacketGlitter
 import be.bluexin.rpg.stats.SecondaryStat
@@ -24,8 +25,6 @@ import be.bluexin.rpg.stats.get
 import be.bluexin.saomclib.onServer
 import be.bluexin.saomclib.profile
 import com.teamwizardry.librarianlib.features.base.entity.LivingEntityMod
-import com.teamwizardry.librarianlib.features.config.ConfigDoubleRange
-import com.teamwizardry.librarianlib.features.config.ConfigProperty
 import com.teamwizardry.librarianlib.features.kotlin.Client
 import com.teamwizardry.librarianlib.features.kotlin.createCompoundKey
 import com.teamwizardry.librarianlib.features.kotlin.managedValue
@@ -59,11 +58,6 @@ import net.minecraftforge.fml.relauncher.SideOnly
 import org.lwjgl.opengl.GL11
 import java.util.*
 import kotlin.math.pow
-
-@ConfigDoubleRange(.0, java.lang.Double.MAX_VALUE)
-@ConfigProperty("general", "Pet mount speed general multiplier")
-var petMountSpeed = 1.0
-    internal set
 
 class PetEntity(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable, IJumpingMount {
     private companion object {
@@ -103,6 +97,7 @@ class PetEntity(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable, IJum
     init {
         setSize(.8f, .8f)
         aiMoveSpeed = .8f
+        stepHeight = 1.4f
     }
 
     override fun onAddedToWorld() {
@@ -245,8 +240,7 @@ class PetEntity(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable, IJum
             this.jumpMovementFactor = this.aiMoveSpeed * 0.1f
 
             if (this.canPassengerSteer()) {
-                this.aiMoveSpeed =
-                    (this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).attributeValue * driver[SecondaryStat.SPEED] * 1000 * petMountSpeed).toFloat()
+                this.aiMoveSpeed = (driver[SecondaryStat.SPEED] * (100 + petMountSpeedBonus)).toFloat()
                 super.travel(strafe, vertical, forward)
             } else if (driver is EntityPlayer) {
                 this.motionX = 0.0
@@ -275,6 +269,8 @@ class PetEntity(worldIn: World) : LivingEntityMod(worldIn), IEntityOwnable, IJum
             super.travel(strafe, vertical, forward)
         }
     }
+
+    override fun getMountedYOffset() = this.height * .95
 }
 
 @SideOnly(Side.CLIENT)

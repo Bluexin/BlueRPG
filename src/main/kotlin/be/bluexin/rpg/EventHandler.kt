@@ -41,6 +41,7 @@ import be.bluexin.rpg.utilities.DynItem
 import be.bluexin.rpg.utilities.dynamicData
 import be.bluexin.saomclib.onServer
 import com.saomc.saoui.GLCore
+import com.teamwizardry.librarianlib.features.config.ConfigDoubleRange
 import com.teamwizardry.librarianlib.features.config.ConfigProperty
 import com.teamwizardry.librarianlib.features.container.GuiHandler
 import com.teamwizardry.librarianlib.features.container.internal.ContainerImpl
@@ -89,6 +90,11 @@ import kotlin.math.min
 // TODO: Split by feature
 @Mod.EventBusSubscriber(modid = BlueRPG.MODID)
 object CommonEventHandler {
+
+    @ConfigDoubleRange(.0, java.lang.Double.MAX_VALUE)
+    @ConfigProperty("general", "Pet mount speed bonus")
+    var petMountSpeedBonus = 50.0
+        internal set
 
     @SubscribeEvent
     @JvmStatic
@@ -383,6 +389,18 @@ object CommonEventHandler {
         val stats = event.item.item.stats ?: return
         stats.generateNameIfNeeded(event.entityPlayer)
         if (stats.bound == null && stats.binding == Binding.BOP) stats.bindTo(event.entityPlayer)
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    @JvmStatic
+    fun onLivingDrops(e: LivingDropsEvent) {
+        val s = e.drops.asSequence()
+        if (autoOpen) s.filter { it.item.item is GearTokenItem }.forEach {
+            it.item = it.item.tokenStats?.open(e.entity.world, null) ?: it.item
+        }
+        if (autoIdentifyDrop) s.filter { it.item.item is IRPGGear }.forEach {
+            it.item.stats?.generate(e.entity.world, null)
+        }
     }
 }
 
