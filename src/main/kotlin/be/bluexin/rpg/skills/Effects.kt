@@ -26,6 +26,7 @@ import com.teamwizardry.librarianlib.features.saving.Savable
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.filter
 import kotlinx.coroutines.launch
 import net.minecraft.util.EntityDamageSource
 import net.minecraft.util.math.Vec3d
@@ -131,7 +132,7 @@ data class Skill(
                 launch {
                     val c = Channel<Pair<Target, Target>>(capacity = Channel.UNLIMITED)
                     targeting(context, target, c)
-                    effect(context, c)
+                    effect(context, if (condition != null) c.filter { condition.invoke(context, it.second) } else c)
                 }
 
                 clientInfo(context, from, target)
