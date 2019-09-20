@@ -68,7 +68,7 @@ class RangedWeaponItem private constructor(override val type: RangedWeaponType) 
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack> {
         val r = super<IRPGGear>.onItemRightClick(worldIn, playerIn, handIn)
-        return if (r.type == EnumActionResult.PASS) {
+        return if (r.type == EnumActionResult.PASS && handIn == EnumHand.MAIN_HAND) {
             val itemstack = playerIn.getHeldItem(handIn)
             val stats = itemstack.stats!!
             if (!stats.generated) return r
